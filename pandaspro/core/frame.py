@@ -24,6 +24,34 @@ class swFrame(pd.DataFrame):
     def data(self):
         return pd.DataFrame(self)
 
+    @property
+    def varnames(self):
+
+        ## 1. change from number of cols to number of rows
+        ## 2. add the index number to the left
+        ## 3. adjust the looking using css codes
+
+        if not isinstance(self, pd.DataFrame):
+            print('Please declare one dataframe')
+        else:
+            names = self.columns.to_list()
+            num_cols = 8
+
+            num_rows = -(-len(names) // num_cols)
+            self = [['' for i in range(num_cols)] for j in range(num_rows)]
+
+            for k, name in enumerate(names):
+                row = k % num_rows
+                col = k // num_rows
+                self[row][col] = name
+            out = pd.DataFrame(self).style.hide_index().hide_columns().set_table_styles([
+                {'selector': 'td',
+                 'props': 'padding: 10px; text-align: center; font-weight: regular; background: lightgoldenrodyellow; border: 1px dotted black;'},
+                {'selector': 'tr', 'props': 'width: 100% !important'},
+                {'selector': 'table', 'props': 'width: 100% !important'}
+            ], overwrite=True)
+        return out
+
     def tab(self, name, d='brief', m=False, sort='index', asce=True):
         sort_dict = {
             f'{name}': f'{name}',
