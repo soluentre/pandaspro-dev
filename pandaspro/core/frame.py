@@ -1,8 +1,6 @@
 import pandas as pd
 from functools import partial
 
-from pandaspro
-
 def return_same_type_decor(func):
     def wrapper(self, *args, **kwargs):
         result = func(*args, **kwargs)
@@ -111,5 +109,5 @@ class swFrame(pd.DataFrame):
             df.columns = [name, 'Count', 'Percent']
             return df
 
-    def inlist(self):
-        pass
+    # def inlist(self):
+    #     pass
