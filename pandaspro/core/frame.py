@@ -96,8 +96,8 @@ class swFrame(pd.DataFrame):
             df = df.reset_index()
             df['Percent'] = (df['count'] / df['count'].sum()).round(3)
             total_row = pd.Series({
-                'index': 'Total',
-                name: df[name].sum(),
+                name: 'Total',
+                'count': df['count'].sum(),
                 'Percent': 1
             })
 
