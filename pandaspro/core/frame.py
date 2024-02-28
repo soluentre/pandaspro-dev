@@ -1,6 +1,8 @@
 import pandas as pd
 from functools import partial
 
+from pandaspro
+
 def return_same_type_decor(func):
     def wrapper(self, *args, **kwargs):
         result = func(*args, **kwargs)
@@ -35,7 +37,7 @@ class swFrame(pd.DataFrame):
             print('Please declare one dataframe')
         else:
             names = self.columns.to_list()
-            num_cols = 8
+            num_cols = 5
 
             num_rows = -(-len(names) // num_cols)
             self = [['' for i in range(num_cols)] for j in range(num_rows)]
@@ -44,7 +46,7 @@ class swFrame(pd.DataFrame):
                 row = k % num_rows
                 col = k // num_rows
                 self[row][col] = name
-            out = pd.DataFrame(self).style.hide_index().hide_columns().set_table_styles([
+            out = pd.DataFrame(self).style.hide(axis=0).hide(axis=1).set_table_styles([
                 {'selector': 'td',
                  'props': 'padding: 10px; text-align: center; font-weight: regular; background: lightgoldenrodyellow; border: 1px dotted black;'},
                 {'selector': 'tr', 'props': 'width: 100% !important'},
