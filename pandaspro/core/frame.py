@@ -35,7 +35,7 @@ class FramePro(pd.DataFrame):
     def tab(self, name, d='brief', m=False, sort='index', ascending=True):
         return tab(self, name, d, m, sort, ascending)
 
-    def dfilter(self, input, debug):
+    def dfilter(self, input, debug=False):
         return dfilter(self, input, debug)
 
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
