@@ -9,7 +9,7 @@ def return_same_type_decor(func):
         return result
     return wrapper
 
-class swFrame(pd.DataFrame):
+class FramePro(pd.DataFrame):
     def __init__(self, data=None, *args, **kwargs):
         super().__init__(data, *args, **kwargs)
 
