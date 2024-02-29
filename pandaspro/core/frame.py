@@ -1,5 +1,9 @@
 import pandas as pd
+import pandaspro.core.tools.tab
 from functools import partial
+from pandaspro.core.tools.dfilter import dfilter
+from pandaspro.core.tools.tab import tab
+
 
 def return_same_type_decor(func):
     def wrapper(self, *args, **kwargs):
@@ -52,62 +56,12 @@ class FramePro(pd.DataFrame):
             ], overwrite=True)
         return out
 
-    def tab(self, name, d='brief', m=False, sort='index', asce=True):
-        sort_dict = {
-            f'{name}': f'{name}',
-            'index': f'{name}',
-            'percent': 'Percent'
-        }
-        if m == 'missing' or m == True:
-            df = self[name].value_counts(dropna=False).sort_index().to_frame()
-        else:
-            df = self[name].value_counts().sort_index().to_frame()
+    def tab(self, name, d='brief', m=False, sort='index', ascending=True):
+        return tab(self, name, d, m, sort, ascending)
+    tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
 
-        if d == 'brief':
-            # Sort
-            if sort == 'index':
-                df = df.sort_index(ascending=asce)
-            else:
-                df = df.sort_values(sort_dict[sort], ascending=asce)
-            return df
-
-        elif d == 'detail':
-            # Calculate Percent and Cumulative Percent
-            df = df.reset_index()
-            df['Percent'] = (df['count'] / df['count'].sum() * 100).round(2)
-
-            # Sort
-            df = df.sort_values(sort_dict[sort], ascending=asce)
-            df['Cum.'] = df['Percent'].cumsum().round(2)
-
-            # Create a Total row
-            total_row = pd.Series({
-                name: 'Total',
-                'count': df['count'].sum(),
-                'Percent': 100.00,
-                'Cum.': ''
-            })
-
-            # Concatenate the Total row to the DataFrame
-            df = pd.concat([df, pd.DataFrame([total_row])], ignore_index=True)
-            return df
-
-        elif d == 'export':
-            df = df.reset_index()
-            df['Percent'] = (df['count'] / df['count'].sum()).round(3)
-            total_row = pd.Series({
-                name: 'Total',
-                'count': df['count'].sum(),
-                'Percent': 1
-            })
-
-            # Sort
-            df = df.sort_values(sort_dict[sort], ascending=asce)
-
-            # Concatenate the Total row to the DataFrame
-            df = pd.concat([df, pd.DataFrame([total_row])], ignore_index=True)
-            df.columns = [name, 'Count', 'Percent']
-            return df
-
+    def dfilter(self, input, debug):
+        return dfilter(self, input, debug)
+    dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     # def inlist(self):
     #     pass
