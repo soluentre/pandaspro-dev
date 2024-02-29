@@ -10,9 +10,12 @@ def dfilter(data, inputdict, debug=False):
 
     Parameters
     ----------
-    data : dataframe object to be filtered
-    inputdict : a dictionary follows the required syntax:
-    debug : if True, print intermediate results along the process
+    data : DataFrame
+        dataframe object to be filtered
+    inputdict : dictionary
+        a dictionary follows the required syntax:
+    debug : bool, optional and default =False
+        if True, print intermediate results along the process
 
     Returns
     ----------
@@ -27,7 +30,7 @@ def dfilter(data, inputdict, debug=False):
         'nickname1': (column_name1, [~]method_key1, list/str object),
         'nickname2': (column_name2, [~]method_key1, list/str object),
         ....
-     }
+    }
 
     method_key can take values:
     1. isin :  uses the pandas.Series.isin
@@ -36,23 +39,8 @@ def dfilter(data, inputdict, debug=False):
             receives a string
     3. number : no method called
             receives a string with operator and value
-    4.
-             'isin': {
-                'funct': '.isin',
-                'inbracket': f"({inputdict[key][2]})"
-            },
-            'contains': {
-                'funct': '.str.lower().str.contains',
-                'inbracket': f"('{inputdict[key][2]}', regex=True)"
-            },
-            'number': {
-                'funct': '',
-                'inbracket': f"{inputdict[key][2]}"
-            },
-            'na': {
-                'funct': '.isna',
-                'inbracket': f"()"
-            }
+    4. na : uses the pandas.Series.isna() method
+            the third element in tuple can be omitted or anything, no impact at all
 
     Example
     ----------
@@ -89,19 +77,19 @@ def dfilter(data, inputdict, debug=False):
     for key in list(inputdict.keys())[1:]:
         cdict = {
             'isin': {
-                'funct': '.isin',
+                'func': '.isin',
                 'inbracket': f"({inputdict[key][2]})"
             },
             'contains': {
-                'funct': '.str.lower().str.contains',
+                'func': '.str.lower().str.contains',
                 'inbracket': f"('{inputdict[key][2]}', regex=True)"
             },
             'number': {
-                'funct': '',
+                'func': '',
                 'inbracket': f"{inputdict[key][2]}"
             },
             'na': {
-                'funct': '.isna',
+                'func': '.isna',
                 'inbracket': f"()"
             }
         }
@@ -109,9 +97,9 @@ def dfilter(data, inputdict, debug=False):
 
         if "~" in usemethod:
             usemethod = usemethod.replace("~", "")
-            filter_code = f"~(df['{inputdict[key][0]}']{cdict[usemethod]['funct']}{cdict[usemethod]['inbracket']})"
+            filter_code = f"~(df['{inputdict[key][0]}']{cdict[usemethod]['func']}{cdict[usemethod]['inbracket']})"
         else:
-            filter_code = f"df['{inputdict[key][0]}']{cdict[usemethod]['funct']}{cdict[usemethod]['inbracket']}"
+            filter_code = f"df['{inputdict[key][0]}']{cdict[usemethod]['func']}{cdict[usemethod]['inbracket']}"
         filters[f"filter{key}"] = eval(filter_code)
         if debug == True:
             print(f"item {key}: {filter_code}")

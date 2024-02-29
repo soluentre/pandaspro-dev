@@ -1,6 +1,52 @@
 import pandas as pd
 
 def tab(data, name, d='brief', m=False, sort='index', ascending=True):
+    """
+    The `tab` function provides various tabulations of a specified column in a DataFrame,
+    with options for including missing values, and sorting the results by
+    index, value count, or percentage.
+
+    It supports three modes of output: 'brief', 'detail', and 'export', each offering a
+    different level of information and formatting suited for quick review,
+    detailed analysis, or preparation for export, respectively.
+
+    Parameters
+    ----------
+    data : DataFrame
+        The DataFrame containing the data to be tabulated.
+    name : str
+        The name of the column to tabulate.
+    d : str, optional and default ='brief'
+        The detail level of the output. Options are
+            - 'brief' (default)
+            - 'detail'
+            - 'export'
+    m : bool or 'missing', optional and default =False
+        If True or 'missing', includes missing values in the tabulation. Defaults to False.
+    sort : str, optional, default =index
+        The criterion for sorting the results. Options are
+            - 'index' (default)
+            - 'value'
+            - 'percent'.
+    ascending : bool, optional and default =True
+        Determines the sorting order. Defaults to True (ascending).
+
+    Returns
+    -------
+    DataFrame
+        A DataFrame containing the tabulated data. The structure of the DataFrame varies
+        depending on the `d` parameter:
+        - 'brief': Returns counts sorted according to the `sort` parameter.
+        - 'detail': Returns counts along with their percentage of the total and
+                    cumulative percentage, sorted as specified.
+        - 'export': Similar to 'detail', but formatted for export, with a total row at the bottom.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 2, np.nan]})
+    >>> tab(df, 'A', d='detail', m=True, sort='percent', ascending=False)
+    Returns a detailed tabulation of column 'A', including missing values, sorted by percentage in descending order.
+    """
     sort_dict = {
         f'{name}': f'{name}',
         'index': f'{name}',

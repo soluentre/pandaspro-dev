@@ -1,9 +1,9 @@
 import pandas as pd
-import pandaspro.core.tools.tab
+import pandaspro
 from functools import partial
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
-
+from pandaspro.core.tools.varnames import varnames
 
 def return_same_type_decor(func):
     def wrapper(self, *args, **kwargs):
@@ -30,38 +30,16 @@ class FramePro(pd.DataFrame):
 
     @property
     def varnames(self):
-
-        ## 1. change from number of cols to number of rows
-        ## 2. add the index number to the left
-        ## 3. adjust the looking using css codes
-
-        if not isinstance(self, pd.DataFrame):
-            print('Please declare one dataframe')
-        else:
-            names = self.columns.to_list()
-            num_cols = 5
-
-            num_rows = -(-len(names) // num_cols)
-            self = [['' for i in range(num_cols)] for j in range(num_rows)]
-
-            for k, name in enumerate(names):
-                row = k % num_rows
-                col = k // num_rows
-                self[row][col] = name
-            out = pd.DataFrame(self).style.hide(axis=0).hide(axis=1).set_table_styles([
-                {'selector': 'td',
-                 'props': 'padding: 10px; text-align: center; font-weight: regular; background: lightgoldenrodyellow; border: 1px dotted black;'},
-                {'selector': 'tr', 'props': 'width: 100% !important'},
-                {'selector': 'table', 'props': 'width: 100% !important'}
-            ], overwrite=True)
-        return out
+        return varnames(self)
 
     def tab(self, name, d='brief', m=False, sort='index', ascending=True):
         return tab(self, name, d, m, sort, ascending)
-    tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
 
     def dfilter(self, input, debug):
         return dfilter(self, input, debug)
+
+    tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
+    varnames.__doc__ = pandaspro.core.tools.varnames.varnames.__doc__
     # def inlist(self):
     #     pass
