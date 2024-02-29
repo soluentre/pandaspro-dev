@@ -2,6 +2,11 @@ import pandas as pd
 
 def varnames(self, rows=None, cols=None):
     """
+         _  _   _  ___ __   __ _____  ___  ___    ___   _  _  _  __   __
+      _ | || | | || _ \\ \ / /|_   _|| __|| _ \  / _ \ | \| || | \ \ / /
+     | || || |_| ||  _/ \ V /   | |  | _| |   / | (_) || .` || |__\ V /
+      \__/  \___/ |_|    |_|    |_|  |___||_|_\  \___/ |_|\_||____||_|
+
     This function rearranges the column names of a DataFrame into a tabular format for
     easier visualization, with options to specify the number of rows or columns.
 
