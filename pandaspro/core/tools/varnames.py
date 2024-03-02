@@ -1,6 +1,7 @@
 import pandas as pd
 
-def varnames(self, rows=None, cols=None) -> pd.DataFrame:
+
+def varnames(self, rows: int = None, cols: int = None) -> pd.DataFrame:
     """
          _  _   _  ___ __   __ _____  ___  ___    ___   _  _  _  __   __
       _ | || | | || _ \\ \ / /|_   _|| __|| _ \  / _ \ | \| || | \ \ / /

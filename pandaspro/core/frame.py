@@ -40,8 +40,13 @@ class FramePro(pd.DataFrame):
     def dfilter(self, input, debug=False):
         return dfilter(self, input, debug)
 
-    def colrename(self, engine='data', inplace=False):
+    def colrename(self, engine='columns', inplace=False):
         return colrename(self, engine, inplace=inplace)
+
+    def merge(*args, **kwargs):
+        result = super().merge(*args, **kwargs, indicator=True)
+        print(result.tab('_merge'))
+        return result
 
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
@@ -50,3 +55,6 @@ class FramePro(pd.DataFrame):
 
     # def inlist(self):
     #     pass
+
+if __name__ == '__main__':
+    pass

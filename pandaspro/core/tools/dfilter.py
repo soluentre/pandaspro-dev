@@ -1,6 +1,9 @@
 import pandas as pd
 
-def dfilter(data, inputdict: dict, debug: bool=False):
+
+def dfilter(data,
+            inputdict: dict,
+            debug: bool = False):
     """
     dfilter is a method that filters the dataframe according to an input dictionary
     In the dictionary, there's a format key which states the combine logic for multiple masks
