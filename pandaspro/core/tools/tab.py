@@ -1,6 +1,6 @@
 import pandas as pd
 
-def tab(data, name, d='brief', m=False, sort='index', ascending=True):
+def tab(data, name, d: str='brief', m: bool=False, sort: str='index', ascending=True):
     """
     The `tab` function provides various tabulations of a specified column in a DataFrame,
     with options for including missing values, and sorting the results by

@@ -4,6 +4,7 @@ from functools import partial
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
+from pandaspro.io.excel._base import colrename
 
 def return_same_type_decor(func):
     def wrapper(self, *args, **kwargs):
@@ -16,6 +17,7 @@ def return_same_type_decor(func):
 class FramePro(pd.DataFrame):
     def __init__(self, data=None, *args, **kwargs):
         super().__init__(data, *args, **kwargs)
+        self.namemap = "This attribute will reflect the orignal names when importing data using 'readpro' method in io.excel._base module"
 
         for attr_name in dir(pd.DataFrame):
             if callable(getattr(pd.DataFrame, attr_name, None)) and not attr_name.startswith("_") and attr_name not in ['sparse']:
@@ -38,8 +40,13 @@ class FramePro(pd.DataFrame):
     def dfilter(self, input, debug=False):
         return dfilter(self, input, debug)
 
+    def colrename(self, engine='data', inplace=False):
+        return colrename(self, engine, inplace=inplace)
+
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     varnames.__doc__ = pandaspro.core.tools.varnames.varnames.__doc__
+    colrename.__doc__ = pandaspro.io.excel._base.colrename.__doc__
+
     # def inlist(self):
     #     pass
