@@ -2,14 +2,17 @@ from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.utils.cell import coordinate_from_string
 
 
-def index_cell(cellname: str):
+def index_cell(cell: str) -> str:
     """
-    This function converts an Excel cell name (e.g., 'A1') into its corresponding row and column indices using openpyxl's utility functions. It separates the alphabetic column identifier(s) and the numeric row identifier, then converts the column identifier to a numeric index.
+    This function converts an Excel cell name (e.g., 'A1') into its corresponding row and column indices using
+    openpyxl's utility functions. It separates the alphabetic column identifier(s) and the numeric row identifier,
+    then converts the column identifier to a numeric index.
 
     Parameters
     ----------
-    cellname : str
-        The name of the cell in Excel format (e.g., 'A1', 'B22'), where letters refer to the column and numbers refer to the row.
+    cell : str
+        The name of the cell in Excel format (e.g., 'A1', 'B22'), where letters refer to the column and numbers
+        refer to the row.
 
     Returns
     -------
@@ -20,7 +23,9 @@ def index_cell(cellname: str):
 
     Notes
     -----
-    The function relies on openpyxl's `coordinate_from_string` to split the cell name into its letter and number components, and `column_index_from_string` to convert the column letter(s) to a numeric index. It assumes the input is a valid Excel cell reference.
+    The function relies on openpyxl's `coordinate_from_string` to split the cell name into its letter and number
+    components, and `column_index_from_string` to convert the column letter(s) to a numeric index.
+    It assumes the input is a valid Excel cell reference.
 
     Examples
     --------
@@ -28,26 +33,157 @@ def index_cell(cellname: str):
     This would return (3, 3), indicating that the cell is in the 3rd row and 3rd column of the spreadsheet.
     """
 
-    column_letter, row_number = coordinate_from_string(cellname)  # Separate letter and number
+    column_letter, row_number = coordinate_from_string(cell)  # Separate letter and number
     column_number = column_index_from_string(column_letter)  # Convert letter to number
-    return (row_number, column_number)
+    return [row_number, column_number]
 
-def get_cell_aside(cellname: str,
-                   direction: str = 'right',
-                   skipnum: int = 1):
-    '''
-    Extracting column letters and row numbers from the cell reference
-    '''
-    row, col = index_cell(cellname)
-    if direction == 'right':
-        result_row, result_col = row, col+1
-    elif direction == 'left':
-        result_row, result_col = row, col-1
-    elif
 
-    if result_row < 0 or result_col < 0:
-        raise ValueError("Row 1 and Column A are the borders of an Excel Spreadsheet")
-        result_col =
-    col_index = column_index_from_string(col_letters)
-    next_col_letter = get_column_letter(col_index + skipnum)
-    return next_col_letter + row_numbers
+def resize(cell: str,
+           row_resize: int,
+           col_resize: int) -> str:
+    """
+    Adjusts the size of a cell range starting from a specified cell in Excel format, by adding a specified number
+    of rows and columns to it. The function returns the new cell range in Excel notation. It uses the `index_cell`
+    function to get the row and column indices of the starting cell, then calculates the ending cell's indices
+    based on the resize parameters.
+
+    Parameters
+    ----------
+    cell : str
+        The starting cell's name in Excel format (e.g., 'A1'), where letters represent the column and numbers
+        represent the row.
+    row_resize : int
+        The number of rows to add to the starting cell's row to determine the ending cell's row. The resize value
+        includes the starting row itself.
+    col_resize : int
+        The number of columns to add to the starting cell's column to determine the ending cell's column.
+        The resize value includes the starting column itself.
+
+    Returns
+    -------
+    str
+        The new cell range in Excel format (e.g., 'A1:B2'), where the first part ('A1') is the starting cell,
+        and the second part ('B2') is the ending cell determined by the resize parameters.
+
+    Notes
+    -----
+    The function assumes the provided cell name and resize parameters are valid. The ending cell is calculated
+    by adding `row_resize - 1` to the starting row and `col_resize - 1` to the starting column, accounting for
+    the inclusion of the starting cell in the resize count.
+
+    Examples
+    --------
+    >>> resize('B2', 3, 2)
+    This would return 'B2:C4', indicating that starting from cell 'B2', the new range extends 3 rows down and 2
+    columns to the right, ending at cell 'C4'.
+    """
+    row, col = index_cell(cell)
+    new_row = row + row_resize - 1
+    new_col = col + col_resize - 1
+
+    start_column_letter = get_column_letter(col)
+    end_column_letter = get_column_letter(new_col)
+    result = f"{start_column_letter}{row}:{end_column_letter}{new_row}"
+    return result
+
+
+def offset(cell: str,
+           down_offset: int,
+           right_offset: int) -> str:
+    """
+    Calculates the Excel cell reference offset from a given starting cell by a specified number of rows and columns.
+    This function allows for moving a cell reference vertically and horizontally based on the provided offsets.
+
+    Parameters
+    ----------
+    cell : str
+        The starting cell's name in Excel format (e.g., 'A1'), where letters represent the column and numbers
+        represent the row.
+    down_offset : int
+        The number of rows to move down from the starting cell. A positive value moves the cell reference down,
+        while a negative value moves it up.
+    right_offset : int
+        The number of columns to move right from the starting cell. A positive value moves the cell reference to
+        the right, while a negative value moves it to the left.
+
+    Returns
+    -------
+    str
+        The new cell reference in Excel format (e.g., 'B2') after applying the given row and column offsets.
+
+    Raises
+    ------
+    ValueError
+        If the resulting cell reference is outside the valid Excel sheet range, specifically if the row or
+        column index is less than 1.
+
+    Notes
+    -----
+    The function checks for invalid resulting indices, ensuring that the new cell reference does not exceed Excel's
+    minimum row and column limits. Excel sheets start at row 1 and column 'A'.
+
+    Examples
+    --------
+    >>> offset('A1', 2, 3)
+    This would return 'D3', indicating that starting from cell 'A1', moving 2 rows down and 3 columns to the
+    right lands at cell 'D3'.
+    """
+    row, col = index_cell(cell)
+    new_row = row + down_offset
+    new_col = col + right_offset
+    if new_row < 0 or new_col < 0:
+        raise ValueError("Excel min row is 0 and min col is A; Indices must be greater than 1")
+    new_column_letter = get_column_letter(new_col)
+    return f"{new_column_letter}{new_row}"
+
+
+def get_cell_lists(rowlist: list,
+                   columnlist: list,
+                   orientation: str = 'c') -> dict:
+    """
+    Generates a dictionary of cell lists from specified row and column ranges, organized by either rows or columns
+    based on the given orientation. Each key in the dictionary corresponds to a list of cell references in Excel format.
+
+    Parameters
+    ----------
+    rowlist : list
+        A list of row indices (integers) to be included in the cell lists.
+    columnlist : list
+        A list of column letters (strings) corresponding to the columns to be included.
+    orientation : str, optional
+        Specifies the orientation for grouping cell references. 'r' for row-wise grouping, 'c' for
+        column-wise grouping (default is 'c').
+
+    Returns
+    -------
+    dict
+        A dictionary where each key ('cells0', 'cells1', ...) maps to a list of cell references in
+        the specified orientation.
+
+    Examples
+    --------
+    >>> get_cell_lists([1, 2], ['A', 'B'], 'r')
+    This will return a dictionary with row-wise grouped cell references, e.g.
+    {'cells0': ['A1', 'B1'], 'cells1': ['A2', 'B2']}.
+    """
+    result_dict = {}
+    i = 0
+
+    if orientation == 'r':
+        for row in rowlist:
+            temp_list = []
+            for col in columnlist:
+                temp_list.append(col + str(row))
+            result_dict[f'cells{i}'] = temp_list
+            i += 1
+
+    elif orientation == 'c':
+        for col in columnlist:
+            temp_list = []
+            for row in rowlist:
+                temp_list.append(col + str(row))
+            result_dict[f'cells{i}'] = temp_list
+            i += 1
+
+    return result_dict
+

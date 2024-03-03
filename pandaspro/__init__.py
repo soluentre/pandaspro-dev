@@ -6,5 +6,7 @@ from pandaspro.core.api import (
 )
 
 from pandaspro.io.api import (
-    get_cell_aside
+    index_cell,
+    resize,
+    offset
 )

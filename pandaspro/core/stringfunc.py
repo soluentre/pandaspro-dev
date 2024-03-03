@@ -1,6 +1,7 @@
 import re
 
-def str2list(inputstring):
+
+def str2list(inputstring: str) -> str:
     '''
     This function is used to turn a string of vars to a list object
     Python can not automatically parse list of vars as written in a string separated by space, like "make price mpg rep78" as comparing to Stata
@@ -13,7 +14,7 @@ def str2list(inputstring):
     '''
     pattern = r'\w+\s*-\s*\w+'
     match = re.findall(pattern, inputstring)
-    if match == []:
+    if not match:
         newlist = inputstring.split()
     else:
         for index, item in enumerate(match):

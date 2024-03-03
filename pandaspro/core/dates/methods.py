@@ -1,6 +1,7 @@
 from datetime import datetime
 import re
 
+
 def bdate(date_str):
     if date_str == '':
         return ''

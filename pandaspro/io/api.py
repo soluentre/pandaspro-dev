@@ -1,3 +1,11 @@
 from pandaspro.io.excel._utils import (
-    get_cell_aside
+    index_cell,
+    resize,
+    offset
 )
+
+__all__ = [
+    'index_cell',
+    'resize',
+    'offset'
+]

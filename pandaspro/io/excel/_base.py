@@ -2,7 +2,10 @@ import re
 import pandas as pd
 import numpy as np
 
-def colrename(data, engine :str='data', inplace: bool=False):
+
+def colrename(data,
+              engine: str = 'data',
+              inplace: bool = False) -> pd.DataFrame | list | dict :
     """
     This function renames the columns of a DataFrame by formatting the original column names
     according to a specified pattern, primarily to ensure the column names are
@@ -83,5 +86,4 @@ def colrename(data, engine :str='data', inplace: bool=False):
         data.rename(columns=mapping_update, inplace=True)
         return
     else:
-        return (df, cols, mapping_update, mapping_revert)[_engines[engine]]
-
+        return [df, cols, mapping_update, mapping_revert][_engines[engine]]
