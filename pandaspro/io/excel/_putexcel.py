@@ -25,21 +25,26 @@ class FramexlWriter:
             tr, tc = frame.shape[0] + header_row_count, frame.shape[1] + index_column_count
             export_data = frame
             range_index = cell.offset(header_row_count,0).resize(tr-header_row_count, index_column_count)
+            range_indexnames = cell.resize(header_row_count, header_row_count)
             range_header = cell.offset(0, index_column_count).resize(header_row_count, tc-index_column_count)
         elif header == False and index == True:
             tr, tc = frame.shape[0], frame.shape[1] + index_column_count
             export_data = frame.reset_index().to_numpy().tolist()
             range_index = cell.resize(tr, index_column_count)
+            range_indexnames = 'N/A'
             range_header = 'N/A'
         elif header == False and index == False:
             tr, tc = frame.shape[0], frame.shape[1]
             export_data = frame.to_numpy().tolist()
             range_index = 'N/A'
+            range_indexnames = 'N/A'
             range_header = 'N/A'
         else:
             tr, tc = frame.shape[0] + header_row_count, frame.shape[1]
-            export_data = [frame.columns.tolist()] + frame.to_numpy().tolist()
+            column_export = [list(lst) for lst in list(zip(*frame.columns.values))]
+            export_data = column_export + frame.to_numpy().tolist()
             range_index = 'N/A'
+            range_indexnames = 'N/A'
             range_header = cell.resize(header_row_count, tc)
 
         self.frame = export_data
@@ -50,6 +55,7 @@ class FramexlWriter:
                             .resize(tr - header_row_count, tc - index_column_count)
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
+        self.range_indexnames = range_indexnames.cell if range_indexnames !='N/A' else 'N/A'
 
 
 class PutxlSet:
@@ -155,10 +161,30 @@ class PutxlSet:
             print(f"\n>>> Cell Range Analysis")
             print(f" ----------------------")
             print(f">>> Total row: {io.tr}, Total column: {io.tc}")
-            print(f">>> Range index: {io.range_index}, Range header: {io.range_header}\n")
+            print(f">>> Range index: {io.range_index}, Range header: {io.range_header}, Range index names: {io.range_indexnames}\n")
 
 
 if __name__ == '__main__':
+    import pandas as pd
+    import numpy as np
+
+    # Define the countries
+    countries = ["USA", "China", "Japan", "Germany", "India", "UK", "France", "Brazil", "Italy", "Canada"]
+
+    # Generate random data for GDP (in trillion USD), Population (in millions), and GDP per Capita (in USD)
+    np.random.seed(0)  # For reproducibility
+    gdp = np.random.uniform(1, 20, size=len(countries))  # GDP in trillion USD
+    population = np.random.uniform(10, 1400, size=len(countries))  # Population in millions
+    gdp_per_capita = gdp * 1e12 / (population * 1e6)  # GDP per Capita in USD
+
+    # Create the DataFrame
+    df1 = pd.DataFrame({
+        'Country': countries,
+        'GDP (Trillion USD)': gdp.round(2),
+        'Population (Millions)': population.round(1),
+        'GDP per Capita (USD)': gdp_per_capita.round(2)
+    })
+
     import pandas as pd
 
     # Re-create the initial DataFrame
@@ -188,10 +214,10 @@ if __name__ == '__main__':
     df = pd.DataFrame(df.values[:, 1:], index=index_multi, columns=columns_multi)
 
     ps = PutxlSet('test.xlsx', 'Sheet3', noisily=True)
-    ps.putxl('A1', df, index=True, header=True, sheetreplace=True, sheet_name='TT', debug=True)
-    ps.putxl('A1', df, index=True, header=False, sheetreplace=True, sheet_name='TF', debug=True)
-    ps.putxl('A1', df, index=False, header=True, sheetreplace=True, sheet_name='FT', debug=True)
-    ps.putxl('A1', df, index=False, header=False, sheetreplace=True, sheet_name='FF', debug=True)
+    ps.putxl('A1', df1, index=True, header=True, sheetreplace=True, sheet_name='TT', debug=True)
+    ps.putxl('A1', df1, index=True, header=False, sheetreplace=True, sheet_name='TF', debug=True)
+    ps.putxl('A1', df1, index=False, header=True, sheetreplace=True, sheet_name='FT', debug=True)
+    ps.putxl('A1', df1, index=False, header=False, sheetreplace=True, sheet_name='FF', debug=True)
 
 '''
 putxl('A1', ...)
