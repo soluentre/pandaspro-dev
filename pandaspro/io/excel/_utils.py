@@ -2,7 +2,21 @@ from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.utils.cell import coordinate_from_string
 
 
-def index_cell(cell: str) -> str:
+class CellPro:
+    def __init__(self, cell: str):
+        self.cell = cell
+
+    def index_cell(self):
+        return CellPro(index_cell(self.cell))
+
+    def resize(self, row_resize, col_resize):
+        return CellPro(resize(self.cell, row_resize, col_resize))
+
+    def offset(self, down_offset, right_offset):
+        return CellPro(offset(self.cell, down_offset, right_offset))
+
+
+def index_cell(cell: str) -> list:
     """
     This function converts an Excel cell name (e.g., 'A1') into its corresponding row and column indices using
     openpyxl's utility functions. It separates the alphabetic column identifier(s) and the numeric row identifier,
@@ -80,10 +94,11 @@ def resize(cell: str,
     row, col = index_cell(cell)
     new_row = row + row_resize - 1
     new_col = col + col_resize - 1
-
     start_column_letter = get_column_letter(col)
     end_column_letter = get_column_letter(new_col)
     result = f"{start_column_letter}{row}:{end_column_letter}{new_row}"
+    if new_row <= 0 or new_col <= 0:
+        raise ValueError(f"Excel min row is 0 and min col is A, the result would be invalid {result}")
     return result
 
 
@@ -131,9 +146,9 @@ def offset(cell: str,
     row, col = index_cell(cell)
     new_row = row + down_offset
     new_col = col + right_offset
-    if new_row < 0 or new_col < 0:
-        raise ValueError("Excel min row is 0 and min col is A; Indices must be greater than 1")
     new_column_letter = get_column_letter(new_col)
+    if new_row <= 0 or new_col <= 0:
+        raise ValueError(f"Excel min row is 0 and min col is A, the result would be invalid {new_column_letter}{new_row}")
     return f"{new_column_letter}{new_row}"
 
 
@@ -186,4 +201,3 @@ def get_cell_lists(rowlist: list,
             i += 1
 
     return result_dict
-
