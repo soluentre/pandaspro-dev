@@ -41,7 +41,10 @@ class FramexlWriter:
             range_header = 'N/A'
         else:
             tr, tc = frame.shape[0] + header_row_count, frame.shape[1]
-            column_export = [list(lst) for lst in list(zip(*frame.columns.values))]
+            if isinstance(frame.columns, pd.MultiIndex):
+                column_export = [list(lst) for lst in list(zip(*frame.columns.values))]
+            else:
+                column_export = [frame.columns.to_list()]
             export_data = column_export + frame.to_numpy().tolist()
             range_index = 'N/A'
             range_indexnames = 'N/A'
@@ -163,6 +166,24 @@ class PutxlSet:
             print(f">>> Total row: {io.tr}, Total column: {io.tc}")
             print(f">>> Range index: {io.range_index}, Range header: {io.range_header}, Range index names: {io.range_indexnames}\n")
 
+    def switchtab(self, sheet_name: str) -> None:
+        """
+        Switches to a specified sheet in the workbook.
+        If the sheet does not exist, it creates a new one with the given name.
+
+        Parameters
+        ----------
+        sheet_name : str
+            The name of the sheet to switch to or create.
+        """
+        current_sheets = [sheet.name for sheet in self.wb.sheets]
+        if sheet_name in current_sheets:
+            sheet = self.wb.sheets[sheet_name]
+        else:
+            sheet = self.wb.sheets.add(after=self.wb.sheets.count)
+            sheet.name = sheet_name
+        self.ws = sheet
+        return
 
 if __name__ == '__main__':
     import pandas as pd
@@ -219,10 +240,7 @@ if __name__ == '__main__':
     ps.putxl('A1', df1, index=False, header=True, sheetreplace=True, sheet_name='FT', debug=True)
     ps.putxl('A1', df1, index=False, header=False, sheetreplace=True, sheet_name='FF', debug=True)
 
-'''
-putxl('A1', ...)
-putxlsheet('A1', ..., sheet='Sheet2')
-ps.switch('Sheet2')
-putxl('A1', )
-ps.switch('Dashboard')
-'''
+    ps.switchtab('new tab')
+    ps.putxl('A1', df1, sheetreplace=True)
+    ps.putxl('G1', df)
+
