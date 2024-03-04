@@ -157,6 +157,10 @@ class PutxlSet:
             new_sheet.name = original_name
             ws = new_sheet
             self.ws = ws
+        else:
+            # Add warning lines around the df if not replacing the sheet
+
+            io.start_cell.offset()
 
         ws.range(io.start_cell).value = io.frame
 
@@ -243,4 +247,7 @@ if __name__ == '__main__':
     ps.switchtab('new tab')
     ps.putxl('A1', df1, sheetreplace=True)
     ps.putxl('G1', df)
+
+    io = FramexlWriter(frame=df, start_cell='A1', index=False, header=True)
+
 
