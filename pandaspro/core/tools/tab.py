@@ -1,12 +1,14 @@
 import pandas as pd
 
 
-def tab(data,
-        name: str,
-        d: str = 'brief',
-        m: bool = False,
-        sort: str = 'index',
-        ascending: bool = True):
+def tab(
+    data,
+    name: str,
+    d: str = 'brief',
+    m: bool = False,
+    sort: str = 'index',
+    ascending: bool = True
+):
     """
     The `tab` function provides various tabulations of a specified column in a DataFrame,
     with options for including missing values, and sorting the results by

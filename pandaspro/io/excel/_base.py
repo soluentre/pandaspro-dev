@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-def colrename(data,
+def lowervarlist(data,
               engine: str = 'data',
               inplace: bool = False) -> pd.DataFrame | list | dict :
     """
@@ -43,7 +43,7 @@ def colrename(data,
     Examples
     --------
     >>> df = pd.DataFrame(np.random.rand(3, 3), columns=['Column 1', 'Column-2', 'Column 3'])
-    >>> colrename(df, 'update_map')
+    >>> lowervarlist(df, 'update_map')
     This will return a dictionary mapping the original column names to their new, formatted names, such as {'Column 1': 'column_1', 'Column-2': 'column_2', 'Column 3': 'column_3'}.
     """
 
