@@ -46,7 +46,7 @@ class FramePro(pd.DataFrame):
         return FramePro(dfilter(self, inputdict, debug))
 
     def inlist(self, colname: str, *args, engine: str = 'b', inplace: bool = False, invert: bool = False, debug: bool = False):
-        return FramePro(inlist(
+        result = inlist(
             self,
             colname,
             *args,
@@ -54,7 +54,13 @@ class FramePro(pd.DataFrame):
             inplace=inplace,
             invert=invert,
             debug=debug,
-        ))
+        )
+        if debug:
+            print(type(result))
+        if engine == 'm':
+            return result
+        else:
+            return FramePro(result)
 
     def lowervarlist(self, engine='columns', inplace=False):
         if engine == 'data':
@@ -79,4 +85,5 @@ class FramePro(pd.DataFrame):
 
 if __name__ == '__main__':
     a = FramePro({'a': [1,2,3],'b':[3,4,5]})
-    b = a.inlist('a',1)
+    b = a.inlist('a',1, engine = 'm')
+    e = a.inlist('a', 1, engine='b')

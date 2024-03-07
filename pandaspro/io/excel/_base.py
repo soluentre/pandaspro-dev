@@ -80,7 +80,7 @@ def lowervarlist(data,
 
     # Rename the columns in the DataFrame
     df = data.rename(columns=mapping_update)
-    cols = data.columns.to_list()
+    cols = df.columns.to_list()
 
     if inplace:
         data.rename(columns=mapping_update, inplace=True)
