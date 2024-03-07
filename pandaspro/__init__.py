@@ -8,5 +8,6 @@ from pandaspro.core.api import (
 from pandaspro.io.api import (
     index_cell,
     resize,
-    offset
+    offset,
+    PutxlSet
 )

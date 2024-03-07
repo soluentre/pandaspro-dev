@@ -4,11 +4,11 @@ import pandas as pd
 def inlist(
     data,
     colname: str,
+    *args,
     engine: str = 'b',
     inplace: bool = False,
     invert: bool = False,
     debug: bool = False,
-    *args
 ):
     """
     Filters a DataFrame based on whether values in a specified column are in a given list. Supports various
