@@ -49,11 +49,11 @@ class FramePro(pd.DataFrame):
         return FramePro(inlist(
             self,
             colname,
-            *args,
             engine=engine,
             inplace=inplace,
             invert=invert,
-            debug=debug
+            debug=debug,
+            *args
         ))
 
     def lowervarlist(self, engine='columns', inplace=False):
@@ -78,4 +78,5 @@ class FramePro(pd.DataFrame):
 
 
 if __name__ == '__main__':
-    pass
+    a = FramePro({'a': [1,2,3],'b':[3,4,5]})
+    b = a.inlist('a',1)
