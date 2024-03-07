@@ -40,35 +40,41 @@ class FramePro(pd.DataFrame):
         return varnames(self)
 
     def tab(self, name: str, d: str = 'brief', m: bool = False, sort: str = 'index', ascending: bool = True):
-        return tab(self, name, d, m, sort, ascending)
+        return FramePro(tab(self, name, d, m, sort, ascending))
 
     def dfilter(self, inputdict: dict = None, debug: bool = False):
-        return dfilter(self, inputdict, debug)
+        return FramePro(dfilter(self, inputdict, debug))
 
     def inlist(self, colname: str, *args, engine: str = 'b', inplace: bool = False, invert: bool = False, debug: bool = False):
-        return inlist(
-            data=self,
-            colname=colname,
+        return FramePro(inlist(
+            self,
+            colname,
             *args,
             engine=engine,
             inplace=inplace,
             invert=invert,
             debug=debug
-        )
+        ))
 
     def lowervarlist(self, engine='columns', inplace=False):
+        if engine == 'data':
+            return FramePro(lowervarlist(self, engine, inplace=inplace))
         return lowervarlist(self, engine, inplace=inplace)
 
     def merge(*args, **kwargs):
         result = super().merge(*args, **kwargs, indicator=True)
         print(result.tab('_merge'))
-        return result
+        return FramePro(result)
 
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     inlist.__doc__ = pandaspro.core.tools.inlist.__doc__
     varnames.__doc__ = pandaspro.core.tools.varnames.varnames.__doc__
     lowervarlist.__doc__ = pandaspro.io.excel._base.lowervarlist.__doc__
+
+    # Overwriting original methods
+    def rename(self, columns=None, *args, **kwargs):
+        return FramePro(super().rename(columns=columns, *args, **kwargs))
 
 
 if __name__ == '__main__':

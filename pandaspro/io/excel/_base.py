@@ -50,8 +50,8 @@ def lowervarlist(data,
     _engines = {
         'data': 0,
         'columns': 1,
-        'update_map': 2,
-        'revert_map': 3
+        'update': 2,
+        'revert': 3
     }
 
     # Get the original list of column names

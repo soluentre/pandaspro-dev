@@ -56,6 +56,7 @@ def inlist(
     >>> df = inlist(df, 'A', 5, engine='c', invert=True)
     Adds a new column '_inlist' to `df`, marking with 1 the rows where column 'A' does not contain 5.
     """
+    data = pd.DataFrame(data)
     boolist = args[0] if isinstance(args[0], list) else list(args)
     if debug:
         print(boolist)
