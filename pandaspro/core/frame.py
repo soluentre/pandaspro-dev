@@ -32,7 +32,7 @@ class FramePro(pd.DataFrame):
                         pass
 
     @property
-    def data(self):
+    def d(self):
         return pd.DataFrame(self)
 
     @property
