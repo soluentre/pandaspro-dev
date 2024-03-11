@@ -17,6 +17,11 @@ def _extract_tuple(s):
         raise ValueError(f"Multiple tuples found in '{s}'")
 
 
+def _is_number(s: str):
+    pattern = re.compile(r'^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$')
+    return bool(pattern.match(s))
+
+
 class RangeOperator:
     _alignment_map = {
         'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
@@ -43,29 +48,53 @@ class RangeOperator:
             font_name: str = None,
             font_size: str = None,
             font_color: str | tuple = None,
-            italic: bool = False,
-            bold: bool = False,
-            underline: bool = False,
-            strikeout: bool = False,
+            italic: bool = None,
+            bold: bool = None,
+            underline: bool = None,
+            strikeout: bool = None,
             align: str | list = None,
     ) -> None:
         if font:
             if isinstance(font, tuple):
                 self.xwrange.font.color = font
-            elif isinstance(font, int):
+            elif isinstance(font, (int, float)):
                 self.xwrange.font.size = font
-            elif isinstance(font, str) and re.fullmatch(r'#[0-9A-Fa-f]{6}', font):
-                self.xwrange.font.name = font
             elif isinstance(font, str):
                 color, remaining = _extract_tuple(font)
                 if color:
                     self.xwrange.font.color = color
                 for item in remaining.split(','):
                     item = item.strip()
-                    if isinstance(item, int):
+                    if _is_number(item):
                         self.xwrange.font.size = item
                     elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
                         self.xwrange.font.color = item
+                    elif item == 'bold':
+                        self.xwrange.font.bold = True
+                    elif item == 'italic':
+                        self.xwrange.font.italic = True
+                    elif item == 'underline':
+                        self.xwrange.api.Font.Underline = True
+                    elif item == 'strikeout':
+                        self.xwrange.api.Font.Strikethrough = True
+                    else:
+                        self.xwrange.font.name = item
+            elif isinstance(font, list):
+                for item in font:
+                    if isinstance(item, tuple):
+                        self.xwrange.font.color = item
+                    elif isinstance(item, (int, float)):
+                        self.xwrange.font.size = item
+                    elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                        self.xwrange.font.color = item
+                    elif isinstance(item, str) and item == 'bold':
+                        self.xwrange.font.bold = True
+                    elif isinstance(item, str) and item == 'italic':
+                        self.xwrange.font.italic = True
+                    elif isinstance(item, str) and item == 'underline':
+                        self.xwrange.api.Font.Underline = True
+                    elif isinstance(item, str) and item == 'strikeout':
+                        self.xwrange.api.Font.Strikethrough = True
                     else:
                         self.xwrange.font.name = item
 
@@ -104,7 +133,8 @@ class RangeOperator:
                 return
 
             if isinstance(align, str):
-                for item in align.split():
+                for item in align.split(','):
+                    item = item.strip()
                     _alignfunc(item)
             elif isinstance(align, list):
                 for item in align:
@@ -125,6 +155,7 @@ if __name__ == '__main__':
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font='Calibri, 14, #FFFF00', align='center')    # print(a.range)
+    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='left, top')    # print(a.range)
+    # a.format(bold=True, align='left, top')    # print(a.range)
     # print(_extract_tuple('12 (4,255,67)'))
     # a.range.font.color = '#FF0000'
