@@ -39,7 +39,16 @@ class RangeOperator:
                 self.range.font.color = font
             elif isinstance(font, str):
                 for item in font.split():
-                    if re.match(item, '#\d{6}'):
+                    if isinstance(item, tuple):
+                        self.range.font.color = item
+                    elif isinstance(item, int):
+                        self.range.font.size = item
+                    elif re.fullmatch(item, '#\d{6}'):
+                        self.range.font.color = item
+                    else:
+                        available_fonts = [f.name for f in self.range.font.application.fonts]
+                        if item in available_fonts:
+                            self.range.font.name = item
 
         # 'color' attribute can follow formats: (1) string of hex starts with '#'; (2) tuple of RGB
         self.range.font.name = font_name
@@ -62,6 +71,7 @@ class RangeOperator:
                 elif align not in self._alignment_map.keys():
                     raise ValueError(f'Alignment {alignkey} is not supported')
                 return
+
             if isinstance(align, str):
                 for item in align.split():
                     _alignfunc(item)
