@@ -54,12 +54,16 @@ class FramexlWriter:
         self.start_cell = start_cell
         self.tr = tr
         self.tc = tc
+        self.top_right_cell = cell.offset(0, self.tc - 1)
+        self.bottom_left_cell = cell.offset(self.tr - 1, 0)
+        self.end_cell = cell.offset(self.tr - 1, self.tc - 1)
         self.range_data = cell.offset(header_row_count, index_column_count)\
                             .resize(tr - header_row_count, tc - index_column_count)
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
         self.range_indexnames = range_indexnames.cell if range_indexnames !='N/A' else 'N/A'
-
+        self.range_top_checker = CellPro(self.start_cell).offset(-1,0).resize(self.tc) if CellPro(self.start_cell).index_cell()[0] != 1 else None
+        self.range_top_checker = self.start_cell - 1
 
 class PutxlSet:
 
@@ -122,8 +126,19 @@ class PutxlSet:
             replace: str = None,
             sheetreplace: bool = False,
             sheet_name: str = None,
-            debug: bool = False
+            debug: bool = False,
+            font: str | tuple = None,
+            font_name: str = None,
+            font_size: str = None,
+            font_color: str | tuple = None,
+            italic: bool = False,
+            bold: bool = False,
+            underline: bool = False,
+            strikeout: bool = False,
+            align: str | list = None,
     ) -> None:
+        from pandaspro.io.excel._xlwings import RangeOperator
+
         io = FramexlWriter(frame=frame, start_cell=start_cell, index=index, header=header)
         replace_type = self.globalreplace if self.globalreplace else replace
 
@@ -159,10 +174,15 @@ class PutxlSet:
             self.ws = ws
         else:
             # Add warning lines around the df if not replacing the sheet
-
             io.start_cell.offset()
 
+        # Export to target sheet
         ws.range(io.start_cell).value = io.frame
+
+        # Format the sheet
+
+        rangeop = RangeOperator()
+
 
         if debug:
             print(f"\n>>> Cell Range Analysis")
@@ -189,6 +209,7 @@ class PutxlSet:
         self.ws = sheet
         return
 
+
 if __name__ == '__main__':
     import pandas as pd
     import numpy as np
@@ -209,8 +230,6 @@ if __name__ == '__main__':
         'Population (Millions)': population.round(1),
         'GDP per Capita (USD)': gdp_per_capita.round(2)
     })
-
-    import pandas as pd
 
     # Re-create the initial DataFrame
     countries = ["USA", "China", "Japan", "Germany", "India", "UK", "France", "Brazil", "Italy", "Canada"]
