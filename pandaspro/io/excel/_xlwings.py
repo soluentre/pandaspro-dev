@@ -53,7 +53,11 @@ class RangeOperator:
             underline: bool = None,
             strikeout: bool = None,
             align: str | list = None,
+            merge: bool = None
     ) -> None:
+
+        # Font Attributes
+        ##################################
         if font:
             if isinstance(font, tuple):
                 self.xwrange.font.color = font
@@ -119,6 +123,8 @@ class RangeOperator:
         if strikeout is not None:
             self.xwrange.api.Font.Strikethrough = strikeout
 
+        # Align Attributes
+        ##################################
         if align:
             def _alignfunc(alignkey):
                 if align in ['center', 'justify', 'distributed']:
@@ -140,6 +146,17 @@ class RangeOperator:
                 for item in align:
                     _alignfunc(item)
 
+        # Merge Attributes
+        ##################################
+        if merge:
+            xw.apps.active.api.DisplayAlerts = False
+            self.xwrange.api.MergeCells = merge
+            xw.apps.active.api.DisplayAlerts = True
+
+        elif merge == False:
+            self.xwrange.unmerge()
+
+
         return
 
     def clear(self):
@@ -151,11 +168,12 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range("C1:D2")
+    my_range = sheet.range("C1:D1")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='left, top')    # print(a.range)
+    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='center', merge=False)    # print(a.range)
+
     # a.format(bold=True, align='left, top')    # print(a.range)
     # print(_extract_tuple('12 (4,255,67)'))
     # a.range.font.color = '#FF0000'
