@@ -2,6 +2,21 @@ import xlwings as xw
 import re
 
 
+def _extract_tuple(s):
+    pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
+    matches = list(re.finditer(pattern, s))
+    if len(matches) == 0:
+        return None, s.strip()
+    elif len(matches) == 1:
+        match = matches[0]
+        tuple_str = match.group(1)
+        color_tuple = tuple(map(int, tuple_str.split(',')))
+        remaining_str = s[:match.start()] + s[match.end():]
+        return color_tuple, remaining_str.strip()
+    else:
+        raise ValueError(f"Multiple tuples found in '{s}'")
+
+
 class RangeOperator:
     _alignment_map = {
         'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
@@ -20,11 +35,11 @@ class RangeOperator:
     }
 
     def __init__(self, xwrange: xw.Range) -> None:
-        self.range = xwrange
+        self.xwrange = xwrange
 
     def format(
             self,
-            font: str | tuple = None,
+            font: str | tuple | list = None,
             font_name: str = None,
             font_size: str = None,
             font_color: str | tuple = None,
@@ -36,38 +51,54 @@ class RangeOperator:
     ) -> None:
         if font:
             if isinstance(font, tuple):
-                self.range.font.color = font
+                self.xwrange.font.color = font
+            elif isinstance(font, int):
+                self.xwrange.font.size = font
+            elif isinstance(font, str) and re.fullmatch(r'#[0-9A-Fa-f]{6}', font):
+                self.xwrange.font.name = font
             elif isinstance(font, str):
-                for item in font.split():
-                    if isinstance(item, tuple):
-                        self.range.font.color = item
-                    elif isinstance(item, int):
-                        self.range.font.size = item
-                    elif re.fullmatch(item, '#\d{6}'):
-                        self.range.font.color = item
+                color, remaining = _extract_tuple(font)
+                if color:
+                    self.xwrange.font.color = color
+                for item in remaining.split(','):
+                    item = item.strip()
+                    if isinstance(item, int):
+                        self.xwrange.font.size = item
+                    elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                        self.xwrange.font.color = item
                     else:
-                        available_fonts = [f.name for f in self.range.font.application.fonts]
-                        if item in available_fonts:
-                            self.range.font.name = item
+                        self.xwrange.font.name = item
 
-        # 'color' attribute can follow formats: (1) string of hex starts with '#'; (2) tuple of RGB
-        self.range.font.name = font_name
-        self.range.font.size = font_size
-        self.range.font.color = font_color
-        self.range.font.italic = italic
-        self.range.font.bold = bold
-        self.range.api.Font.Underline = underline
-        self.range.api.Font.Strikethrough = strikeout
+        if font_name:
+            self.xwrange.font.name = font_name
+
+        if font_size is not None:
+            self.xwrange.font.size = font_size
+
+        if font_color:
+            self.xwrange.font.color = font_color
+
+        if italic is not None:
+            self.xwrange.font.italic = italic
+
+        if bold is not None:
+            self.xwrange.font.bold = bold
+
+        if underline is not None:
+            self.xwrange.api.Font.Underline = underline
+
+        if strikeout is not None:
+            self.xwrange.api.Font.Strikethrough = strikeout
 
         if align:
             def _alignfunc(alignkey):
                 if align in ['center', 'justify', 'distributed']:
-                    self.range.api.VerticalAlignment = self._alignment_map['v' + alignkey][1]
-                    self.range.api.HorizontalAlignment = self._alignment_map['h' + alignkey][1]
+                    self.xwrange.api.VerticalAlignment = self._alignment_map['v' + alignkey][1]
+                    self.xwrange.api.HorizontalAlignment = self._alignment_map['h' + alignkey][1]
                 elif self._alignment_map[alignkey][0] == 'v':
-                    self.range.api.VerticalAlignment = self._alignment_map[alignkey][1]
+                    self.xwrange.api.VerticalAlignment = self._alignment_map[alignkey][1]
                 elif self._alignment_map[alignkey][0] == 'h':
-                    self.range.api.HorizontalAlignment = self._alignment_map[alignkey][1]
+                    self.xwrange.api.HorizontalAlignment = self._alignment_map[alignkey][1]
                 elif align not in self._alignment_map.keys():
                     raise ValueError(f'Alignment {alignkey} is not supported')
                 return
@@ -82,7 +113,7 @@ class RangeOperator:
         return
 
     def clear(self):
-        self.range.clear()
+        self.xwrange.clear()
 
 
 if __name__ == '__main__':
@@ -94,5 +125,6 @@ if __name__ == '__main__':
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='#FFFF00')
-    print(a.range)
+    a.format(font='Calibri, 14, #FFFF00', align='center')    # print(a.range)
+    # print(_extract_tuple('12 (4,255,67)'))
+    # a.range.font.color = '#FF0000'

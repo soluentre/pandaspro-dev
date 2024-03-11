@@ -7,7 +7,7 @@ class CellPro:
         self.cell = cell
 
     def index_cell(self):
-        return CellPro(index_cell(self.cell))
+        return index_cell(self.cell)
 
     def resize(self, row_resize, col_resize):
         return CellPro(resize(self.cell, row_resize, col_resize))
