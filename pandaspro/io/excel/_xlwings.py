@@ -38,6 +38,27 @@ class RangeOperator:
         'vjustify': ['v', xw.constants.VAlign.xlVAlignJustify],
         'top': ['v', xw.constants.VAlign.xlVAlignTop],
     }
+    _fpattern_map = patterns = {
+        'none': None,
+        'solid': 'solid',
+        'gray50': 'mediumGray',
+        'gray75': 'darkGray',
+        'gray25': 'lightGray',
+        'horstripe': 'darkHorizontal',
+        'verstripe': 'darkVertical',
+        'diagstripe': 'darkDown',
+        'revdiagstripe': 'darkUp',
+        'diagcrosshatch': 'darkGrid',
+        'thinhorstripe': 'lightHorizontal',
+        'thinverstripe': 'lightVertical',
+        'thindiagstripe': 'lightDown',
+        'thinrevdiagstripe': 'lightUp',
+        'thinhorcrosshatch': 'lightGrid',
+        'thindiagcrosshatch': 'lightTrellis',
+        'thickdiagcrosshatch': 'gray0625',
+        'gray12p5': 'gray125',
+        'gray6p25': 'gray0625'
+    }
 
     def __init__(self, xwrange: xw.Range) -> None:
         self.xwrange = xwrange
@@ -153,8 +174,12 @@ class RangeOperator:
             self.xwrange.api.MergeCells = merge
             xw.apps.active.api.DisplayAlerts = True
 
-        elif merge == False:
-            self.xwrange.unmerge()
+        elif not merge:
+            if self.xwrange.api.MergeCells:
+                self.xwrange.unmerge()
+
+        # Border Attributes
+        ##################################
 
 
         return
@@ -173,7 +198,20 @@ if __name__ == '__main__':
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
     a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='center', merge=False)    # print(a.range)
-
+    _fpattern_map = {
+        'none': -4142,  # xlNone
+        'solid': 1,  # xlSolid
+        'gray50': -4125,  # xlGray50
+        'gray75': -4126,  # xlGray75
+        'gray25': -4124,  # xlGray25
+        # Add other patterns as needed, using their corresponding integer values
+    }
+    pattern = 'gray50'
+    fill = _fpattern_map[pattern]
+    a.xwrange.api.Interior.Pattern = fill
+    a.xwrange.font.color = (255,0,255)
+    # a.xwrange.api.Interior.Color = 0x00FFFF  # RGB格式
     # a.format(bold=True, align='left, top')    # print(a.range)
     # print(_extract_tuple('12 (4,255,67)'))
     # a.range.font.color = '#FF0000'
+
