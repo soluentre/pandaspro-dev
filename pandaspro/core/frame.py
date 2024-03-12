@@ -1,11 +1,21 @@
 import pandas as pd
 import pandaspro
 from functools import partial
+
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
-from pandaspro.io.excel._base import lowervarlist
+from pandaspro.io.excel._utils import lowervarlist
+from pandaspro.io.excel._putexcel import PutxlSet
+
+
+__pp_default_export_global_wb = None
+
+
+def excel_d(file: str = 'Exported Results.xlsx', noisily = None):
+    global __pp_default_export_global_wb
+    __pp_default_export_global_wb = PutxlSet(file, noisily=noisily)
 
 
 def return_same_type_decor(func):
@@ -72,11 +82,38 @@ class FramePro(pd.DataFrame):
         print(result.tab('_merge'))
         return FramePro(result)
 
+    def excel_e(
+            self,
+            sheet_name: str = 'Sheet1',
+            start_cell: str = 'A1',
+            index: bool = False,
+            header: bool = True,
+            replace: str = None,
+            sheetreplace: bool = False,
+            format: str | list = None,
+            rowformat: dict = None,
+            colformat: dict = None,
+            override: bool = None,
+    ):
+        wb = __pp_default_export_global_wb
+        wb.putxl(
+            frame=self,
+            sheet_name=sheet_name,
+            start_cell=start_cell,
+            index=index,
+            header=header,
+            replace=replace,
+            sheetreplace=sheetreplace
+        )
+
+        if override:
+            return wb
+
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     inlist.__doc__ = pandaspro.core.tools.inlist.__doc__
     varnames.__doc__ = pandaspro.core.tools.varnames.varnames.__doc__
-    lowervarlist.__doc__ = pandaspro.io.excel._base.lowervarlist.__doc__
+    lowervarlist.__doc__ = pandaspro.io.excel._utils.lowervarlist.__doc__
 
     # Overwriting original methods
     def rename(self, columns=None, *args, **kwargs):

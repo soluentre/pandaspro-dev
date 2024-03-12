@@ -2,7 +2,8 @@ from pandaspro.core.api import (
     bdate,
     dfilter,
     FramePro,
-    tab
+    tab,
+    excel_d,
 )
 
 from pandaspro.io.api import (

@@ -4,7 +4,6 @@ from pathlib import Path
 import os
 import xlwings as xw
 
-from pandaspro import FramePro
 from pandaspro.io.excel._utils import CellPro
 
 
@@ -22,7 +21,7 @@ class FramexlWriter:
 
     def __init__(
             self,
-            frame: DataFrame | FramePro,
+            frame,
             start_cell: str,
             index: bool = False,
             header: bool = True,
@@ -78,9 +77,9 @@ class PutxlSet:
     def __init__(
             self,
             workbook: str,
-            sheet_name: str,
+            sheet_name: str = 'Sheet1',
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
-            noisily: bool = False
+            noisily: bool = None
     ) -> None:
         def _extract_filename_from_path(path):
             return Path(path).name
@@ -119,6 +118,7 @@ class PutxlSet:
             sheet = wb.sheets.add(after=wb.sheets.count)
             sheet.name = sheet_name
 
+        self.app = app
         self.workbook = workbook
         self.worksheet = sheet_name
         self.wb = wb
@@ -128,13 +128,13 @@ class PutxlSet:
 
     def putxl(
             self,
-            start_cell: str,
             frame,
+            sheet_name: str = 'Sheet1',
+            start_cell: str = 'A1',
             index: bool = False,
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
-            sheet_name: str = None,
             debug: bool = False,
             font: str | tuple = None,
             font_name: str = None,
@@ -198,6 +198,8 @@ class PutxlSet:
 
         # rangeop = RangeOperator()
 
+        self.wb.save()
+
         if debug:
             print(f"\n>>> Cell Range Analysis")
             print(f" ----------------------")
@@ -226,6 +228,7 @@ class PutxlSet:
 
 
 if __name__ == '__main__':
+    pass
     # import pandas as pd
     # import numpy as np
     #
@@ -282,8 +285,8 @@ if __name__ == '__main__':
     # ps.putxl('A1', df1, sheetreplace=True)
     # ps.putxl('G1', df)
 
-    io = FramexlWriter(frame=df, start_cell='M5', index=False, header=True)
-    ps.putxl('M5', df)
-    print(io.bottom_left_cell)
-    print(io.top_right_cell)
-    print(io.range_top_checker)
+    # io = FramexlWriter(frame=df, start_cell='M5', index=False, header=True)
+    # ps.putxl('M5', df)
+    # print(io.bottom_left_cell)
+    # print(io.top_right_cell)
+    # print(io.range_top_checker)

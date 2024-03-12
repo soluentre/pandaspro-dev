@@ -1,7 +1,6 @@
 import xlwings as xw
 import re
 
-
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
     matches = list(re.finditer(pattern, s))

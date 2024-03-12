@@ -1,4 +1,4 @@
-from pandaspro.core.frame import FramePro
+from pandaspro.core.frame import FramePro, excel_d
 
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
