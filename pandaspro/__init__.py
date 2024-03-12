@@ -9,5 +9,6 @@ from pandaspro.io.api import (
     index_cell,
     resize,
     offset,
-    PutxlSet
+    PutxlSet,
+    pwread
 )
