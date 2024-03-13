@@ -221,19 +221,19 @@ class RangeOperator:
             if isinstance(fill, list):
                 for item in fill:
                     if isinstance(item, tuple):
-                        self.xwrange.api.Interior.PatternColor = xw.utils.rgb_to_int(item)
+                        self.xwrange.api.Interior.Color = xw.utils.rgb_to_int(item)
                     elif item in list(_fpattern_map.keys()):
                         self.xwrange.api.Interior.Pattern = _fpattern_map[item]
                     elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
-                        self.xwrange.api.Interior.PatternColor = hex_to_int(item)
+                        self.xwrange.api.Interior.Color = hex_to_int(item)
             elif isinstance(fill, tuple):
                 foreground_color_int = xw.utils.rgb_to_int(fill)
-                self.xwrange.api.Interior.PatternColor = foreground_color_int
+                self.xwrange.api.Interior.Color = foreground_color_int
             elif isinstance(fill, str):
                 if fill in list(_fpattern_map.keys()):
                     self.xwrange.api.Interior.Pattern = _fpattern_map[fill]
                 elif re.fullmatch(r'#[0-9A-Fa-f]{6}', fill):
-                    self.xwrange.api.Interior.PatternColor = hex_to_int(fill)
+                    self.xwrange.api.Interior.Color = hex_to_int(fill)
                 else:
                     color, remaining = _extract_tuple(fill)
                     if color:
@@ -243,7 +243,7 @@ class RangeOperator:
                             if item.strip() in list(_fpattern_map.keys()):
                                 self.xwrange.api.Interior.Pattern = _fpattern_map[item.strip()]
                             elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item.strip()):
-                                self.xwrange.api.Interior.PatternColor = hex_to_int(item.strip())
+                                self.xwrange.api.Interior.Color = hex_to_int(item.strip())
 
         if fill_pattern:
             self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
@@ -283,9 +283,9 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range('C8')
+    my_range = sheet.range('E3')
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font=['bold'], align='center', merge=False, fill=[(0,10,250)])
+    a.format(font_color='FFFF00', align='center', merge=False, fill=['horstripe', '#FFFF00'])
 
