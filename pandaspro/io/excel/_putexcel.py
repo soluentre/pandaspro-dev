@@ -171,6 +171,7 @@ class PutxlSet:
             original_index = ws.index
             original_name = ws.name
             total_count = self.wb.sheets.count
+            self.wb.sheets.add('tempnewsheet_for_ph_0001')
             if debug:
                 print(f">>> Row 121: original index is {original_index}")
             ws.delete()
@@ -193,12 +194,13 @@ class PutxlSet:
             pass
 
         # Export to target sheet
+        # print(ws, io.start_cell, io.frame.shape)
         ws.range(io.start_cell).value = io.frame
 
         # Format the sheet
 
         # rangeop = RangeOperator()
-
+        self.wb.sheets['tempnewsheet_for_ph_0001'].delete()
         self.wb.save()
 
         if debug:

@@ -94,7 +94,7 @@ class FramePro(pd.DataFrame):
     ):
         declaredwb = WorkbookExportSimplifier.get_last_declared_workbook()
         declaredwb.putxl(
-            frame=self,
+            frame=self.df,
             sheet_name=sheet_name,
             start_cell=start_cell,
             index=index,
