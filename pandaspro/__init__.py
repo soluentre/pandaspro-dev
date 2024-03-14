@@ -3,7 +3,6 @@ from pandaspro.core.api import (
     dfilter,
     FramePro,
     tab,
-    excel_d,
 )
 
 from pandaspro.io.api import (
@@ -11,5 +10,8 @@ from pandaspro.io.api import (
     resize,
     offset,
     PutxlSet,
-    pwread
+    pwread,
+    WorkbookExportSimplifier
 )
+
+excel_d = WorkbookExportSimplifier().declare_workbook

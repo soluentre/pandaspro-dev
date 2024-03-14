@@ -17,6 +17,7 @@ def is_range_filled(ws, range_str: str = None):
                 return True
         return False
 
+
 class FramexlWriter:
 
     def __init__(
@@ -80,7 +81,7 @@ class PutxlSet:
             sheet_name: str = 'Sheet1',
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
             noisily: bool = None
-    ) -> None:
+    ):
         def _extract_filename_from_path(path):
             return Path(path).name
 
