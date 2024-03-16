@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 
 def wildcardread(stringlist, varkey):
@@ -53,7 +54,7 @@ def str2list(inputstring: str) -> list[str] | list[str | Any]:
     return newlist
 
 
-def parsewild(checklist: list, promptstring: str, dictmap: dict):
+def parsewild(promptstring: str, checklist: list, dictmap: dict = None):
     """
     This function will return the searched varnames from a python dataframe according to the prompt string
 
@@ -66,14 +67,34 @@ def parsewild(checklist: list, promptstring: str, dictmap: dict):
     varlist = []
     result_list = []
     for varkey in str2list(promptstring):
-        if varkey in dictmap.keys():
+        if dictmap and varkey in dictmap.keys():
+            varkey = varkey.lower()
             for term in dictmap[varkey]:
                 varlist += wildcardread(checklist, term)
         else:
             varlist += wildcardread(checklist, varkey)
-    [result_list.append(x) for x in varlist if x not in result_list]
+    for x in varlist:
+        if x not in result_list:
+            result_list.append(x)
     return result_list
 
 
-def getvarlist(df, promptstring):
-    return parsewild(df.columns, promptstring, 1)
+def cvar(df, promptstring):
+    return parsewild(promptstring, df.columns)
+
+
+def clean_keys(input_dict):
+    return {re.sub(r'[^a-zA-Z0-9]', '', key): value for key, value in input_dict.items()}
+
+
+def clean_string(input_string):
+    return re.sub(r'[^a-zA-Z0-9]', '', input_string)
+
+
+def encapsulate_lists(module):
+    lists_dict = {}
+    for name, value in vars(module).items():
+        if isinstance(value, list):
+            lists_dict[name] = value
+    return lists_dict
+

@@ -2,6 +2,7 @@ import pandas as pd
 import pandaspro
 from functools import partial
 
+from pandaspro.core.stringfunc import cvar
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
@@ -22,8 +23,8 @@ from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
 
 class FramePro(pd.DataFrame):
-    def __init__(self, data=None, *args, **kwargs):
-        super().__init__(data, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.namemap = "This attribute displays the original names when importing data using 'readpro' method in io.excel._base module, and currently is not activated"
 
         # for attr_name in dir(pd.DataFrame):
@@ -74,11 +75,6 @@ class FramePro(pd.DataFrame):
             return self._constructor(lowervarlist(self, engine, inplace=inplace))
         return lowervarlist(self, engine, inplace=inplace)
 
-    def merge(*args, **kwargs):
-        result = super().merge(*args, **kwargs, indicator=True)
-        print(result.tab('_merge'))
-        return self._constructor(result)
-
     def excel_e(
             self,
             sheet_name: str = 'Sheet1',
@@ -106,6 +102,11 @@ class FramePro(pd.DataFrame):
         if override:
             return declaredwb
 
+    def cvar(self, promptstring):
+        return self._constructor(cvar(self, promptstring))
+
+
+
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     inlist.__doc__ = pandaspro.core.tools.inlist.__doc__
@@ -113,6 +114,11 @@ class FramePro(pd.DataFrame):
     lowervarlist.__doc__ = pandaspro.io.excel._utils.lowervarlist.__doc__
 
     # Overwriting original methods
+    def merge(self, *args, **kwargs):
+        result = super().merge(*args, **kwargs, indicator=True)
+        print(result.tab('_merge'))
+        return self._constructor(result)
+
     def rename(self, columns=None, *args, **kwargs):
         return self._constructor(super().rename(columns=columns, *args, **kwargs))
 
