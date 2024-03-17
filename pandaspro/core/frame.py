@@ -103,7 +103,7 @@ class FramePro(pd.DataFrame):
             return declaredwb
 
     def cvar(self, promptstring):
-        return self._constructor(cvar(self, promptstring))
+        return cvar(self, promptstring)
 
 
 

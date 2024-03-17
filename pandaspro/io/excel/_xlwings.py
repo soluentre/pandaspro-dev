@@ -73,9 +73,10 @@ class RangeOperator:
             underline: bool = None,
             strikeout: bool = None,
             align: str | list = None,
-            merge: bool = None
+            merge: bool = None,
+            border: bool = None
     ) -> None:
-
+        print(border)
         # Font Attributes
         ##################################
         if font:

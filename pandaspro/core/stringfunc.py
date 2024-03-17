@@ -59,7 +59,7 @@ def parsewild(promptstring: str, checklist: list, dictmap: dict = None):
     This function will return the searched varnames from a python dataframe according to the prompt string
 
     :param checklist: list
-    :param promptstring: for example: "name* title*"
+    :param promptstring: for example: "name* title*", must separated by blanks, meaning names should not contain blanks
     :param dictmap: dictionary to convert abbr names
 
     :return: a list of available varnames
