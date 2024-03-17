@@ -105,6 +105,8 @@ class FramePro(pd.DataFrame):
     def cvar(self, promptstring):
         return cvar(self, promptstring)
 
+    def br(self, promptstring):
+        return self[cvar(self, promptstring)]
 
 
     tab.__doc__ = pandaspro.core.tools.tab.tab.__doc__
