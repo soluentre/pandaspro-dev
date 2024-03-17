@@ -44,13 +44,13 @@ def str2list(inputstring: str) -> list[str] | list[str | Any]:
     pattern = r'\w+\s*-\s*\w+'
     match = re.findall(pattern, inputstring)
     if not match:
-        newlist = inputstring.split()
+        newlist = [s.strip() for s in inputstring.split(',')]
     else:
         for index, item in enumerate(match):
             inputstring = inputstring.replace(item, '__' + str(index) + '__')
-        aloneitem = inputstring.split()
+        aloneitem = inputstring.split(',')
         for index, item in enumerate(match):
-            newlist = [item if s == '__' + str(index) + '__' else s for s in aloneitem]
+            newlist = [item if s == '__' + str(index) + '__' else s.strip() for s in aloneitem]
     return newlist
 
 
