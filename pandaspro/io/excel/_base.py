@@ -106,6 +106,6 @@ def pwread(
             dfresult = func(file, sheet_name=sheet_name, header=None, **kwargs)
 
     if returnmap:
-        return c(lowervarlist(dfresult)), lowervarlist(dfresult, 'revert')
+        return cFrame(lowervarlist(dfresult)), lowervarlist(dfresult, 'revert')
     else:
-        return c(lowervarlist(dfresult))
+        return cFrame(lowervarlist(dfresult))
