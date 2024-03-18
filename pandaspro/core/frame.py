@@ -23,7 +23,7 @@ from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 #     return wrapper
 
 
-class cFrame(pd.DataFrame):
+class FramePro(pd.DataFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.namemap = "This attribute displays the original names when importing data using 'readpro' method in io.excel._base module, and currently is not activated"
@@ -38,7 +38,7 @@ class cFrame(pd.DataFrame):
 
     @property
     def _constructor(self):
-        return c
+        return FramePro
 
     @property
     def df(self):
@@ -171,7 +171,7 @@ class cFrame(pd.DataFrame):
         return self._constructor(super().rename(columns=columns, *args, **kwargs))
 
 
-pd.DataFrame.excel_e = c.excel_e
+pd.DataFrame.excel_e = FramePro.excel_e
 
 
 if __name__ == '__main__':

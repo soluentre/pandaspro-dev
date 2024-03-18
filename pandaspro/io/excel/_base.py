@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 from openpyxl.utils import column_index_from_string, get_column_letter
-from pandaspro.core.frame import cFrame
+from pandaspro.core.frame import FramePro
 from pandaspro.io.excel._utils import lowervarlist
 
 
@@ -106,6 +106,6 @@ def pwread(
             dfresult = func(file, sheet_name=sheet_name, header=None, **kwargs)
 
     if returnmap:
-        return cFrame(lowervarlist(dfresult)), lowervarlist(dfresult, 'revert')
+        return FramePro(lowervarlist(dfresult)), lowervarlist(dfresult, 'revert')
     else:
-        return cFrame(lowervarlist(dfresult))
+        return FramePro(lowervarlist(dfresult))
