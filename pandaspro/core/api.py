@@ -1,4 +1,4 @@
-from pandaspro.core.frame import FramePro
+from pandaspro.core.frame import cFrame
 
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
@@ -13,7 +13,7 @@ from pandaspro.core.dates.methods import (
 __all__ = [
     "bdate",
     "dfilter",
-    "FramePro",
+    "cFrame",
     "tab",
     "varnames"
 ]
