@@ -13,16 +13,6 @@ from pandaspro.io.excel._putexcel import PutxlSet
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
 
-# def return_same_type_decor(func):
-#     def wrapper(self, *args, **kwargs):
-#         result = func(*args, **kwargs)
-#         if isinstance(result, pd.DataFrame):
-#             return self.__class__(data=result)
-#         return result
-#
-#     return wrapper
-
-
 class FramePro(pd.DataFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -133,6 +123,30 @@ class FramePro(pd.DataFrame):
             insert_positions = [i + 0.1 for i in indices]
         blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
         result = self._constructor(pd.concat([self, blank_rows]).sort_index().reset_index(drop=True))
+
+        return result
+
+    def add_total(
+            self,
+            total_label_column,
+            label: str = 'Total',
+            sum_columns: str = '_all'
+    ):
+        total_row = {col: np.nan for col in self.columns}
+        total_row[total_label_column] = label
+
+        if sum_columns == '_all':
+            sum_columns = self.select_dtypes(include=[np.number]).columns.tolist()
+        elif isinstance(sum_columns, (str, int)):
+            sum_columns = [sum_columns]
+
+        for col in sum_columns:
+            if col in self.columns:
+                total_sum = self[col].sum(min_count=1)  # 使用min_count=1确保全为np.nan时结果为0
+                total_row[col] = total_sum if not pd.isna(total_sum) else 0
+
+        total_df = pd.DataFrame([total_row], columns=self.columns)
+        result = self._constructor(pd.concat([self, total_df], ignore_index=True))
 
         return result
 
