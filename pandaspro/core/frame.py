@@ -107,15 +107,22 @@ class FramePro(pd.DataFrame):
         else:
             return self[self.cvar(promptstring)]
 
-    def insert_blank(self, locator_dict=None, how='after', num_rows=1):
+    def insert_blank(self, locator_dict: dict = None, how: str = 'after', nrow: int = 1):
         if locator_dict is None:
-            if how == 'first':
-                insert_positions = [0] * num_rows
-            elif how == 'last':
-                insert_positions = [self.index[-1] + i + 1 for i in range(num_rows)]
+            data = self.copy()
+            blankfill = np.full((nrow, len(data.columns)), np.nan)
+
+            if isinstance(data.index, pd.MultiIndex):
+                blank_rows = pd.DataFrame(blankfill, index=[(np.nan,) * len(data.index.names)] * nrow, columns=data.columns)
             else:
-                print("Invalid 'how' parameter value when 'locator_dict' is None.")
-                return self
+                blank_rows = pd.DataFrame(blankfill, index=[np.nan] * nrow, columns=data.columns)
+
+            if how == 'first':
+                data = pd.concat([blank_rows, data], ignore_index=False)
+            elif how == 'last':
+                data = pd.concat([data, blank_rows], ignore_index=False)
+            result = self._constructor(data)
+
         else:
             condition = pd.Series([True] * len(self))
             for col, value in locator_dict.items():
@@ -129,12 +136,12 @@ class FramePro(pd.DataFrame):
             insert_positions = []
             for i in indices:
                 if how == 'before':
-                    insert_positions.extend([i - j - 1 for j in range(num_rows)])
+                    insert_positions.extend([i - j - 1 for j in range(nrow)])
                 else:  # 'after'
-                    insert_positions.extend([i + j + 1 for j in range(num_rows)])
+                    insert_positions.extend([i + j + 1 for j in range(nrow)])
 
-        blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
-        result = self._constructor(pd.concat([self, blank_rows]).reset_index(drop=True))
+            blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
+            result = self._constructor(pd.concat([self, blank_rows]).reset_index(drop=True))
 
         return result
 
@@ -201,6 +208,6 @@ pd.DataFrame.excel_e = FramePro.excel_e
 
 
 if __name__ == '__main__':
-    a = c({'a': [1, 2, 3], 'b':[3, 4, 5]})
+    a = FramePro({'a': [1, 2, 3], 'b':[3, 4, 5]})
     b = a.inlist('a',1, engine = 'm')
     e = a.inlist('a', 1, engine='b')
