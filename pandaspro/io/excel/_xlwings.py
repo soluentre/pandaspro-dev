@@ -1,5 +1,44 @@
+import pandas as pd
 import xlwings as xw
 import re
+
+_alignment_map = {
+    'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
+    'center_across_selection': ['h', xw.constants.HAlign.xlHAlignCenterAcrossSelection],
+    'hdistributed': ['h', xw.constants.HAlign.xlHAlignDistributed],
+    'fill': ['h', xw.constants.HAlign.xlHAlignFill],
+    'general': ['h', xw.constants.HAlign.xlHAlignGeneral],
+    'hjustify': ['h', xw.constants.HAlign.xlHAlignJustify],
+    'left': ['h', xw.constants.HAlign.xlHAlignLeft],
+    'right': ['h', xw.constants.HAlign.xlHAlignRight],
+    'bottom': ['v', xw.constants.VAlign.xlVAlignBottom],
+    'vcenter': ['v', xw.constants.VAlign.xlVAlignCenter],
+    'vdistributed': ['v', xw.constants.VAlign.xlVAlignDistributed],
+    'vjustify': ['v', xw.constants.VAlign.xlVAlignJustify],
+    'top': ['v', xw.constants.VAlign.xlVAlignTop],
+}
+
+_fpattern_map = {
+    'none': 0,  # xlNone
+    'solid': 1,  # xlSolid
+    'gray50': 2,  # xlGray50
+    'gray75': 3,  # xlGray75
+    'gray25': 4,  # xlGray25
+    'horstripe': 5,  # xlHorizontalStripe
+    'verstripe': 6,  # xlVerticalStripe
+    'diagstripe': 8,  # xlDiagonalDown
+    'revdiagstripe': 7,  # xlDiagonalUp
+    'diagcrosshatch': 9,  # xlDiagonalCrosshatch
+    'thinhorstripe': 11,  # xlThinHorizontalStripe
+    'thinverstripe': 12,  # xlThinVerticalStripe
+    'thindiagstripe': 14,  # xlThinDiagonalDown
+    'thinrevdiagstripe': 13,  # xlThinDiagonalUp
+    'thinhorcrosshatch': 15,  # xlThinHorizontalCrosshatch
+    'thindiagcrosshatch': 16,  # xlThinDiagonalCrosshatch
+    'thickdiagcrosshatch': 10,  # xlThickDiagonalCrosshatch
+    'gray12p5': 17,  # xlGray12.5
+    'gray6p25': 18  # xlGray6.25
+}
 
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
@@ -21,43 +60,15 @@ def _is_number(s: str):
     return bool(pattern.match(s))
 
 
+def hex_to_int(hex: str):
+    hex = hex.lstrip('#')
+    red = int(hex[:2], 16)
+    green = int(hex[2:4], 16)
+    blue = int(hex[4:], 16)
+    return red | (green << 8) | (blue << 16)
+
+
 class RangeOperator:
-    _alignment_map = {
-        'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
-        'center_across_selection': ['h', xw.constants.HAlign.xlHAlignCenterAcrossSelection],
-        'hdistributed': ['h', xw.constants.HAlign.xlHAlignDistributed],
-        'fill': ['h', xw.constants.HAlign.xlHAlignFill],
-        'general': ['h', xw.constants.HAlign.xlHAlignGeneral],
-        'hjustify': ['h', xw.constants.HAlign.xlHAlignJustify],
-        'left': ['h', xw.constants.HAlign.xlHAlignLeft],
-        'right': ['h', xw.constants.HAlign.xlHAlignRight],
-        'bottom': ['v', xw.constants.VAlign.xlVAlignBottom],
-        'vcenter': ['v', xw.constants.VAlign.xlVAlignCenter],
-        'vdistributed': ['v', xw.constants.VAlign.xlVAlignDistributed],
-        'vjustify': ['v', xw.constants.VAlign.xlVAlignJustify],
-        'top': ['v', xw.constants.VAlign.xlVAlignTop],
-    }
-    _fpattern_map = patterns = {
-        'none': None,
-        'solid': 'solid',
-        'gray50': 'mediumGray',
-        'gray75': 'darkGray',
-        'gray25': 'lightGray',
-        'horstripe': 'darkHorizontal',
-        'verstripe': 'darkVertical',
-        'diagstripe': 'darkDown',
-        'revdiagstripe': 'darkUp',
-        'diagcrosshatch': 'darkGrid',
-        'thinhorstripe': 'lightHorizontal',
-        'thinverstripe': 'lightVertical',
-        'thindiagstripe': 'lightDown',
-        'thinrevdiagstripe': 'lightUp',
-        'thinhorcrosshatch': 'lightGrid',
-        'thindiagcrosshatch': 'lightTrellis',
-        'thickdiagcrosshatch': 'gray0625',
-        'gray12p5': 'gray125',
-        'gray6p25': 'gray0625'
-    }
 
     def __init__(self, xwrange: xw.Range) -> None:
         self.xwrange = xwrange
@@ -74,9 +85,12 @@ class RangeOperator:
             strikeout: bool = None,
             align: str | list = None,
             merge: bool = None,
-            border: bool = None
+            fill: str | tuple | list  = None,
+            fill_pattern: str = None,
+            fill_fg: str | tuple = None,
+            fill_bg: str | tuple = None
     ) -> None:
-        print(border)
+
         # Font Attributes
         ##################################
         if font:
@@ -149,13 +163,13 @@ class RangeOperator:
         if align:
             def _alignfunc(alignkey):
                 if align in ['center', 'justify', 'distributed']:
-                    self.xwrange.api.VerticalAlignment = self._alignment_map['v' + alignkey][1]
-                    self.xwrange.api.HorizontalAlignment = self._alignment_map['h' + alignkey][1]
-                elif self._alignment_map[alignkey][0] == 'v':
-                    self.xwrange.api.VerticalAlignment = self._alignment_map[alignkey][1]
-                elif self._alignment_map[alignkey][0] == 'h':
-                    self.xwrange.api.HorizontalAlignment = self._alignment_map[alignkey][1]
-                elif align not in self._alignment_map.keys():
+                    self.xwrange.api.VerticalAlignment = _alignment_map['v' + alignkey][1]
+                    self.xwrange.api.HorizontalAlignment = _alignment_map['h' + alignkey][1]
+                elif _alignment_map[alignkey][0] == 'v':
+                    self.xwrange.api.VerticalAlignment = _alignment_map[alignkey][1]
+                elif _alignment_map[alignkey][0] == 'h':
+                    self.xwrange.api.HorizontalAlignment = _alignment_map[alignkey][1]
+                elif align not in _alignment_map.keys():
                     raise ValueError(f'Alignment {alignkey} is not supported')
                 return
 
@@ -182,6 +196,102 @@ class RangeOperator:
         ##################################
 
 
+        # Fill Attributes
+        ##################################
+        if fill:
+            if isinstance(fill, list):
+                if (len(fill) == 1) or (len(fill) == 2 and 'solid' in fill):
+                    for item in fill:
+                        if isinstance(item, tuple):
+                            self.xwrange.api.Interior.Color = xw.utils.rgb_to_int(item)
+                        elif item in list(_fpattern_map.keys()):
+                            self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                        elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                            self.xwrange.api.Interior.Color = hex_to_int(item)
+                elif len(fill) == 2 and 'solid' not in fill:
+                    for item in fill:
+                        if isinstance(item, tuple):
+                            self.xwrange.api.Interior.PatternColor = xw.utils.rgb_to_int(item)
+                        elif item in list(_fpattern_map.keys()):
+                            self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                        elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                            self.xwrange.api.Interior.PatternColor = hex_to_int(item)
+                else:
+                    raise ValueError("Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
+
+
+            elif isinstance(fill, tuple):
+                foreground_color_int = xw.utils.rgb_to_int(fill)
+                self.xwrange.api.Interior.Color = foreground_color_int
+            elif isinstance(fill, str):
+                if fill in list(_fpattern_map.keys()):
+                    self.xwrange.api.Interior.Pattern = _fpattern_map[fill]
+                elif re.fullmatch(r'#[0-9A-Fa-f]{6}', fill):
+                    self.xwrange.api.Interior.Color = hex_to_int(fill)
+                else:
+                    color, remaining = _extract_tuple(fill)
+                    if color:
+                        foreground_color_int = xw.utils.rgb_to_int(color)
+                        self.xwrange.api.Interior.PatternColor = foreground_color_int
+                        for item in remaining.split(','):
+                            if item.strip() in list(_fpattern_map.keys()):
+                                self.xwrange.api.Interior.Pattern = _fpattern_map[item.strip()]
+                                if item.strip() == 'solid':
+                                    self.xwrange.api.Interior.Color = foreground_color_int
+                            elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item.strip()):
+                                raise ValueError()
+                            else:
+                                raise ValueError()
+                    else:
+                        if (len(remaining) == 1) or (len(remaining) == 2 and 'solid' in remaining):
+                            for item in remaining:
+                                if item in list(_fpattern_map.keys()):
+                                    self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                                elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                                    self.xwrange.api.Interior.Color = hex_to_int(item)
+                        elif len(remaining) == 2 and 'solid' not in remaining:
+                            for item in remaining:
+                                if item in list(_fpattern_map.keys()):
+                                    self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                                elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                                    self.xwrange.api.Interior.PatternColor = hex_to_int(item)
+                        else:
+                            raise ValueError(
+                                "Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
+
+                    if len(remaining.split(',')) >= 3:
+                        raise ValueError("Can only accept 2 parameters (one for pattern and one for color) at most.")
+                    for item in remaining.split(','):
+                        if item.strip() in list(_fpattern_map.keys()):
+                            self.xwrange.api.Interior.Pattern = _fpattern_map[item.strip()]
+                        elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item.strip()):
+                            self.xwrange.api.Interior.PatternColor = hex_to_int(item.strip())
+
+        if fill_pattern:
+            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
+
+        if isinstance(fill_fg, tuple):
+            foreground_color_int = xw.utils.rgb_to_int(fill_fg)
+            self.xwrange.api.Interior.PatternColor = foreground_color_int
+        elif isinstance(fill_fg, str):
+            fill_fg = fill_fg.lstrip('#')
+            red = int(fill_fg[:2], 16)
+            green = int(fill_fg[2:4], 16)
+            blue = int(fill_fg[4:], 16)
+            foreground_color_int = red | (green << 8) | (blue << 16)
+            self.xwrange.api.Interior.PatternColor = foreground_color_int
+
+        if isinstance(fill_bg, tuple):
+            background_color_int = xw.utils.rgb_to_int(fill_bg)
+            self.xwrange.api.Interior.Color = background_color_int
+        elif isinstance(fill_bg, str):
+            fill_bg = fill_bg.lstrip('#')
+            red = int(fill_bg[:2], 16)
+            green = int(fill_bg[2:4], 16)
+            blue = int(fill_bg[4:], 16)
+            background_color_int = red | (green << 8) | (blue << 16)
+            self.xwrange.api.Interior.Color = background_color_int
+
         return
 
     def clear(self):
@@ -189,29 +299,12 @@ class RangeOperator:
 
 
 if __name__ == '__main__':
-    wb = xw.Book('test.xlsx')
+    wb = xw.Book(r'C:\Users\xli7\Desktop\try.xlsx')
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range("C1:D1")
+    my_range = sheet.range('E15')
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='center', merge=False)    # print(a.range)
-    _fpattern_map = {
-        'none': -4142,  # xlNone
-        'solid': 1,  # xlSolid
-        'gray50': -4125,  # xlGray50
-        'gray75': -4126,  # xlGray75
-        'gray25': -4124,  # xlGray25
-        # Add other patterns as needed, using their corresponding integer values
-    }
-    pattern = 'gray50'
-    fill = _fpattern_map[pattern]
-    a.xwrange.api.Interior.Pattern = fill
-    a.xwrange.font.color = (255,0,255)
-    # a.xwrange.api.Interior.Color = 0x00FFFF  # RGB格式
-    # a.format(bold=True, align='left, top')    # print(a.range)
-    # print(_extract_tuple('12 (4,255,67)'))
-    # a.range.font.color = '#FF0000'
-
+    a.format(font_color='FFFF00', align='center', merge=False, fill_pattern='solid')
