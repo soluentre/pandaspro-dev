@@ -107,20 +107,32 @@ class FramePro(pd.DataFrame):
         else:
             return self[self.cvar(promptstring)]
 
-    def insert_blank(self, locator_dict, how='after'):
-        condition = pd.Series([True] * len(self))
-        for col, value in locator_dict.items():
-            if col in self.columns:
-                condition &= (self[col] == value)
+    def insert_blank(self, locator_dict: dict = None, how: str = 'after', num_rows: int = 1):
+        if locator_dict is None:
+            if how == 'first':
+                insert_positions = [-0.1] * num_rows
+            elif how == 'last':
+                insert_positions = [self.index[-1] + i + 0.1 for i in range(num_rows)]
             else:
-                print(f"Column '{col}' does not exist in the Frame")
+                print("Invalid 'how' parameter value when 'locator_dict' is None.")
                 return self
+        else:
+            condition = pd.Series([True] * len(self))
+            for col, value in locator_dict.items():
+                if col in self.columns:
+                    condition &= (self[col] == value)
+                else:
+                    print(f"Column '{col}' does not exist in the Frame.")
+                    return self
 
-        indices = self.index[condition].tolist()
-        if how == 'before':
-            insert_positions = [i - 0.1 for i in indices]
-        else:  # 'after'
-            insert_positions = [i + 0.1 for i in indices]
+            indices = self.index[condition].tolist()
+            insert_positions = []
+            for i in indices:
+                if how == 'before':
+                    insert_positions.extend([i - 0.1 - j / 10 for j in range(num_rows)])
+                else:  # 'after'
+                    insert_positions.extend([i + 0.1 + j / 10 for j in range(num_rows)])
+
         blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
         result = self._constructor(pd.concat([self, blank_rows]).sort_index().reset_index(drop=True))
 
