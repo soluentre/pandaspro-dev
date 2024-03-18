@@ -107,12 +107,12 @@ class FramePro(pd.DataFrame):
         else:
             return self[self.cvar(promptstring)]
 
-    def insert_blank(self, locator_dict: dict = None, how: str = 'after', num_rows: int = 1):
+    def insert_blank(self, locator_dict=None, how='after', num_rows=1):
         if locator_dict is None:
             if how == 'first':
-                insert_positions = [-0.1] * num_rows
+                insert_positions = [0] * num_rows
             elif how == 'last':
-                insert_positions = [self.index[-1] + i + 0.1 for i in range(num_rows)]
+                insert_positions = [self.index[-1] + i + 1 for i in range(num_rows)]
             else:
                 print("Invalid 'how' parameter value when 'locator_dict' is None.")
                 return self
@@ -129,12 +129,12 @@ class FramePro(pd.DataFrame):
             insert_positions = []
             for i in indices:
                 if how == 'before':
-                    insert_positions.extend([i - 0.1 - j / 10 for j in range(num_rows)])
+                    insert_positions.extend([i - j - 1 for j in range(num_rows)])
                 else:  # 'after'
-                    insert_positions.extend([i + 0.1 + j / 10 for j in range(num_rows)])
+                    insert_positions.extend([i + j + 1 for j in range(num_rows)])
 
         blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
-        result = self._constructor(pd.concat([self, blank_rows]).sort_index().reset_index(drop=True))
+        result = self._constructor(pd.concat([self, blank_rows]).reset_index(drop=True))
 
         return result
 
