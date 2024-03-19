@@ -22,56 +22,66 @@ class FramexlWriter:
 
     def __init__(
             self,
-            frame,
-            start_cell: str,
+            content,
+            cell: str,
             index: bool = False,
             header: bool = True,
     ) -> None:
-        cell = CellPro(start_cell)
-        header_row_count = len(frame.columns.levels) if isinstance(frame.columns, pd.MultiIndex) else 1
-        index_column_count = len(frame.index.levels) if isinstance(frame.index, pd.MultiIndex) else 1
+        if isinstance(content, str):
+            self.content = content
+            self.cell = cell
+            self.tr = None
+            self.tc = None
+            self.range_index = None
+            self.range_header = None
+            self.range_indexnames = None
 
-        if header == True and index == True:
-            tr, tc = frame.shape[0] + header_row_count, frame.shape[1] + index_column_count
-            export_data = frame
-            range_index = cell.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
-            range_indexnames = cell.resize(header_row_count, header_row_count)
-            range_header = cell.offset(0, index_column_count).resize(header_row_count, tc - index_column_count)
-        elif header == False and index == True:
-            tr, tc = frame.shape[0], frame.shape[1] + index_column_count
-            export_data = frame.reset_index().to_numpy().tolist()
-            range_index = cell.resize(tr, index_column_count)
-            range_indexnames = 'N/A'
-            range_header = 'N/A'
-        elif header == False and index == False:
-            tr, tc = frame.shape[0], frame.shape[1]
-            export_data = frame.to_numpy().tolist()
-            range_index = 'N/A'
-            range_indexnames = 'N/A'
-            range_header = 'N/A'
         else:
-            tr, tc = frame.shape[0] + header_row_count, frame.shape[1]
-            if isinstance(frame.columns, pd.MultiIndex):
-                column_export = [list(lst) for lst in list(zip(*frame.columns.values))]
-            else:
-                column_export = [frame.columns.to_list()]
-            export_data = column_export + frame.to_numpy().tolist()
-            range_index = 'N/A'
-            range_indexnames = 'N/A'
-            range_header = cell.resize(header_row_count, tc)
+            cellobj = CellPro(cell)
+            header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
+            index_column_count = len(content.index.levels) if isinstance(content.index, pd.MultiIndex) else 1
 
-        self.frame = export_data
-        self.start_cell = start_cell
-        self.tr = tr
-        self.tc = tc
-        self.top_right_cell = cell.offset(0, self.tc - 1).cell
-        self.bottom_left_cell = cell.offset(self.tr - 1, 0).cell
-        self.end_cell = cell.offset(self.tr - 1, self.tc - 1).cell
-        self.range_data = cell.offset(header_row_count, index_column_count).resize(tr - header_row_count, tc - index_column_count).cell
-        self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
-        self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
-        self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
-        self.range_top_checker = CellPro(self.start_cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.start_cell).index_cell()[0] != 1 else None
+            if header == True and index == True:
+                tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
+                export_data = content
+                range_index = cellobj.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
+                range_indexnames = cellobj.resize(header_row_count, header_row_count)
+                range_header = cellobj.offset(0, index_column_count).resize(header_row_count, tc - index_column_count)
+            elif header == False and index == True:
+                tr, tc = content.shape[0], content.shape[1] + index_column_count
+                export_data = content.reset_index().to_numpy().tolist()
+                range_index = cellobj.resize(tr, index_column_count)
+                range_indexnames = 'N/A'
+                range_header = 'N/A'
+            elif header == False and index == False:
+                tr, tc = content.shape[0], content.shape[1]
+                export_data = content.to_numpy().tolist()
+                range_index = 'N/A'
+                range_indexnames = 'N/A'
+                range_header = 'N/A'
+            else:
+                tr, tc = content.shape[0] + header_row_count, content.shape[1]
+                if isinstance(content.columns, pd.MultiIndex):
+                    column_export = [list(lst) for lst in list(zip(*content.columns.values))]
+                else:
+                    column_export = [content.columns.to_list()]
+                export_data = column_export + content.to_numpy().tolist()
+                range_index = 'N/A'
+                range_indexnames = 'N/A'
+                range_header = cellobj.resize(header_row_count, tc)
+
+            self.content = export_data
+            self.cell = cell
+            self.tr = tr
+            self.tc = tc
+            self.top_right_cell = cellobj.offset(0, self.tc - 1).cell
+            self.bottom_left_cell = cellobj.offset(self.tr - 1, 0).cell
+            self.end_cell = cellobj.offset(self.tr - 1, self.tc - 1).cell
+            self.range_data = cellobj.offset(header_row_count, index_column_count).resize(tr - header_row_count, tc - index_column_count).cell
+            self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
+            self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
+            self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
+            self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).index_cell()[0] != 1 else None
 
 
 class PutxlSet:
@@ -129,9 +139,9 @@ class PutxlSet:
 
     def putxl(
             self,
-            frame,
+            content,
             sheet_name: str = 'Sheet1',
-            start_cell: str = 'A1',
+            cell: str = 'A1',
             index: bool = False,
             header: bool = True,
             replace: str = None,
@@ -148,14 +158,9 @@ class PutxlSet:
             debug: bool = False,
     ) -> None:
         from pandaspro.io.excel._xlwings import RangeOperator
-
-        io = FramexlWriter(frame=frame, start_cell=start_cell, index=index, header=header)
-        self.io = io
-        dfrange_formatter = RangeOperator(self.io.range_data)
-
         replace_type = self.globalreplace if self.globalreplace else replace
 
-        # If a sheet_name is specified at the very end, then override the current sheet
+        # If a sheet_name is specified, then override the current sheet
         if sheet_name and sheet_name != self.worksheet:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
                 ws = self.wb.sheets[sheet_name]
@@ -164,6 +169,10 @@ class PutxlSet:
                 ws.name = sheet_name
         else:
             ws = self.ws
+
+        # Declare IO Object
+        io = FramexlWriter(content=content, cellobj=cell, index=index, header=header)
+        self.io = io
 
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
         if sheetreplace or replace_type == 'sheet':
@@ -186,17 +195,28 @@ class PutxlSet:
             ws = new_sheet
             self.ws = ws
         else:
-            if is_range_filled(self.ws, self.io.range_top_checker):
-                dfrange_formatter.format()
+            if not isinstance(io.content, str):
+                if is_range_filled(self.ws, self.io.range_top_checker):
+                    RangeOperator(ws.range(self.io.range_data)).format()
             # Add warning lines around the df if not replacing the sheet
-            # io.start_cell.offset()
-            pass
+            # io.cell.offset()
 
         # Export to target sheet
-        # print(ws, io.start_cell, io.frame.shape)
-        ws.range(io.start_cell).value = io.frame
+        ws.range(io.cell).value = io.content
 
         # Format the sheet
+        if isinstance(io.content):
+            RangeOperator(ws.range(io.cell)).format(
+                font=font,
+                font_name=font_name,
+                font_size=font_size,
+                font_color=font_color,
+                italic=italic,
+                bold=bold,
+                underline=underline,
+                strikeout=strikeout,
+                align=align
+            )
 
         # rangeop = RangeOperator()
         self.wb.save()
@@ -283,12 +303,13 @@ if __name__ == '__main__':
     ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
 
     ps.putxl(df1, 'TF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
+    ps.putxl('SSSSS', 'TF', 'I2', index=False, header=False, sheetreplace=True, debug=True)
     #
     # ps.switchtab('new tab')
     # ps.putxl('A1', df1, sheetreplace=True)
     # ps.putxl('G1', df)
 
-    # io = FramexlWriter(frame=df, start_cell='M5', index=False, header=True)
+    # io = FramexlWriter(content=df, cell='M5', index=False, header=True)
     # ps.putxl('M5', df)
     # print(io.bottom_left_cell)
     # print(io.top_right_cell)
