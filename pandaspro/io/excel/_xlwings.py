@@ -40,6 +40,31 @@ _fpattern_map = {
     'gray6p25': 18  # xlGray6.25
 }
 
+_border_map = {
+    'None': None,
+    'down_diagonal': 5,
+    'up_diagonal': 6,
+    'left': 7,
+    'top': 8,
+    'bottom': 9,
+    'right': 10,
+    'inner_vert': 11,
+    'inner_hor': 12,
+    'outer': 0
+}
+
+_border_style_map = {
+    'continue': 1,
+    'dash': 2,
+    'dot': 3,
+    'dash_dot': 4,
+    'dash_dot_dot': 5,
+    'slant_dash': 6,
+    'thick_dash': 8,
+    'double': 9,
+    'thick_dash_dot_dot': 11
+}
+
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
     matches = list(re.finditer(pattern, s))
@@ -96,11 +121,23 @@ class RangeOperator:
             strikeout: bool = None,
             align: str | list = None,
             merge: bool = None,
+            border: str = None,
+            border_line: str = None,
+            border_style: str = None,
+            border_weight: int = None,
             fill: str | tuple | list  = None,
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
-            fill_bg: str | tuple = None
+            fill_bg: str | tuple = None,
+            check_para: bool = False
     ) -> None:
+
+        if check_para:
+            print('Please choose one value from the corresponding parameter: \n'
+                  f'align: {list(_alignment_map.keys())}; \n'
+                  f'fill_pattern: {list(_fpattern_map.keys())};\n'
+                  f'border_line: {list(_border_map.keys())};\n'
+                  f'border_style: {list(_border_style_map.keys())};\n')
 
         # Font Attributes
         ##################################
@@ -205,7 +242,35 @@ class RangeOperator:
 
         # Border Attributes
         ##################################
+        if isinstance(border, list):
 
+
+        else:
+            for i in range(1, 12):
+                self.xwrange.api.Borders(i).LineStyle = 0
+
+        if border_line and border_line != 'None':
+            if border_line == 'outer':
+                self.xwrange.api.Borders.LineStyle = 1
+            elif border_line in _border_map.keys():
+                self.xwrange.api.Borders(_border_map[border_line]).LineStyle = 1
+            else:
+                raise ValueError('Invalid boarder specified')
+
+            if border_weight:
+                if border_line == 'outer':
+                    self.xwrange.api.Borders.Weight = border_weight
+                elif border_line in _border_map.keys():
+                    self.xwrange.api.Borders(_border_map[border_line]).Weight = border_weight
+
+            if border_style:
+                if border_line == 'outer':
+                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+                elif border_line in _border_map.keys():
+                    self.xwrange.api.Borders(_border_map[border_line]).LineStyle = _border_style_map[border_style]
+        elif border_line == 'None' or border_line is None:
+            for i in range(1, 12):
+                self.xwrange.api.Borders(i).LineStyle = 0
 
         # Fill Attributes
         ##################################
@@ -306,8 +371,10 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range('G6')
+    my_range = sheet.range('B14:D16')
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='FFFF00', align='center', merge=False, fill=[(0,255,0)])
+    a.format(font_color='FFFF00', align='center', merge=False, border_line='None', check_para=True)
+    # my_range.api.Borders(9).LineStyle = 0
+    # my_range.api.Borders(11).Weight = 3
