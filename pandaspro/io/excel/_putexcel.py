@@ -148,7 +148,7 @@ class PutxlSet:
             sheetreplace: bool = False,
             font: str | tuple = None,
             font_name: str = None,
-            font_size: str = None,
+            font_size: int = None,
             font_color: str | tuple = None,
             italic: bool = False,
             bold: bool = False,

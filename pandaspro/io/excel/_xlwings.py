@@ -66,7 +66,7 @@ class RangeOperator:
             self,
             font: str | tuple | list = None,
             font_name: str = None,
-            font_size: str = None,
+            font_size: int = None,
             font_color: str | tuple = None,
             italic: bool = None,
             bold: bool = None,
