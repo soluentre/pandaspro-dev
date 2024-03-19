@@ -218,7 +218,6 @@ class PutxlSet:
                 align=align
             )
 
-        # rangeop = RangeOperator()
         self.wb.save()
 
         if debug:
