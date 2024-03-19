@@ -171,7 +171,7 @@ class PutxlSet:
             ws = self.ws
 
         # Declare IO Object
-        io = FramexlWriter(content=content, cellobj=cell, index=index, header=header)
+        io = FramexlWriter(content=content, cell=cell, index=index, header=header)
         self.io = io
 
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
@@ -205,7 +205,7 @@ class PutxlSet:
         ws.range(io.cell).value = io.content
 
         # Format the sheet
-        if isinstance(io.content):
+        if isinstance(io.content, str):
             RangeOperator(ws.range(io.cell)).format(
                 font=font,
                 font_name=font_name,

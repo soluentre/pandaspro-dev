@@ -76,7 +76,7 @@ class RangeOperator:
             merge: bool = None,
             border: bool = None
     ) -> None:
-        print(border)
+
         # Font Attributes
         ##################################
         if font:
