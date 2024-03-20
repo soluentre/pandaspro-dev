@@ -67,6 +67,18 @@ _border_style_map = {
     'thick_dash_dot_dot': 11
 }
 
+_border_custom = {
+    'all_thin': ['all', 'continue', 1],
+    'all_medium': ['all', 'continue', 2],
+    'all_thick': ['all', 'continue', 3],
+    'inner_thin': ['inner', 'continue', 1],
+    'inner_medium': ['inner', 'continue', 2],
+    'inner_thick': ['inner', 'continue', 3],
+    'outer_thin': ['outer', 'continue', 1],
+    'outer_medium': ['outer', 'continue', 2],
+    'outer_thick': ['outer', 'continue', 3]
+}
+
 
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
@@ -139,8 +151,7 @@ class RangeOperator:
             print('Please choose one value from the corresponding parameter: \n'
                   f'align: {list(_alignment_map.keys())}; \n'
                   f'fill_pattern: {list(_fpattern_map.keys())};\n'
-                  f'border_side: {list(_border_map.keys())};\n'
-                  f'border_style: {list(_border_style_map.keys())};\n')
+                  f'border_custom: {list(_border_custom.keys())};\n')
 
         # Font Attributes
         ##################################
