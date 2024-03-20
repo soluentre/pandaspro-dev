@@ -88,7 +88,7 @@ class PutxlSet:
     def __init__(
             self,
             workbook: str,
-            sheet_name: str = 'Sheet1',
+            sheet_name: str = None,
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
             noisily: bool = None
     ):
@@ -122,6 +122,9 @@ class PutxlSet:
             wb = xw.Book(workbook)
 
         # Worksheet declaration
+        if sheet_name is None:
+            sheet_name = wb.sheets[0].name
+
         current_sheets = [sheet.name for sheet in wb.sheets]
         if sheet_name in current_sheets:
             sheet = wb.sheets[sheet_name]
@@ -140,7 +143,7 @@ class PutxlSet:
     def putxl(
             self,
             content,
-            sheet_name: str = 'Sheet1',
+            sheet_name: str = None,
             cell: str = 'A1',
             index: bool = False,
             header: bool = True,
