@@ -80,10 +80,14 @@ class FramePro(pd.DataFrame):
             override: bool = None,
     ):
         declaredwb = WorkbookExportSimplifier.get_last_declared_workbook()
+        if hasattr(self, 'df'):
+            data = self.df
+        else:
+            data = self
         declaredwb.putxl(
-            frame=self.df,
+            content=data,
             sheet_name=sheet_name,
-            start_cell=start_cell,
+            cell=start_cell,
             index=index,
             header=header,
             replace=replace,
