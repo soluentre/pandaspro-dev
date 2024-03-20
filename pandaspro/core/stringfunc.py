@@ -79,10 +79,6 @@ def parsewild(promptstring: str, checklist: list, dictmap: dict = None):
     return result_list
 
 
-def cvar(df, promptstring):
-    return parsewild(promptstring, df.columns)
-
-
 def clean_keys(input_dict):
     return {re.sub(r'[^a-zA-Z0-9]', '', key): value for key, value in input_dict.items()}
 
