@@ -257,6 +257,9 @@ class RangeOperator:
         # Border Attributes
         ##################################
         if border:
+            if isinstance(border, str) and border in list(_border_custom.keys()):
+
+
             if isinstance(border, list):
                 border_side = 'outer'
                 border_style = 'continue'
