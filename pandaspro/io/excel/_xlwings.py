@@ -41,16 +41,18 @@ _fpattern_map = {
 }
 
 _border_map = {
-    'None': None,
-    'down_diagonal': 5,
-    'up_diagonal': 6,
+    'none': None,
+    'inner': None,
+    'outer': None,
+    'all': None,
     'left': 7,
     'top': 8,
     'bottom': 9,
     'right': 10,
     'inner_vert': 11,
     'inner_hor': 12,
-    'outer': 0
+    'down_diagonal': 5,
+    'up_diagonal': 6
 }
 
 _border_style_map = {
@@ -64,6 +66,7 @@ _border_style_map = {
     'double': 9,
     'thick_dash_dot_dot': 11
 }
+
 
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
@@ -121,11 +124,11 @@ class RangeOperator:
             strikeout: bool = None,
             align: str | list = None,
             merge: bool = None,
-            border: str = None,
-            border_line: str = None,
+            border: str | list = None,
+            border_side: str = None,
             border_style: str = None,
             border_weight: int = None,
-            fill: str | tuple | list  = None,
+            fill: str | tuple | list = None,
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
@@ -136,7 +139,7 @@ class RangeOperator:
             print('Please choose one value from the corresponding parameter: \n'
                   f'align: {list(_alignment_map.keys())}; \n'
                   f'fill_pattern: {list(_fpattern_map.keys())};\n'
-                  f'border_line: {list(_border_map.keys())};\n'
+                  f'border_side: {list(_border_map.keys())};\n'
                   f'border_style: {list(_border_style_map.keys())};\n')
 
         # Font Attributes
@@ -242,35 +245,61 @@ class RangeOperator:
 
         # Border Attributes
         ##################################
-        if isinstance(border, list):
+        if border:
+            if isinstance(border, list):
+                border_side = 'outer'
+                border_style = 'continue'
+                border_weight = 1
+                for item in border:
+                    if item in list(_border_map.keys()):
+                        border_side = _border_map[item]
+                    elif item in list(_border_style_map.keys()):
+                        border_style = _border_style_map[item]
+                    elif isinstance(item, int):
+                        border_weight = item
+                    else:
+                        raise ValueError(
+                            'Invalid parameter specification, please use check_para=True to see the valid lists.')
 
-
-        else:
-            for i in range(1, 12):
-                self.xwrange.api.Borders(i).LineStyle = 0
-
-        if border_line and border_line != 'None':
-            if border_line == 'outer':
-                self.xwrange.api.Borders.LineStyle = 1
-            elif border_line in _border_map.keys():
-                self.xwrange.api.Borders(_border_map[border_line]).LineStyle = 1
-            else:
-                raise ValueError('Invalid boarder specified')
-
-            if border_weight:
-                if border_line == 'outer':
+                if border_side == 'None':
+                    for i in range(1, 12):
+                        self.xwrange.api.Borders(i).LineStyle = 0
+                elif border_side == 0:
+                    self.xwrange.api.Borders.LineStyle = border_style
                     self.xwrange.api.Borders.Weight = border_weight
-                elif border_line in _border_map.keys():
-                    self.xwrange.api.Borders(_border_map[border_line]).Weight = border_weight
+                else:
+                    self.xwrange.api.Borders(border_side).LineStyle = border_style
+                    self.xwrange.api.Borders(border_side).Weight = border_weight
 
-            if border_style:
-                if border_line == 'outer':
-                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
-                elif border_line in _border_map.keys():
-                    self.xwrange.api.Borders(_border_map[border_line]).LineStyle = _border_style_map[border_style]
-        elif border_line == 'None' or border_line is None:
+        if border_side and border_side != 'none':
+            if border_side == 'inner':
+                self.xwrange.api.Borders(11).LineStyle = 1
+                self.xwrange.api.Borders(12).LineStyle = 1
+            elif border_side == 'outer':
+                self.xwrange.api.Borders.LineStyle = 1
+                self.xwrange.api.Borders(11).LineStyle = 0
+                self.xwrange.api.Borders(12).LineStyle = 0
+            elif border_side == 'all':
+                self.xwrange.api.Borders.LineStyle = 1
+            elif border_side in _border_map.keys():
+                self.xwrange.api.Borders(_border_map[border_side]).LineStyle = 1
+            else:
+                raise ValueError('Invalid boarder specified, please use check_para=True to see the valid lists.')
+        elif border_side == 'none':
             for i in range(1, 12):
                 self.xwrange.api.Borders(i).LineStyle = 0
+
+        if border_weight:
+            if border_side == 'outer':
+                self.xwrange.api.Borders.Weight = border_weight
+            elif border_side in _border_map.keys():
+                self.xwrange.api.Borders(_border_map[border_side]).Weight = border_weight
+
+        if border_style:
+            if border_side == 'outer':
+                self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+            elif border_side in _border_map.keys():
+                self.xwrange.api.Borders(_border_map[border_side]).LineStyle = _border_style_map[border_style]
 
         # Fill Attributes
         ##################################
@@ -307,7 +336,8 @@ class RangeOperator:
                             elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
                                 self.xwrange.api.Interior.PatternColor = hex_to_int(item)
                     else:
-                        raise ValueError("Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
+                        raise ValueError(
+                            "Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
 
 
             elif isinstance(fill, tuple):
@@ -337,7 +367,7 @@ class RangeOperator:
                         if '#' in colorlist[0]:
                             colorint = hex_to_int(colorlist[0])
                         else:
-                            colortuple = tuple(map(int, colorlist[0].replace('(','').replace(')','').split(',')))
+                            colortuple = tuple(map(int, colorlist[0].replace('(', '').replace(')', '').split(',')))
                             colorint = xw.utils.rgb_to_int(colortuple)
 
                         if firstpattern is None or firstpattern == 'solid':
@@ -375,6 +405,6 @@ if __name__ == '__main__':
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='FFFF00', align='center', merge=False, border_line='None', check_para=True)
+    a.format(font_color='FFFF00', align='center', border_weight=2, merge=False)
     # my_range.api.Borders(9).LineStyle = 0
     # my_range.api.Borders(11).Weight = 3
