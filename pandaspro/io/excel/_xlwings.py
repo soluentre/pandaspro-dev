@@ -259,21 +259,21 @@ class RangeOperator:
             border_style = 'continue'
             weight = 1
 
-            if isinstance(border, str) and border == 'none':
+            if isinstance(border, str) and border.strip() == 'none':
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
             else:
-                if isinstance(border, str) and border in list(_border_custom.keys()):
-                    border_para = _border_custom[border]
+                if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
+                    border_para = _border_custom[border.strip()]
                 elif isinstance(border, str):
-                    border_para = border.split(',')
+                    border_para = [float(i.strip()) if i.strip().isdigit() else i.strip() for i in border.split(',')]
                 elif isinstance(border, list):
                     border_para = border
                 else:
                     raise ValueError('Invalid boarder specification, please use check_para=True to see the valid lists.')
 
                 for item in border_para:
-                    if isinstance(item, (int, float)):
+                    if isinstance(item, (int, float)) or (isinstance(item, str) and item.strip().isdigit()):
                         weight = item
                     elif isinstance(item, str) and item in list(_border_side_map.keys()):
                         border_side = item
@@ -403,10 +403,10 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range('B14:D16')
+    my_range = sheet.range('B20:D22')
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='FFFF00', align='center', border='top, dash, 3')
+    a.format(font_color='FFFF00', align='center', border=['top', '3'])
     # my_range.api.Borders(9).LineStyle = 0
     # my_range.api.Borders(11).Weight = 3
