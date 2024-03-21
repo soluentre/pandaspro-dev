@@ -270,7 +270,8 @@ class RangeOperator:
                 elif isinstance(border, list):
                     border_para = border
                 else:
-                    raise ValueError('Invalid boarder specification, please use check_para=True to see the valid lists.')
+                    raise ValueError(
+                        'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
                 for item in border_para:
                     if isinstance(item, (int, float)) or (isinstance(item, str) and item.strip().isdigit()):
@@ -280,7 +281,8 @@ class RangeOperator:
                     elif isinstance(item, str) and item in list(_border_style_map.keys()):
                         border_style = item
                     else:
-                        raise ValueError('Invalid boarder specification, please use check_para=True to see the valid lists.')
+                        raise ValueError(
+                            'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
                 if border_side == 'none':
                     for i in range(1, 12):
@@ -301,7 +303,6 @@ class RangeOperator:
                 elif border_side in _border_side_map.keys():
                     self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
-
 
         # Fill Attributes
         ##################################
@@ -340,7 +341,6 @@ class RangeOperator:
                     else:
                         raise ValueError(
                             "Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
-
 
             elif isinstance(fill, tuple):
                 foreground_color_int = xw.utils.rgb_to_int(fill)
