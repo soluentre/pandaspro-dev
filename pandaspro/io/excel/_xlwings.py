@@ -407,6 +407,6 @@ if __name__ == '__main__':
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='FFFF00', align='center', border=['top', '3'])
+    a.format(font_color='FFFF00', align='center', fill='horstripe, #FF00FF')
     # my_range.api.Borders(9).LineStyle = 0
     # my_range.api.Borders(11).Weight = 3
