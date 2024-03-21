@@ -70,14 +70,14 @@ _border_style_map = {
 _border_custom = {
     'none': None,
     'all_thin': ['all', 'continue', 1],
-    'all_medium': ['all', 'continue', 2],
-    'all_thick': ['all', 'continue', 3],
+    'all_medium': ['all', 'continue', 2.5],
+    'all_thick': ['all', 'continue', 3.5],
     'inner_thin': ['inner', 'continue', 1],
-    'inner_medium': ['inner', 'continue', 2],
-    'inner_thick': ['inner', 'continue', 3],
+    'inner_medium': ['inner', 'continue', 2.5],
+    'inner_thick': ['inner', 'continue', 3.5],
     'outer_thin': ['outer', 'continue', 1],
-    'outer_medium': ['outer', 'continue', 2],
-    'outer_thick': ['outer', 'continue', 3]
+    'outer_medium': ['outer', 'continue', 2.5],
+    'outer_thick': ['outer', 'continue', 3.5]
 }
 
 
@@ -265,6 +265,8 @@ class RangeOperator:
             else:
                 if isinstance(border, str) and border in list(_border_custom.keys()):
                     border_para = _border_custom[border]
+                elif isinstance(border, str):
+                    border_para = border.split(',')
                 elif isinstance(border, list):
                     border_para = border
                 else:
@@ -405,6 +407,6 @@ if __name__ == '__main__':
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font_color='FFFF00', align='center', border='inner_thin')
+    a.format(font_color='FFFF00', align='center', border='top, dash, 3')
     # my_range.api.Borders(9).LineStyle = 0
     # my_range.api.Borders(11).Weight = 3
