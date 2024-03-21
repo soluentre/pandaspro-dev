@@ -160,6 +160,10 @@ class PutxlSet:
             align: str | list = None,
             debug: bool = False,
     ) -> None:
+
+        if hasattr(content, 'df'):
+            content = content.df
+
         from pandaspro.io.excel._xlwings import RangeOperator
         replace_type = self.globalreplace if self.globalreplace else replace
 
