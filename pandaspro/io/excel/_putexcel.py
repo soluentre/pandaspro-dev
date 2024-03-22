@@ -1,10 +1,8 @@
-from pandas import DataFrame
-import pandas as pd
 from pathlib import Path
 import os
 import xlwings as xw
 
-from pandaspro.io.excel._utils import CellPro
+from pandaspro.io.excel._framewriter import FramexlWriter
 
 
 def is_range_filled(ws, range_str: str = None):
@@ -16,72 +14,6 @@ def is_range_filled(ws, range_str: str = None):
             if cell.value is not None and str(cell.value).strip() != '':
                 return True
         return False
-
-
-class FramexlWriter:
-
-    def __init__(
-            self,
-            content,
-            cell: str,
-            index: bool = False,
-            header: bool = True,
-    ) -> None:
-        if isinstance(content, str):
-            self.content = content
-            self.cell = cell
-            self.tr = None
-            self.tc = None
-            self.range_index = None
-            self.range_header = None
-            self.range_indexnames = None
-
-        else:
-            cellobj = CellPro(cell)
-            header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
-            index_column_count = len(content.index.levels) if isinstance(content.index, pd.MultiIndex) else 1
-
-            if header == True and index == True:
-                tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
-                export_data = content
-                range_index = cellobj.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
-                range_indexnames = cellobj.resize(header_row_count, header_row_count)
-                range_header = cellobj.offset(0, index_column_count).resize(header_row_count, tc - index_column_count)
-            elif header == False and index == True:
-                tr, tc = content.shape[0], content.shape[1] + index_column_count
-                export_data = content.reset_index().to_numpy().tolist()
-                range_index = cellobj.resize(tr, index_column_count)
-                range_indexnames = 'N/A'
-                range_header = 'N/A'
-            elif header == False and index == False:
-                tr, tc = content.shape[0], content.shape[1]
-                export_data = content.to_numpy().tolist()
-                range_index = 'N/A'
-                range_indexnames = 'N/A'
-                range_header = 'N/A'
-            else:
-                tr, tc = content.shape[0] + header_row_count, content.shape[1]
-                if isinstance(content.columns, pd.MultiIndex):
-                    column_export = [list(lst) for lst in list(zip(*content.columns.values))]
-                else:
-                    column_export = [content.columns.to_list()]
-                export_data = column_export + content.to_numpy().tolist()
-                range_index = 'N/A'
-                range_indexnames = 'N/A'
-                range_header = cellobj.resize(header_row_count, tc)
-
-            self.content = export_data
-            self.cell = cell
-            self.tr = tr
-            self.tc = tc
-            self.top_right_cell = cellobj.offset(0, self.tc - 1).cell
-            self.bottom_left_cell = cellobj.offset(self.tr - 1, 0).cell
-            self.end_cell = cellobj.offset(self.tr - 1, self.tc - 1).cell
-            self.range_data = cellobj.offset(header_row_count, index_column_count).resize(tr - header_row_count, tc - index_column_count).cell
-            self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
-            self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
-            self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
-            self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).index_cell()[0] != 1 else None
 
 
 class PutxlSet:
@@ -158,6 +90,13 @@ class PutxlSet:
             underline: bool = False,
             strikeout: bool = False,
             align: str | list = None,
+            merge: bool = None,
+            border: str | list = None,
+            fill: str | tuple | list = None,
+            fill_pattern: str = None,
+            fill_fg: str | tuple = None,
+            fill_bg: str | tuple = None,
+            check_para: bool = False,
             debug: bool = False,
     ) -> None:
 
@@ -225,7 +164,15 @@ class PutxlSet:
                 bold=bold,
                 underline=underline,
                 strikeout=strikeout,
-                align=align
+                align=align,
+                merge=merge,
+                border=border,
+                fill=fill,
+                fill_pattern=fill_pattern,
+
+                fill_fg=fill_fg,
+                fill_bg=fill_bg,
+                check_para=check_para
             )
 
         self.wb.save()

@@ -1,4 +1,3 @@
-import pandas as pd
 import xlwings as xw
 import re
 
@@ -313,10 +312,10 @@ class RangeOperator:
                 for item in fill:
                     if isinstance(item, (tuple, list, str)) and item in _fpattern_map.keys():
                         patternlist.append(item)
-                if isinstance(item, str) and is_valid_hex_color(item):
-                    colorlist.append(item)
-                elif isinstance(item, (list, tuple)) and _is_valid_rgb(item):
-                    colorlist.append(item)
+                    if isinstance(item, str) and is_valid_hex_color(item):
+                        colorlist.append(item)
+                    elif isinstance(item, (list, tuple)) and _is_valid_rgb(item):
+                        colorlist.append(item)
 
                 leftover = [item for item in fill if item not in patternlist + colorlist]
                 if len(leftover) > 0:
