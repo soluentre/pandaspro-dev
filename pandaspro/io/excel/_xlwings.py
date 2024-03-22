@@ -1,5 +1,85 @@
+import pandas as pd
 import xlwings as xw
 import re
+
+_alignment_map = {
+    'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
+    'center_across_selection': ['h', xw.constants.HAlign.xlHAlignCenterAcrossSelection],
+    'hdistributed': ['h', xw.constants.HAlign.xlHAlignDistributed],
+    'fill': ['h', xw.constants.HAlign.xlHAlignFill],
+    'general': ['h', xw.constants.HAlign.xlHAlignGeneral],
+    'hjustify': ['h', xw.constants.HAlign.xlHAlignJustify],
+    'left': ['h', xw.constants.HAlign.xlHAlignLeft],
+    'right': ['h', xw.constants.HAlign.xlHAlignRight],
+    'bottom': ['v', xw.constants.VAlign.xlVAlignBottom],
+    'vcenter': ['v', xw.constants.VAlign.xlVAlignCenter],
+    'vdistributed': ['v', xw.constants.VAlign.xlVAlignDistributed],
+    'vjustify': ['v', xw.constants.VAlign.xlVAlignJustify],
+    'top': ['v', xw.constants.VAlign.xlVAlignTop],
+}
+
+_fpattern_map = {
+    'none': 0,  # xlNone
+    'solid': 1,  # xlSolid
+    'gray50': 2,  # xlGray50
+    'gray75': 3,  # xlGray75
+    'gray25': 4,  # xlGray25
+    'horstripe': 5,  # xlHorizontalStripe
+    'verstripe': 6,  # xlVerticalStripe
+    'diagstripe': 8,  # xlDiagonalDown
+    'revdiagstripe': 7,  # xlDiagonalUp
+    'diagcrosshatch': 9,  # xlDiagonalCrosshatch
+    'thinhorstripe': 11,  # xlThinHorizontalStripe
+    'thinverstripe': 12,  # xlThinVerticalStripe
+    'thindiagstripe': 14,  # xlThinDiagonalDown
+    'thinrevdiagstripe': 13,  # xlThinDiagonalUp
+    'thinhorcrosshatch': 15,  # xlThinHorizontalCrosshatch
+    'thindiagcrosshatch': 16,  # xlThinDiagonalCrosshatch
+    'thickdiagcrosshatch': 10,  # xlThickDiagonalCrosshatch
+    'gray12p5': 17,  # xlGray12.5
+    'gray6p25': 18  # xlGray6.25
+}
+
+_border_side_map = {
+    'none': None,
+    'inner': None,
+    'outer': None,
+    'all': None,
+    'left': 7,
+    'top': 8,
+    'bottom': 9,
+    'right': 10,
+    'inner_vert': 11,
+    'inner_hor': 12,
+    'down_diagonal': 5,
+    'up_diagonal': 6
+}
+
+_border_style_map = {
+    'continue': 1,
+    'dash': 2,
+    'dot': 3,
+    'dash_dot': 4,
+    'dash_dot_dot': 5,
+    'slant_dash': 6,
+    'thick_dash': 8,
+    'double': 9,
+    'thick_dash_dot_dot': 11
+}
+
+_border_custom = {
+    'none': None,
+    'all_thin': ['all', 'continue', 1],
+    'all_medium': ['all', 'continue', 2.5],
+    'all_thick': ['all', 'continue', 3.5],
+    'inner_thin': ['inner', 'continue', 1],
+    'inner_medium': ['inner', 'continue', 2.5],
+    'inner_thick': ['inner', 'continue', 3.5],
+    'outer_thin': ['outer', 'continue', 1],
+    'outer_medium': ['outer', 'continue', 2.5],
+    'outer_thick': ['outer', 'continue', 3.5]
+}
+
 
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
@@ -21,43 +101,26 @@ def _is_number(s: str):
     return bool(pattern.match(s))
 
 
+def hex_to_int(hex: str):
+    hex = hex.lstrip('#')
+    red = int(hex[:2], 16)
+    green = int(hex[2:4], 16)
+    blue = int(hex[4:], 16)
+    return red | (green << 8) | (blue << 16)
+
+
+def is_valid_hex_color(s):
+    pattern = r'^#[0-9A-F]{6}$'
+    return bool(re.match(pattern, s, re.IGNORECASE))
+
+
+def _is_valid_rgb(rgb):
+    if not isinstance(rgb, (list, tuple)) or len(rgb) != 3:
+        return False
+    return all(isinstance(n, int) and 0 <= n <= 255 for n in rgb)
+
+
 class RangeOperator:
-    _alignment_map = {
-        'hcenter': ['h', xw.constants.HAlign.xlHAlignCenter],
-        'center_across_selection': ['h', xw.constants.HAlign.xlHAlignCenterAcrossSelection],
-        'hdistributed': ['h', xw.constants.HAlign.xlHAlignDistributed],
-        'fill': ['h', xw.constants.HAlign.xlHAlignFill],
-        'general': ['h', xw.constants.HAlign.xlHAlignGeneral],
-        'hjustify': ['h', xw.constants.HAlign.xlHAlignJustify],
-        'left': ['h', xw.constants.HAlign.xlHAlignLeft],
-        'right': ['h', xw.constants.HAlign.xlHAlignRight],
-        'bottom': ['v', xw.constants.VAlign.xlVAlignBottom],
-        'vcenter': ['v', xw.constants.VAlign.xlVAlignCenter],
-        'vdistributed': ['v', xw.constants.VAlign.xlVAlignDistributed],
-        'vjustify': ['v', xw.constants.VAlign.xlVAlignJustify],
-        'top': ['v', xw.constants.VAlign.xlVAlignTop],
-    }
-    _fpattern_map = patterns = {
-        'none': None,
-        'solid': 'solid',
-        'gray50': 'mediumGray',
-        'gray75': 'darkGray',
-        'gray25': 'lightGray',
-        'horstripe': 'darkHorizontal',
-        'verstripe': 'darkVertical',
-        'diagstripe': 'darkDown',
-        'revdiagstripe': 'darkUp',
-        'diagcrosshatch': 'darkGrid',
-        'thinhorstripe': 'lightHorizontal',
-        'thinverstripe': 'lightVertical',
-        'thindiagstripe': 'lightDown',
-        'thinrevdiagstripe': 'lightUp',
-        'thinhorcrosshatch': 'lightGrid',
-        'thindiagcrosshatch': 'lightTrellis',
-        'thickdiagcrosshatch': 'gray0625',
-        'gray12p5': 'gray125',
-        'gray6p25': 'gray0625'
-    }
 
     def __init__(self, xwrange: xw.Range) -> None:
         self.xwrange = xwrange
@@ -66,7 +129,7 @@ class RangeOperator:
             self,
             font: str | tuple | list = None,
             font_name: str = None,
-            font_size: int = None,
+            font_size: str = None,
             font_color: str | tuple = None,
             italic: bool = None,
             bold: bool = None,
@@ -74,8 +137,19 @@ class RangeOperator:
             strikeout: bool = None,
             align: str | list = None,
             merge: bool = None,
-            border: bool = None
+            border: str | list = None,
+            fill: str | tuple | list = None,
+            fill_pattern: str = None,
+            fill_fg: str | tuple = None,
+            fill_bg: str | tuple = None,
+            check_para: bool = False
     ) -> None:
+
+        if check_para:
+            print('Please choose one value from the corresponding parameter: \n'
+                  f'align: {list(_alignment_map.keys())}; \n'
+                  f'fill_pattern: {list(_fpattern_map.keys())};\n'
+                  f'border_custom: {list(_border_custom.keys())};\n')
 
         # Font Attributes
         ##################################
@@ -149,13 +223,13 @@ class RangeOperator:
         if align:
             def _alignfunc(alignkey):
                 if align in ['center', 'justify', 'distributed']:
-                    self.xwrange.api.VerticalAlignment = self._alignment_map['v' + alignkey][1]
-                    self.xwrange.api.HorizontalAlignment = self._alignment_map['h' + alignkey][1]
-                elif self._alignment_map[alignkey][0] == 'v':
-                    self.xwrange.api.VerticalAlignment = self._alignment_map[alignkey][1]
-                elif self._alignment_map[alignkey][0] == 'h':
-                    self.xwrange.api.HorizontalAlignment = self._alignment_map[alignkey][1]
-                elif align not in self._alignment_map.keys():
+                    self.xwrange.api.VerticalAlignment = _alignment_map['v' + alignkey][1]
+                    self.xwrange.api.HorizontalAlignment = _alignment_map['h' + alignkey][1]
+                elif _alignment_map[alignkey][0] == 'v':
+                    self.xwrange.api.VerticalAlignment = _alignment_map[alignkey][1]
+                elif _alignment_map[alignkey][0] == 'h':
+                    self.xwrange.api.HorizontalAlignment = _alignment_map[alignkey][1]
+                elif align not in _alignment_map.keys():
                     raise ValueError(f'Alignment {alignkey} is not supported')
                 return
 
@@ -180,7 +254,143 @@ class RangeOperator:
 
         # Border Attributes
         ##################################
+        if border:
+            border_side = 'all'
+            border_style = 'continue'
+            weight = 1
 
+            if isinstance(border, str) and border.strip() == 'none':
+                for i in range(1, 12):
+                    self.xwrange.api.Borders(i).LineStyle = 0
+            else:
+                if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
+                    border_para = _border_custom[border.strip()]
+                elif isinstance(border, str):
+                    border_para = [float(i.strip()) if i.strip().isdigit() else i.strip() for i in border.split(',')]
+                elif isinstance(border, list):
+                    border_para = border
+                else:
+                    raise ValueError(
+                        'Invalid boarder specification, please use check_para=True to see the valid lists.')
+
+                for item in border_para:
+                    if isinstance(item, (int, float)) or (isinstance(item, str) and item.strip().isdigit()):
+                        weight = item
+                    elif isinstance(item, str) and item in list(_border_side_map.keys()):
+                        border_side = item
+                    elif isinstance(item, str) and item in list(_border_style_map.keys()):
+                        border_style = item
+                    else:
+                        raise ValueError(
+                            'Invalid boarder specification, please use check_para=True to see the valid lists.')
+
+                if border_side == 'none':
+                    for i in range(1, 12):
+                        self.xwrange.api.Borders(i).LineStyle = 0
+                elif border_side == 'all':
+                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders.Weight = weight
+                elif border_side == 'inner':
+                    self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders(11).Weight = weight
+                    self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders(12).Weight = weight
+                elif border_side == 'outer':
+                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders.Weight = weight
+                    self.xwrange.api.Borders(11).LineStyle = 0
+                    self.xwrange.api.Borders(12).LineStyle = 0
+                elif border_side in _border_side_map.keys():
+                    self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
+
+        # Fill Attributes
+        ##################################
+        if fill:
+            if isinstance(fill, list):
+                patternlist, colorlist = [], []
+
+                for item in fill:
+                    if isinstance(item, (tuple, list, str)) and item in _fpattern_map.keys():
+                        patternlist.append(item)
+                if isinstance(item, str) and is_valid_hex_color(item):
+                    colorlist.append(item)
+                elif isinstance(item, (list, tuple)) and _is_valid_rgb(item):
+                    colorlist.append(item)
+
+                leftover = [item for item in fill if item not in patternlist + colorlist]
+                if len(leftover) > 0:
+                    raise ValueError('Invalid input. Please check if pattern or color are specified correctly.')
+                else:
+                    if (len(fill) == 1) or (len(fill) == 2 and 'solid' in fill):
+                        for item in fill:
+                            if isinstance(item, tuple):
+                                self.xwrange.api.Interior.Color = xw.utils.rgb_to_int(item)
+                            elif item in list(_fpattern_map.keys()):
+                                self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                            elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                                self.xwrange.api.Interior.Color = hex_to_int(item)
+                    elif len(fill) == 2 and 'solid' not in fill:
+                        for item in fill:
+                            if isinstance(item, tuple):
+                                self.xwrange.api.Interior.PatternColor = xw.utils.rgb_to_int(item)
+                            elif item in list(_fpattern_map.keys()):
+                                self.xwrange.api.Interior.Pattern = _fpattern_map[item]
+                            elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                                self.xwrange.api.Interior.PatternColor = hex_to_int(item)
+                    else:
+                        raise ValueError(
+                            "Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
+
+            elif isinstance(fill, tuple):
+                foreground_color_int = xw.utils.rgb_to_int(fill)
+                self.xwrange.api.Interior.Color = foreground_color_int
+            elif isinstance(fill, str):
+                patternkeys = '(' + '|'.join(_fpattern_map.keys()) + ')'
+                compiled_patternkeys = re.compile(patternkeys, re.IGNORECASE)
+                patternlist = re.findall(compiled_patternkeys, fill)
+                firstpattern = patternlist[0] if len(patternlist) >= 1 else None
+
+                colorrule = r'#(?:[0-9a-fA-F]{3}){1,2}|\(\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*,\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*,\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*\)'
+                colorlist = re.findall(colorrule, fill)
+
+                leftover = fill
+                for item in patternlist + colorlist:
+                    leftover = leftover.replace(item, '').strip()
+
+                if len(leftover.replace(',', '')) > 0:
+                    raise ValueError('Incorrect pattern or color specified, please check')
+                elif len(patternlist) > 1 or len(colorlist) > 1:
+                    raise ValueError('Can not specify more than one color or more than one pattern, respectively.')
+                else:
+                    if len(patternlist) == 1:
+                        self.xwrange.api.Interior.Pattern = _fpattern_map[patternlist[0]]
+                    if len(colorlist) == 1:
+                        if '#' in colorlist[0]:
+                            colorint = hex_to_int(colorlist[0])
+                        else:
+                            colortuple = tuple(map(int, colorlist[0].replace('(', '').replace(')', '').split(',')))
+                            colorint = xw.utils.rgb_to_int(colortuple)
+
+                        if firstpattern is None or firstpattern == 'solid':
+                            self.xwrange.api.Interior.Color = colorint
+                        else:
+                            self.xwrange.api.Interior.PatternColor = colorint
+
+        if fill_pattern:
+            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
+
+        if isinstance(fill_fg, tuple):
+            foreground_color_int = xw.utils.rgb_to_int(fill_fg)
+            self.xwrange.api.Interior.PatternColor = foreground_color_int
+        elif isinstance(fill_fg, str):
+            self.xwrange.api.Interior.PatternColor = hex_to_int(fill_fg)
+
+        if isinstance(fill_bg, tuple):
+            background_color_int = xw.utils.rgb_to_int(fill_bg)
+            self.xwrange.api.Interior.Color = background_color_int
+        elif isinstance(fill_bg, str):
+            self.xwrange.api.Interior.Color = hex_to_int(fill_bg)
 
         return
 
