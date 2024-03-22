@@ -24,6 +24,17 @@ class FramexlWriter:
             header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
             index_column_count = len(content.index.levels) if isinstance(content.index, pd.MultiIndex) else 1
 
+            dfmapstart = cellobj.offset(header_row_count, index_column_count)
+            dfmap = content.copy()
+
+            i = 0
+            for index, row in dfmap.iterrows():
+                j = 0
+                for col in dfmap.columns:
+                    dfmap.loc[index, col] = dfmapstart.offset(i, j).cell
+                    j += 1
+                i += 1
+
             if header == True and index == True:
                 tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
                 export_data = content
@@ -67,7 +78,7 @@ class FramexlWriter:
             self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
             self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
             self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).index_cell()[0] != 1 else None
-
+            self.cellmap = dfmap
 
 if __name__ == '__main__':
     import pandas as pd
@@ -80,4 +91,9 @@ if __name__ == '__main__':
         'Population (Millions)': population,
     })
 
-    print(FramexlWriter(df, 'A1', index=True).range_index)
+    # print(FramexlWriter(df, 'A1', index=True).range_index)
+    import xlwings as xw
+    ws = xw.Book('test.xlsx').sheets['FF']
+    ws.range('G1').value = df
+    a = FramexlWriter(df, 'G1')
+    print(a.cellmap)
