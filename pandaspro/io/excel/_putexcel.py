@@ -164,6 +164,9 @@ class PutxlSet:
         if hasattr(content, 'df'):
             content = content.df
 
+        for col in content.columns:
+            content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
+
         from pandaspro.io.excel._xlwings import RangeOperator
         replace_type = self.globalreplace if self.globalreplace else replace
 
@@ -278,20 +281,18 @@ if __name__ == '__main__':
 
     # Re-create the initial DataFrame
     countries = ["USA", "China", "Japan", "Germany", "India", "UK", "France", "Brazil", "Italy", "Canada"]
-    gdp = [11.43, 14.59, 12.45, 11.35, 9.05, 13.27, 9.31, 17.94, 19.31, 8.29]
+    gdp = [11.43, 14.59, 12.45, 11.35, 9.05, 13.27, 9.31, 17.94, (1,2,3,4,5,6), 8.29]
     population = [1110.5, 745.2, 799.6, 1296.6, 108.7, 131.1, 38.1, 1167.3, 1091.6, 1219.3]
-    gdp_per_capita = [x * 1e12 / y for x, y in zip(gdp, population)]
     df = pd.DataFrame({
         'Country': countries,
         'GDP (Trillion USD)': gdp,
         'Population (Millions)': population,
-        'GDP per Capita (USD)': gdp_per_capita
     })
 
     # Convert index and column headers to MultiIndex
 
     # For the index, use a combination of 'Region' and 'Country'
-    regions = ['North America', 'Asia', 'Asia', 'Europe', 'Asia', 'Europe', 'Europe', 'South America', 'Europe',
+    regions = [(1,2), 'Asia', 'Asia', 'Europe', 'Asia', 'Europe', 'Europe', 'South America', 'Europe',
                'North America']
     index_multi = pd.MultiIndex.from_arrays([regions, df['Country']], names=['Region', 'Country'])
 
@@ -303,7 +304,7 @@ if __name__ == '__main__':
     df = pd.DataFrame(df.values[:, 1:], index=index_multi, columns=columns_multi)
 
     ps = PutxlSet('test.xlsx', 'Sheet3', noisily=True)
-    ps.putxl(df1, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
+    ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
     ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
     ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
