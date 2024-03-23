@@ -1,3 +1,4 @@
+from pandaspro.core.stringfunc import parsewild
 from pandaspro.io.excel._utils import CellPro
 import pandas as pd
 
@@ -9,6 +10,8 @@ class FramexlWriter:
             cell: str,
             index: bool = False,
             header: bool = True,
+            column_list: list = None,
+            index_mask = None
     ) -> None:
         if isinstance(content, str):
             self.content = content
@@ -27,6 +30,7 @@ class FramexlWriter:
             dfmapstart = cellobj.offset(header_row_count, index_column_count)
             dfmap = content.copy()
 
+            # Create a cells Map
             i = 0
             for index, row in dfmap.iterrows():
                 j = 0
@@ -35,6 +39,16 @@ class FramexlWriter:
                     j += 1
                 i += 1
 
+            self.formatrange = "Please provide the column_list/index_mask to select a sub-range"
+            self.valuerange
+            if column_list:
+                if isinstance(column_list, str):
+                    column_list = parsewild(column_list, dfmap.columns)
+                self.formatrange = dfmap[column_list]
+            if index_mask:
+                self.formatrange = self.formatrange[index_mask]
+
+            # Calculate the Ranges
             if header == True and index == True:
                 tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
                 export_data = content
@@ -92,8 +106,21 @@ if __name__ == '__main__':
     })
 
     # print(FramexlWriter(df, 'A1', index=True).range_index)
+
     import xlwings as xw
+
     ws = xw.Book('test.xlsx').sheets['FF']
     ws.range('G1').value = df
-    a = FramexlWriter(df, 'G1')
-    print(a.cellmap)
+    a = FramexlWriter(df, 'G1', column_list='Country')
+    print(a.formatrange)
+
+    paintdict = {
+        'all': {
+            'logic': 'grade == 1 and grade <2',
+            'format': {
+                'fill': '#FFF000',
+                'font': 'bold 12'
+            }
+        }
+    }
+
