@@ -47,7 +47,7 @@ if __name__ == '__main__':
     print('end')44
 
     ## Create a CdFormat
-    myformat = CdFormat('grade', applyrange='self', rows={'GA':'#FFF00'})
+    myformat = CdFormat('grade', applyrange='self', rows={'GA':{'font_color':'#FFFF00'}})
     myformat2 = CdFormat('salary', applrange='age', rows={range(0,100):'bold'})
     a.putxl(df, 'sheet', 'G1', cdformat=[myformat, myformat2])
 
@@ -58,3 +58,12 @@ if __name__ == '__main__':
     myformat.add('#FFF000', index_mask=filter1, applyrange=['grade','grade2'])
 
     dfmap[filter1]
+
+
+    myformat.column = 'grade'
+    .applyrange
+
+    applycells
+
+    myformat.coredict = {'font_color':'#FFFF00'}
+    RangeOperator(ws.range(applycells)).format(**myformat.coredict))

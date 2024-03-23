@@ -1,6 +1,8 @@
 from pandaspro.io.excel._utils import CellPro
 import pandas as pd
 
+
+
 class FramexlWriter:
 
     def __init__(
@@ -9,6 +11,7 @@ class FramexlWriter:
             cell: str,
             index: bool = False,
             header: bool = True,
+            cf: list = None,
     ) -> None:
         if isinstance(content, str):
             self.content = content
