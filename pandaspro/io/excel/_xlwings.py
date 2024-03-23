@@ -66,17 +66,20 @@ _border_style_map = {
     'thick_dash_dot_dot': 11
 }
 
+_border_weight_map = {
+    'thin': 2,
+    'thick': 3,
+    'thicker': 4
+}
+
 _border_custom = {
     'none': None,
-    'all_thin': ['all', 'continue', 1],
-    'all_medium': ['all', 'continue', 2.5],
-    'all_thick': ['all', 'continue', 3.5],
-    'inner_thin': ['inner', 'continue', 1],
-    'inner_medium': ['inner', 'continue', 2.5],
-    'inner_thick': ['inner', 'continue', 3.5],
-    'outer_thin': ['outer', 'continue', 1],
-    'outer_medium': ['outer', 'continue', 2.5],
-    'outer_thick': ['outer', 'continue', 3.5]
+    'all_thin': ['all', 'continue', 'thin'],
+    'all_thick': ['all', 'continue', 'thick'],
+    'inner_thin': ['inner', 'continue', 'thin'],
+    'inner_thick': ['inner', 'continue', 'thick'],
+    'outer_thin': ['outer', 'continue', 'thin'],
+    'outer_thick': ['outer', 'continue', 'thick']
 }
 
 
@@ -265,16 +268,16 @@ class RangeOperator:
                 if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
                     border_para = _border_custom[border.strip()]
                 elif isinstance(border, str):
-                    border_para = [float(i.strip()) if i.strip().isdigit() else i.strip() for i in border.split(',')]
+                    border_para = [i.strip() for i in border.split(',')]
                 elif isinstance(border, list):
-                    border_para = border
+                    border_para = [i.strip() for i in border]
                 else:
                     raise ValueError(
                         'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
                 for item in border_para:
-                    if isinstance(item, (int, float)) or (isinstance(item, str) and item.strip().isdigit()):
-                        weight = item
+                    if isinstance(item, str) and item in list(_border_weight_map.keys()):
+                        weight = _border_weight_map[item]
                     elif isinstance(item, str) and item in list(_border_side_map.keys()):
                         border_side = item
                     elif isinstance(item, str) and item in list(_border_style_map.keys()):
@@ -295,10 +298,9 @@ class RangeOperator:
                     self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(12).Weight = weight
                 elif border_side == 'outer':
-                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders.Weight = weight
-                    self.xwrange.api.Borders(11).LineStyle = 0
-                    self.xwrange.api.Borders(12).LineStyle = 0
+                    for i in range(7,11):
+                        self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
+                        self.xwrange.api.Borders(i).Weight = weight
                 elif border_side in _border_side_map.keys():
                     self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
@@ -402,25 +404,11 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range("C1:D1")
+    my_range = sheet.range("H2:I4")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], align='center', merge=False)    # print(a.range)
-    _fpattern_map = {
-        'none': -4142,  # xlNone
-        'solid': 1,  # xlSolid
-        'gray50': -4125,  # xlGray50
-        'gray75': -4126,  # xlGray75
-        'gray25': -4124,  # xlGray25
-        # Add other patterns as needed, using their corresponding integer values
-    }
-    pattern = 'gray50'
-    fill = _fpattern_map[pattern]
-    a.xwrange.api.Interior.Pattern = fill
-    a.xwrange.font.color = (255,0,255)
-    # a.xwrange.api.Interior.Color = 0x00FFFF  # RGB格式
-    # a.format(bold=True, align='left, top')    # print(a.range)
-    # print(_extract_tuple('12 (4,255,67)'))
-    # a.range.font.color = '#FF0000'
+    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
+    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
+
 
