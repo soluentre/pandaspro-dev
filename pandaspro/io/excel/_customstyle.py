@@ -44,4 +44,17 @@ if __name__ == '__main__':
     a = FramexlWriter(df, 'G1', index=True)
 
     b = CustomStyle(ws, a)
-    print('end')
+    print('end')44
+
+    ## Create a CdFormat
+    myformat = CdFormat('grade', applyrange='self', rows={'GA':'#FFF00'})
+    myformat2 = CdFormat('salary', applrange='age', rows={range(0,100):'bold'})
+    a.putxl(df, 'sheet', 'G1', cdformat=[myformat, myformat2])
+
+    cdFormat('grade', {}, ['age','name'])
+
+    filter1  = df[df['grade']>df['hgrade2']]
+    myformat = (cdFormat(conplex)
+    myformat.add('#FFF000', index_mask=filter1, applyrange=['grade','grade2'])
+
+    dfmap[filter1]
