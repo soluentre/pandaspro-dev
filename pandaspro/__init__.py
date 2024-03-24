@@ -14,4 +14,9 @@ from pandaspro.io.api import (
     WorkbookExportSimplifier
 )
 
+from pandaspro.test.api import (
+    sysuse_countries,
+    sysuse_auto
+)
+
 excel_d = WorkbookExportSimplifier().declare_workbook
