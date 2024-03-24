@@ -3,12 +3,13 @@ from openpyxl.utils.cell import coordinate_from_string
 import pandas as pd
 import numpy as np
 import re
+from typing import Union
 
 def lowervarlist(
         data,
         engine: str = 'data',
         inplace: bool = False
-) -> pd.DataFrame | list | dict:
+) -> Union[pd.DataFrame, list, dict]:
     """
     This function renames the columns of a DataFrame by formatting the original column names
     according to a specified pattern, primarily to ensure the column names are

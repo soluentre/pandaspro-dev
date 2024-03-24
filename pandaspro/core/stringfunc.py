@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, List, Union
 
 
 def wildcardread(stringlist, varkey):
@@ -30,7 +30,7 @@ def wildcardread(stringlist, varkey):
         return matching_strings
 
 
-def str2list(inputstring: str) -> list[str] | list[str | Any]:
+def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
     """
     This function is used to turn a string of vars to a list object
     Python can not automatically parse list of vars as written in a string separated by space, like "make price mpg rep78" as comparing to Stata
