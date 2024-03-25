@@ -1,4 +1,5 @@
 import pandas as pd
+from pandaspro.core.frame import FramePro
 import numpy as np
 
 # Countries
@@ -1050,5 +1051,5 @@ data = [
         "foreign": "Foreign",
     },
 ]
-sysuse_auto = pd.DataFrame(data)
+sysuse_auto = FramePro(pd.DataFrame(data))
 

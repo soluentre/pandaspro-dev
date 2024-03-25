@@ -48,18 +48,15 @@ class FramexlWriter:
                 self.formatrange = dfmap[column_list]
             if index_mask:
                 self.formatrange = self.formatrange[index_mask]
-            print('runned to here')
 
             # Calculate the Ranges
             if header == True and index == True:
-                print('1')
                 tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
                 export_data = content
                 range_index = cellobj.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
                 range_indexnames = cellobj.resize(header_row_count, header_row_count)
                 range_header = cellobj.offset(0, index_column_count).resize(header_row_count, tc - index_column_count)
             elif header == False and index == True:
-                print('2')
                 tr, tc = content.shape[0], content.shape[1] + index_column_count
                 export_data = content.reset_index().to_numpy().tolist()
                 range_index = cellobj.resize(tr, index_column_count)

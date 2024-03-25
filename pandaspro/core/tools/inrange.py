@@ -6,7 +6,7 @@ def inrange(
     colname: str,
     start,
     stop,
-    inclusive='both',
+    inclusive='left',
     engine: str = 'b',
     inplace: bool = False,
     invert: bool = False,
@@ -50,3 +50,4 @@ def inrange(
 if __name__ == '__main__':
     from pandaspro import sysuse_auto
     auto = sysuse_auto
+    a = auto.inrange('price', 4098, 4099, inclusive='right').df

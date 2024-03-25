@@ -5,6 +5,7 @@ from functools import partial
 
 from pandaspro.core.stringfunc import parsewild
 from pandaspro.core.tools.dfilter import dfilter
+from pandaspro.core.tools.inrange import inrange
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
@@ -44,11 +45,48 @@ class FramePro(pd.DataFrame):
     def dfilter(self, inputdict: dict = None, debug: bool = False):
         return self._constructor(dfilter(self, inputdict, debug))
 
-    def inlist(self, colname: str, *args, engine: str = 'b', inplace: bool = False, invert: bool = False, debug: bool = False):
+    def inlist(
+            self,
+            colname: str,
+            *args,
+            engine: str = 'b',
+            inplace: bool = False,
+            invert: bool = False,
+            debug: bool = False
+    ):
         result = inlist(
             self,
             colname,
             *args,
+            engine=engine,
+            inplace=inplace,
+            invert=invert,
+            debug=debug,
+        )
+        if debug:
+            print(type(result))
+        if engine == 'm':
+            return result
+        else:
+            return self._constructor(result)
+
+    def inrange(
+            self,
+            colname: str,
+            start,
+            stop,
+            inclusive: str = 'left',
+            engine: str = 'b',
+            inplace: bool = False,
+            invert: bool = False,
+            debug: bool = False
+    ):
+        result = inrange(
+            self,
+            colname,
+            start,
+            stop,
+            inclusive=inclusive,
             engine=engine,
             inplace=inplace,
             invert=invert,
