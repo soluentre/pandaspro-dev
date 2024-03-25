@@ -103,8 +103,9 @@ class PutxlSet:
         if hasattr(content, 'df'):
             content = content.df
 
-        for col in content.columns:
-            content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
+        if not isinstance(content, str):
+            for col in content.columns:
+                content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
 
         from pandaspro.io.excel._xlwings import RangeOperator
         replace_type = self.globalreplace if self.globalreplace else replace
