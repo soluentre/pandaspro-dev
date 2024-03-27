@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     import xlwings as xw
 
-    ws = xw.Book('test.xlsx').sheets['FF']
+    ws = xw.Book('sampledf.xlsx').sheets['FF']
     ws.range('G1').value = df
     a = FramexlWriter(df, 'G1', column_list='Country')
     print(a.formatrange)

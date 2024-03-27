@@ -14,7 +14,7 @@ from pandaspro.io.api import (
     WorkbookExportSimplifier
 )
 
-from pandaspro.test.api import (
+from pandaspro.sampledf.api import (
     sysuse_countries,
     sysuse_auto
 )

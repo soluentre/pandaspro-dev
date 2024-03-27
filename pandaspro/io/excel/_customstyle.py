@@ -29,7 +29,7 @@ if __name__ == '__main__':
     pass
 
     #
-    # ws = xw.Book('test.xlsx').sheets['FF']
+    # ws = xw.Book('sampledf.xlsx').sheets['FF']
     # ws.range('G1').value = df
     # a = FramexlWriter(df, 'G1', index=True)
     #

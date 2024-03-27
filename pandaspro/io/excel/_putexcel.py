@@ -64,6 +64,16 @@ class PutxlSet:
             sheet = wb.sheets.add(after=wb.sheets.count)
             sheet.name = sheet_name
 
+        # A small function to decide if sheet is blank ...
+        def is_sheet_empty(sheet):
+            used_range = sheet.used_range
+            if used_range.shape == (1, 1) and not used_range.value:
+                return True
+            return False
+
+        if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']):
+            wb.sheets['Sheet1'].delete()
+
         self.app = app
         self.workbook = workbook
         self.worksheet = sheet_name
@@ -176,6 +186,17 @@ class PutxlSet:
                 check_para=check_para
             )
 
+        # A small function to decide if sheet is blank ...
+        def is_sheet_empty(sheet):
+            used_range = sheet.used_range
+            if used_range.shape == (1, 1) and not used_range.value:
+                return True
+            return False
+
+        current_sheets = [sheet.name for sheet in self.wb.sheets]
+        if 'Sheet1' in current_sheets and is_sheet_empty(self.wb.sheets['Sheet1']):
+            self.wb.sheets['Sheet1'].delete()
+
         self.wb.save()
 
         if debug:
@@ -251,7 +272,7 @@ if __name__ == '__main__':
     # Create a new DataFrame with MultiIndex for both rows and columns
     df = pd.DataFrame(df.values[:, 1:], index=index_multi, columns=columns_multi)
 
-    ps = PutxlSet('test.xlsx', 'Sheet3', noisily=True)
+    ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
     ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
     ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
     ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)

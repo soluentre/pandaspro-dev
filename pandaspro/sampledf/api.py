@@ -1,4 +1,4 @@
-from pandaspro.test.test import (
+from pandaspro.sampledf.sampledf import (
     sysuse_countries,
     sysuse_auto
 )
