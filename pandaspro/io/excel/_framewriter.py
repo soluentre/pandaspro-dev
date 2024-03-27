@@ -30,6 +30,7 @@ class FramexlWriter:
 
             dfmapstart = cellobj.offset(header_row_count, index_column_count)
             dfmap = content.copy()
+            dfmap = dfmap.astype(str)
 
             # Create a cells Map
             i = 0
