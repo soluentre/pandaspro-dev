@@ -71,7 +71,7 @@ class PutxlSet:
                 return True
             return False
 
-        if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']):
+        if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']) and sheet_name is not None:
             wb.sheets['Sheet1'].delete()
 
         self.app = app

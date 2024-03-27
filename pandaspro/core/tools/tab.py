@@ -3,11 +3,11 @@ import pandas as pd
 
 def tab(
     data,
-    name: str,
+    name: str | list,
     d: str = 'brief',
     m: bool = False,
     sort: str = 'index',
-    ascending: bool = True
+    ascending: bool | list = True
 ):
     """
     The `tab` function provides various tabulations of a specified column in a DataFrame,
@@ -55,9 +55,13 @@ def tab(
     >>> tab(df, 'A', d='detail', m=True, sort='percent', ascending=False)
     Returns a detailed tabulation of column 'A', including missing values, sorted by percentage in descending order.
     """
+
+    if isinstance(name, list):
+        ascending = [True for i in range(len(name))]
+
     sort_dict = {
-        f'{name}': f'{name}',
-        'index': f'{name}',
+        f'{name}': name,
+        'index': name,
         'percent': 'Percent'
     }
     if m == 'missing' or m == True:
