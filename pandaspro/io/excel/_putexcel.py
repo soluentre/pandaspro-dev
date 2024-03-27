@@ -228,49 +228,9 @@ class PutxlSet:
 
 if __name__ == '__main__':
 
-    import pandas as pd
-    import numpy as np
-
-    # Define the countries
-    countries = ["USA", "China", "Japan", "Germany", "India", "UK", "France", "Brazil", "Italy", "Canada"]
-
-    # Generate random data for GDP (in trillion USD), Population (in millions), and GDP per Capita (in USD)
-    np.random.seed(0)  # For reproducibility
-    gdp = np.random.uniform(1, 20, size=len(countries))  # GDP in trillion USD
-    population = np.random.uniform(10, 1400, size=len(countries))  # Population in millions
-    gdp_per_capita = gdp * 1e12 / (population * 1e6)  # GDP per Capita in USD
-
-    # Create the DataFrame
-    df1 = pd.DataFrame({
-        'Country': countries,
-        'GDP (Trillion USD)': gdp.round(2),
-        'Population (Millions)': population.round(1),
-        'GDP per Capita (USD)': gdp_per_capita.round(2)
-    })
-
-    # Re-create the initial DataFrame
-    countries = ["USA", "China", "Japan", "Germany", "India", "UK", "France", "Brazil", "Italy", "Canada"]
-    gdp = [11.43, 14.59, 12.45, 11.35, 9.05, 13.27, 9.31, 17.94, (1,2,3,4,5,6), 8.29]
-    population = [1110.5, 745.2, 799.6, 1296.6, 108.7, 131.1, 38.1, 1167.3, 1091.6, 1219.3]
-    df = pd.DataFrame({
-        'Country': countries,
-        'GDP (Trillion USD)': gdp,
-        'Population (Millions)': population,
-    })
-
-    # Convert index and column headers to MultiIndex
-
-    # For the index, use a combination of 'Region' and 'Country'
-    regions = [(1,2), 'Asia', 'Asia', 'Europe', 'Asia', 'Europe', 'Europe', 'South America', 'Europe',
-               'North America']
-    index_multi = pd.MultiIndex.from_arrays([regions, df['Country']], names=['Region', 'Country'])
-
-    # For the columns, create a MultiIndex with two levels: 'Indicator' and 'Measure'
-    columns_multi = pd.MultiIndex.from_product([['Economic Indicators'], df.columns[1:]],
-                                               names=['Indicator', 'Measure'])
-
-    # Create a new DataFrame with MultiIndex for both rows and columns
-    df = pd.DataFrame(df.values[:, 1:], index=index_multi, columns=columns_multi)
+    from pandaspro import sysuse_auto, sysuse_countries
+    df = sysuse_auto
+    df1 = sysuse_countries
 
     ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
     ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
