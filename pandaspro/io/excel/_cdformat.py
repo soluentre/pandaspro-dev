@@ -1,15 +1,32 @@
 from pandaspro import FramePro
-from pandaspro import sysuse_auto, sysuse_countries
+from pandaspro import sysuse_auto
+from pandaspro.core.stringfunc import parsewild
 
 
 class CdFormat:
-    def __init__(self, col: str, rules: dict, apply: str = 'self'):
+    def __init__(self,
+                 df,
+                 col: str,
+                 rules: dict,
+                 apply: str | list = 'self'):
+        self.df = df
         self.col = col
         self.rules = rules
         self.rules_mask = None
-        self.apply = apply
 
-    def configure_rules_mask(self, df):
+        def _apply_decide(input):
+            if input == 'self':
+                return [col]
+            elif input == 'all':
+                return self.df.columns
+            elif isinstance(input, str):
+                return parsewild(apply, self.df.columns)
+            else:
+                return input
+
+        self.apply = _apply_decide(apply)
+
+    def configure_rules_mask(self):
         self.rules_mask = {}
 
         for rulename, value in self.rules.items():
@@ -19,12 +36,12 @@ class CdFormat:
                 raise ValueError("Simple Conditional Formatting can only accept str inputs in rules dictionary's keys")
 
             elif isinstance(rulename, str) and isinstance(value, str):
-                self.rules_mask[rulename]['mask'] = FramePro(df).inlist(self.col, rulename)
+                self.rules_mask[rulename]['mask'] = FramePro(self.df).inlist(self.col, rulename)
 
             else:
                 # If rule is given as a list, only range filtering can satisfy
                 if isinstance(value, list) and len(value) == 2 and isinstance(value[0], range):
-                    self.rules_mask[rulename]['mask'] = df[self.col].between(value[0].start, value[0].stop, inclusive="left")
+                    self.rules_mask[rulename]['mask'] = self.df[self.col].between(value[0].start, value[0].stop, inclusive="left")
 
                 # ... other types of lists will trigger an error
                 elif isinstance(value, list):
@@ -40,15 +57,20 @@ class CdFormat:
                             raise ValueError("In 'r' you can only use 1 dictionary for kwargs of the filter engine method")
                         else:
                             mykwargs = mykwargs_list[0]
-                        method_call = getattr(FramePro(df), engine)
+                        method_call = getattr(FramePro(self.df), engine)
                         self.rules_mask[rulename]['mask'] = method_call(self.col, *myargs, **mykwargs, engine='m')
                     else:
                         raise ValueError("Please pass a list object when declaring 'r' in certain rule")
 
         return self.rules_mask
 
-    def locate_cells(self, df):
-        pass
+    def locate_cells(self):
+        self.locate = {}
+        for key, value in self.configure_rules_mask().items():
+            subrange = self.self.df[value['mask']][self.apply]
+            self.locate['cells'] = subrange
+
+
 
 
 if __name__ == '__main__':

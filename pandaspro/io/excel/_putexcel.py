@@ -180,7 +180,6 @@ class PutxlSet:
                 border=border,
                 fill=fill,
                 fill_pattern=fill_pattern,
-
                 fill_fg=fill_fg,
                 fill_bg=fill_bg,
                 check_para=check_para
