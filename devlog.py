@@ -2,6 +2,23 @@
 现在已知framewrite可以获取index列对应的区域，例如单列index，可以获取G2:G11（参考framewriter下方测试）
 然后就是需要得到一个列表，是按取值划分的长度，代码如下：
 例如获取了【6，2，1，4】就可用offset结合resize对G2开始进行单元格计算，获取到所有的区域
+
+3月27日（明早记录）
+1. 给五月推工作
+信息 + 技术 + 方法，信息是需要大家自己搜集的，我可以提供技术，提供写作方法，以及提供获取信息的工具
+进一步总结
+
+2. hr权力大
+
+3. 老板大晚上要活，只能说好用的工具没开发完啊
+
+4. 雪琪的pivot更好用
+
+5. 初审终于基本通过了
+
+6. bank医保刷新认知
+
+
 '''
 
 import pandas as pd
@@ -27,3 +44,5 @@ def count_consecutive_values(series):
 consecutive_counts = count_consecutive_values(df_sorted['Col2'])
 
 consecutive_counts
+
+
