@@ -8,6 +8,7 @@ def inlist(
     engine: str = 'b',
     inplace: bool = False,
     invert: bool = False,
+    rename: str = None,
     debug: bool = False,
 ):
     """
@@ -24,7 +25,7 @@ def inlist(
         The list of values to check against or multiple arguments forming the list.
     engine : str, optional
         The operation type:
-        'b' for boolean indexing (default)
+        'b' for creating a copy of boolean indexing (default)
         'r' for row filtering
         'm' for mask
         'c' for adding a new column.
@@ -82,10 +83,13 @@ def inlist(
     elif engine == 'c':
         if debug:
             print("type c code executed ...")
+        new_name = rename if rename else '_inlist'
         if not invert:
-            data.loc[data[colname].isin(boolist), '_inlist'] = 1
+            data.loc[data[colname].isin(boolist), new_name] = 1
         else:
-            data.loc[~(data[colname].isin(boolist)), '_inlist'] = 0
+            data.loc[~(data[colname].isin(boolist)), new_name] = 0
         return data
     else:
         print('Unsupported type')
+
+

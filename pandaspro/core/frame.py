@@ -52,6 +52,7 @@ class FramePro(pd.DataFrame):
             engine: str = 'b',
             inplace: bool = False,
             invert: bool = False,
+            rename: str = None,
             debug: bool = False
     ):
         result = inlist(
@@ -61,6 +62,7 @@ class FramePro(pd.DataFrame):
             engine=engine,
             inplace=inplace,
             invert=invert,
+            rename=rename,
             debug=debug,
         )
         if debug:
