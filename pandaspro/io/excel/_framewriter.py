@@ -3,6 +3,18 @@ from pandaspro.io.excel._utils import CellPro
 import pandas as pd
 
 
+class StringxlWriter:
+
+    def __init__(
+            self,
+            content,
+            cell: str,
+    ) -> None:
+        self.iotype = 'str'
+        self.content = content
+        self.cell = cell
+
+
 class FramexlWriter:
 
     def __init__(
@@ -80,6 +92,7 @@ class FramexlWriter:
                 range_indexnames = 'N/A'
                 range_header = cellobj.resize(header_row_count, tc)
 
+            self.iotype = 'df'
             self.content = export_data
             self.cell = cell
             self.tr = tr
@@ -96,6 +109,13 @@ class FramexlWriter:
             self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if \
             CellPro(self.cell).index_cell()[0] != 1 else None
             self.cellmap = dfmap
+
+    def index_break(self):
+        if not isinstance(self, str):
+            temp = self.content
+
+        else:
+            raise ValueError('Str i')
 
 
 if __name__ == '__main__':

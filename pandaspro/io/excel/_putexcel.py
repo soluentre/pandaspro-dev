@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import xlwings as xw
 
-from pandaspro.io.excel._framewriter import FramexlWriter
+from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
 
 
 def is_range_filled(ws, range_str: str = None):
@@ -121,6 +121,7 @@ class PutxlSet:
         replace_type = self.globalreplace if self.globalreplace else replace
 
         # If a sheet_name is specified, then override the current sheet
+        ################################
         if sheet_name and sheet_name != self.worksheet:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
                 ws = self.wb.sheets[sheet_name]
@@ -130,11 +131,8 @@ class PutxlSet:
         else:
             ws = self.ws
 
-        # Declare IO Object
-        io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-        self.io = io
-
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
+        ################################
         if sheetreplace or replace_type == 'sheet':
             _sheetmap = {sheet.index: sheet.name for sheet in self.wb.sheets}
             original_index = ws.index
@@ -154,18 +152,17 @@ class PutxlSet:
             new_sheet.name = original_name
             ws = new_sheet
             self.ws = ws
+            not_replace_warning = False
         else:
-            if not isinstance(io.content, str):
-                if is_range_filled(self.ws, self.io.range_top_checker):
-                    RangeOperator(ws.range(self.io.range_data)).format()
-            # Add warning lines around the df if not replacing the sheet
-            # io.cell.offset()
+            if not isinstance(content, str):
+                not_replace_warning = True
+            else:
+                not_replace_warning = False
 
-        # Export to target sheet
-        ws.range(io.cell).value = io.content
-
-        # Format the sheet
-        if isinstance(io.content, str):
+        # Declare IO Object
+        ################################
+        if isinstance(content, str):
+            io = StringxlWriter(content=content, cell=cell)
             RangeOperator(ws.range(io.cell)).format(
                 font=font,
                 font_name=font_name,
@@ -184,16 +181,34 @@ class PutxlSet:
                 fill_bg=fill_bg,
                 check_para=check_para
             )
+            self.io = io
+            ws.range(io.cell).value = io.content
+
+        else:
+            io = FramexlWriter(content=content, cell=cell, index=index, header=header)
+            ws.range(io.cell).value = io.content
+            self.io = io
+
+        # Format the sheet
+        ################################
+        if not_replace_warning:
+            pass
+        # 添加一个红线框
+        # if is_range_filled(self.ws, self.io.range_top_checker):
+        #     RangeOperator(ws.range(self.io.range_data)).format()
+        # Add warning lines around the df if not replacing the sheet
+        # io.cell.offset()
 
         # A small function to decide if sheet is blank ...
-        def is_sheet_empty(sheet):
+        ################################
+        def _is_sheet_empty(sheet):
             used_range = sheet.used_range
             if used_range.shape == (1, 1) and not used_range.value:
                 return True
             return False
 
         current_sheets = [sheet.name for sheet in self.wb.sheets]
-        if 'Sheet1' in current_sheets and is_sheet_empty(self.wb.sheets['Sheet1']):
+        if 'Sheet1' in current_sheets and _is_sheet_empty(self.wb.sheets['Sheet1']):
             self.wb.sheets['Sheet1'].delete()
 
         self.wb.save()
