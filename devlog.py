@@ -1,33 +1,37 @@
+"""
+笔记
+"""
+
 '''
+获取index集中长度列表
+--------------------------
 现在已知framewrite可以获取index列对应的区域，例如单列index，可以获取G2:G11（参考framewriter下方测试）
 然后就是需要得到一个列表，是按取值划分的长度，代码如下：
 例如获取了【6，2，1，4】就可用offset结合resize对G2开始进行单元格计算，获取到所有的区域
 
-
+>>>>>>>>>>>>>>>>>>>>>>>>>
+>>> MARKED COMPLETED! >>>
+>>>>>>>>>>>>>>>>>>>>>>>>>
 '''
 
-import pandas as pd
-import numpy as np
+'''
+最终成品猜想
+--------------------------
+最终成品
 
-# Create a DataFrame with 15 rows
-# First column is just a range from 1 to 15
-# Second column is randomly chosen letters from A, B, C, D
-df = pd.DataFrame({
-    'Col1': range(1, 10),
-    'Col2': np.random.choice(['A', 'B', 'C', 'D'], 9)
-})
-
-# Sort the DataFrame by the second column
-df_sorted = df.sort_values(by='Col2')
-
-df_sorted
-
-def count_consecutive_values(series):
-    return series.groupby((series != series.shift()).cumsum()).size().tolist()
-
-# Apply the function to the second column of the sorted DataFrame
-consecutive_counts = count_consecutive_values(df_sorted['Col2'])
-
-consecutive_counts
+>>>>>>>>>>>>>>>>>>>>>>>>>
+>>> MARKED COMPLETED! >>>
+>>>>>>>>>>>>>>>>>>>>>>>>>
+'''
+# putxl(df, cell='A1', index_merge={'cmu_dept_major': ['columns1, columns2, columns3']})
 
 
+'''
+根据列返回对应的单元格
+--------------------------
+需要做一个函数，根据df，列名找到对应的单元格，可以从startcell开始？
+根据数据库开始区域单元格，匹配数字，进行offset，例如从C3开始，总共两列，就是在2列里是n，然后offset(n)
+函数制作完毕
+
+下一步：把函数放在循环里
+'''
