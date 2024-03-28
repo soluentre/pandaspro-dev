@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     ws = xw.Book('sampledf.xlsx').sheets['FF']
     ws.range('G1').value = df
-    a = FramexlWriter(df, 'G1', column_list='Country')
+    a = FramexlWriter(df, 'G1', column_list='Country', index=True)
     print(a.formatrange)
 
     paintdict = {

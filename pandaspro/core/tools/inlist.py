@@ -57,23 +57,30 @@ def inlist(
     >>> df = inlist(df, 'A', 5, engine='c', invert=True)
     Adds a new column '_inlist' to `df`, marking with 1 the rows where column 'A' does not contain 5.
     """
-    data = pd.DataFrame(data)
     boolist = args[0] if isinstance(args[0], list) else list(args)
     if debug:
         print(boolist)
 
     # Update the input var when inplace == True or engine == r:
-    if engine == 'r' or True == inplace:
+    if engine == 'r':
         if debug:
             print("type r code executed ..., trimming the original dataframe")
         if not invert:
             data.drop(data[~data[colname].isin(boolist)].index, inplace=True)
         else:
             data.drop(data[data[colname].isin(boolist)].index, inplace=True)
+
     elif engine == 'b':
         if debug:
             print("type b code executed ..., creating a tailored dataframe, original frame remain untouched")
-        return data[data[colname].isin(boolist)] if invert == False else data[~(data[colname].isin(boolist))]
+
+        if inplace:
+            if not invert:
+                data.drop(data[~data[colname].isin(boolist)].index, inplace=True)
+            else:
+                data.drop(data[data[colname].isin(boolist)].index, inplace=True)
+        else:
+            return data[data[colname].isin(boolist)] if invert == False else data[~(data[colname].isin(boolist))]
 
     elif engine == 'm':
         if debug:
@@ -83,12 +90,24 @@ def inlist(
     elif engine == 'c':
         if debug:
             print("type c code executed ...")
+
         new_name = rename if rename else '_inlist'
-        if not invert:
-            data.loc[data[colname].isin(boolist), new_name] = 1
+        if inplace:
+            if not invert:
+                data.loc[data[colname].isin(boolist), new_name] = 1
+                data.loc[~data[colname].isin(boolist), new_name] = 0
+            else:
+                data.loc[~(data[colname].isin(boolist)), new_name] = 1
+                data.loc[data[colname].isin(boolist), new_name] = 0
         else:
-            data.loc[~(data[colname].isin(boolist)), new_name] = 0
-        return data
+            df = data.copy()
+            if not invert:
+                df.loc[data[colname].isin(boolist), new_name] = 1
+                df.loc[~data[colname].isin(boolist), new_name] = 0
+            else:
+                df.loc[~(data[colname].isin(boolist)), new_name] = 1
+                df.loc[~data[colname].isin(boolist), new_name] = 0
+            return df
     else:
         print('Unsupported type')
 

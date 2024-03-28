@@ -50,10 +50,10 @@ if __name__ == '__main__':
     # dfmap[filter1]
 
 
-    myformat.column = 'grade'
-    .applyrange
-
-    applycells
-
-    myformat.coredict = {'font_color':'#FFFF00'}
-    RangeOperator(ws.range(applycells)).format(**myformat.coredict))
+    # myformat.column = 'grade'
+    # .applyrange
+    #
+    # applycells
+    #
+    # myformat.coredict = {'font_color':'#FFFF00'}
+    # RangeOperator(ws.range(applycells)).format(**myformat.coredict))
