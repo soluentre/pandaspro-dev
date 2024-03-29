@@ -1,4 +1,5 @@
 from pandaspro.core.stringfunc import parsewild
+from pandaspro.io.excel._cdformat import CdFormat
 from pandaspro.io.excel._utils import CellPro
 import pandas as pd
 
@@ -179,6 +180,17 @@ class FramexlWriter:
         start_range = CellPro(top_left + ':' + top_right)
         return start_range.resize_h(self.tc)
 
+    def range_cdformat(self, colname, rules, applyto):
+        pass
+        a = CdFormat(self.rawdata, colname, rules, applyto)
+        a.result_dict = {}
+        b = self.start_cell
+        mystart = self.get_column_letter_by_name(colname)
+
+        result = {
+            '1': 'J3, J4, J7, J8, J9'
+        }
+        return result
 
 if __name__ == '__main__':
 
@@ -208,6 +220,7 @@ if __name__ == '__main__':
     # core
     io = FramexlWriter(sysuse_auto, 'G1', index=False, header=True, cols_index_merge='upi, age')
     ws.range('G1').value = io.content
+    ws.range('G2, G3, G7:L10').font.color = '#FFF001'
 
     # a = io.range_index_horizontal_sections(level='cmu_dept_major')
     b = io.range_index_outer
