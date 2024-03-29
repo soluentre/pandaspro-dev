@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 import xlwings as xw
-
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
 
 
@@ -14,6 +13,13 @@ def is_range_filled(ws, range_str: str = None):
             if cell.value is not None and str(cell.value).strip() != '':
                 return True
         return False
+
+
+def is_sheet_empty(sheet):
+    used_range = sheet.used_range
+    if used_range.shape == (1, 1) and not used_range.value:
+        return True
+    return False
 
 
 class PutxlSet:
@@ -193,22 +199,15 @@ class PutxlSet:
         ################################
         if not_replace_warning:
             pass
-        # 添加一个红线框
-        # if is_range_filled(self.ws, self.io.range_top_checker):
-        #     RangeOperator(ws.range(self.io.range_data)).format()
-        # Add warning lines around the df if not replacing the sheet
-        # io.cell.offset()
+            if is_range_filled(self.ws, self.io.range_top_empty_checker):
+                red_range = RangeOperator(ws.range(self.io.range_data)).format()
 
-        # A small function to decide if sheet is blank ...
+        io.cell.offset()
+
+        # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
-        def _is_sheet_empty(sheet):
-            used_range = sheet.used_range
-            if used_range.shape == (1, 1) and not used_range.value:
-                return True
-            return False
-
         current_sheets = [sheet.name for sheet in self.wb.sheets]
-        if 'Sheet1' in current_sheets and _is_sheet_empty(self.wb.sheets['Sheet1']):
+        if 'Sheet1' in current_sheets and is_sheet_empty(self.wb.sheets['Sheet1']):
             self.wb.sheets['Sheet1'].delete()
 
         self.wb.save()

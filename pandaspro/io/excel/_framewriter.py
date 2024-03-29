@@ -117,6 +117,7 @@ class FramexlWriter:
 
         # Special - Checker for sheetreplace
         self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
+        self.range_bottom_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
 
     def _get_column_letter_by_indexname(self, levelname):
         col_count = list(self.rawdata.index.names).index(levelname)
