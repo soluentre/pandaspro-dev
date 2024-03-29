@@ -144,10 +144,10 @@ class RangeOperator:
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
-            check_para: bool = False
+            appendix: bool = False
     ) -> None:
 
-        if check_para:
+        if appendix:
             print('Please choose one value from the corresponding parameter: \n'
                   f'align: {list(_alignment_map.keys())}; \n'
                   f'fill_pattern: {list(_fpattern_map.keys())};\n'

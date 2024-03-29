@@ -97,6 +97,8 @@ class PutxlSet:
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
+
+            # Section 1. String Format
             font: str | tuple = None,
             font_name: str = None,
             font_size: int = None,
@@ -112,7 +114,9 @@ class PutxlSet:
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
-            check_para: bool = False,
+            appendix: bool = False,
+
+            #
             debug: bool = False,
     ) -> None:
 
@@ -185,7 +189,7 @@ class PutxlSet:
                 fill_pattern=fill_pattern,
                 fill_fg=fill_fg,
                 fill_bg=fill_bg,
-                check_para=check_para
+                appendix=appendix
             )
             self.io = io
             ws.range(io.cell).value = io.content
@@ -195,14 +199,12 @@ class PutxlSet:
             ws.range(io.cell).value = io.content
             self.io = io
 
-        # Format the sheet
+        # Format the sheet (Shelley, Li)
         ################################
         if not_replace_warning:
-            pass
-            if is_range_filled(self.ws, self.io.range_top_empty_checker):
-                red_range = RangeOperator(ws.range(self.io.range_data)).format()
-
-        io.cell.offset()
+            for direction in ['top', 'right', 'bottom', 'left']:
+                if is_range_filled(self.ws, self.io.range_top_empty_checker):
+                    red_range = RangeOperator(ws.range(self.io.range_data)).format()
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
