@@ -1,5 +1,4 @@
 from pandaspro.core.stringfunc import parsewild
-from pandaspro.io.excel._cdformat import CdFormat
 from pandaspro.io.excel._utils import CellPro, index_to_cell
 import pandas as pd
 
@@ -22,9 +21,8 @@ class FramexlWriter:
             cell: str,
             index: bool = False,
             header: bool = True,
-            column_list: list = None,
-            cols_index_merge: str | list = None,
-            index_mask=None
+            # column_list: list = None,
+            # index_mask = None
     ) -> None:
         cellobj = CellPro(cell)
         header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
@@ -45,12 +43,12 @@ class FramexlWriter:
 
         self.formatrange = "Please provide the column_list/index_mask to select a sub-range"
 
-        if column_list:
-            if isinstance(column_list, str):
-                column_list = parsewild(column_list, dfmap.columns)
-            self.formatrange = dfmap[column_list]
-        if index_mask:
-            self.formatrange = self.formatrange[index_mask]
+        # if column_list:
+        #     if isinstance(column_list, str):
+        #         column_list = parsewild(column_list, dfmap.columns)
+        #     self.formatrange = dfmap[column_list]
+        # if index_mask:
+        #     self.formatrange = self.formatrange[index_mask]
 
         # Calculate the Ranges
         self.rawdata = content
@@ -83,6 +81,7 @@ class FramexlWriter:
                 column_export = [list(lst) for lst in list(zip(*content.columns.values))]
             else:
                 column_export = [content.columns.to_list()]
+            # noinspection PyTypeChecker
             export_data = column_export + content.to_numpy().tolist()
             range_index = 'N/A'
             range_indexnames = 'N/A'
@@ -111,18 +110,26 @@ class FramexlWriter:
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
         self.range_header_outer = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
-        self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
-        self.cellmap = dfmap
-        if cols_index_merge:
-            self.cols_index_merge = cols_index_merge if isinstance(cols_index_merge, list) else parsewild(cols_index_merge, content)
-        else:
-            self.cols_index_merge = None
 
-    def get_column_letter_by_name(self, colname):
-        rowcount = list(self.columns).index(colname)
-        col_cell = self.start_cell.offset(0, rowcount)
+        # format relevant
+        self.cellmap = dfmap
+        self.cols_index_merge = None
+
+        # Special - Checker for sheetreplace
+        self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
+
+    def _get_column_letter_by_indexname(self, levelname):
+        col_count = list(self.rawdata.index.names).index(levelname)
+        col_cell = CellPro(self.cell).offset(self.header_row_count, col_count)
+        return col_cell
+
+    def _get_column_letter_by_name(self, colname):
+        col_count = list(self.columns).index(colname)
+        col_cell = self.start_cell.offset(0, col_count)
+
         if self.export_type in ['htif', 'hfif']:
             col_cell = col_cell.offset(0, -self.index_column_count)
+
         return col_cell
 
     def _index_break(self, level: str = None):
@@ -133,29 +140,66 @@ class FramexlWriter:
 
         return _count_consecutive_values(temp[level])
 
-    def range_index_merge_inputs(self, level: str = None):
+    def range_index_merge_inputs(
+            self,
+            level: str = None,
+            cols_index_merge: str | list = None
+    ):
         result_dict = {}
-        if self.cols_index_merge is None:
-            raise ValueError('index_merge_inputs method requires cols_index_merge to be passed when constructing the FramexlWriter Object')
-        else:
+
+        # Index Column
+        merge_start_index = self._get_column_letter_by_indexname(level)
+        for localid, rowspan in enumerate(self._index_break(level=level)):
+            result_dict[f'indexlevel_{localid}_{rowspan}'] = merge_start_index.resize(rowspan, 1).cell
+            merge_start_index = merge_start_index.offset(rowspan, 0)
+
+        # Selected Columns
+        if cols_index_merge:
+            self.cols_index_merge = cols_index_merge if isinstance(cols_index_merge, list) else parsewild(cols_index_merge, self.columns)
             for index, col in enumerate(self.cols_index_merge):
-                merge_start_each = self.get_column_letter_by_name(col)
+                merge_start_each = self._get_column_letter_by_name(col)
                 for localid, rowspan in enumerate(self._index_break(level=level)):
                     result_dict[f'col{index}_{localid}_{rowspan}'] = merge_start_each.resize(rowspan, 1).cell
                     merge_start_each = merge_start_each.offset(rowspan, 0)
+
         return result_dict
 
-    def range_index_horizontal_sections(self, level: str = None):
+    def range_index_hsections(self, level: str = None):
         if self.range_index is None:
             raise ValueError('index_sections method requires the input dataframe to have an index')
         else:
-            result_dict = {}
-            result_dict['headers'] = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
+            result_dict = {'headers': CellPro(self.cell).resize(self.header_row_count, self.tc).cell}
             range_start_each = CellPro(self.cell).offset(self.header_row_count, 0)
             for localid, rowspan in enumerate(self._index_break(level=level)):
                 result_dict[f'section_{localid}_{rowspan}'] = range_start_each.resize(rowspan, self.tc).cell
                 range_start_each = range_start_each.offset(rowspan, 0)
+
         return result_dict
+
+    def range_index_selected_hsection(self, level: str = None, token: str = 'Total'):
+        temp = self.rawdata.reset_index()
+
+        def _find_occurrence_details(series, indexname):
+            """
+            This function finds the first occurrence of a specified token in a pandas Series,
+            returns the index of its first appearance, and the count of its consecutive occurrences.
+            """
+            if indexname in series.values:
+                first_occurrence_index = series[series == indexname].index[0]
+                # Count the consecutive occurrences starting from the first occurrence index
+                count = 1  # Start with 1 for the first occurrence
+                for i in range(first_occurrence_index + 1, len(series)):
+                    if series.iloc[i] == indexname:
+                        count += 1
+                    else:
+                        break
+                return first_occurrence_index, count
+            else:
+                return None, 0
+
+        go_down_by, local_height = _find_occurrence_details(temp[level], token)
+        result = self._get_column_letter_by_indexname(level).offset(go_down_by, 0).resize(local_height, self.tc).cell
+        return result
 
     @property
     def range_index_levels(self):
@@ -170,9 +214,9 @@ class FramexlWriter:
             return result_dict
 
     def range_columnspan(self, start_col, stop_col):
-        col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
-        col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
-        row_index = self.get_column_letter_by_name(start_col).cell_index[0]
+        col_index1 = self._get_column_letter_by_name(start_col).cell_index[1]
+        col_index2 = self._get_column_letter_by_name(stop_col).cell_index[1]
+        row_index = self._get_column_letter_by_name(start_col).cell_index[0]
         top_left_index = min(col_index1, col_index2)
         top_right_index = max(col_index1, col_index2)
         top_left = index_to_cell(row_index, top_left_index)
@@ -180,14 +224,15 @@ class FramexlWriter:
         start_range = CellPro(top_left + ':' + top_right)
         return start_range.resize_h(self.tr - self.header_row_count).cell
 
-    def range_cdformat(self, colname, rules, applyto):
-        a = CdFormat(self.rawdata, colname, rules, applyto)
-        cdstart = self.start_cell
-        print(cdstart)
-        result = {
-            '1': 'J3, J4, J7, J8, J9'
-        }
-        return result
+    # def range_cdformat(self, colname, rules, applyto):
+    #     a = CdFormat(self.rawdata, colname, rules, applyto)
+    #     cdstart = self.start_cell
+    #     print(cdstart)
+    #     result = {
+    #         '1': 'J3, J4, J7, J8, J9'
+    #     }
+    #     return result
+
 
 if __name__ == '__main__':
 
@@ -204,23 +249,26 @@ if __name__ == '__main__':
     #     }
     # }
 
-
     import wbhrdata as wb
     import xlwings as xw
-    from pandaspro import sysuse_auto
+    # from pandaspro import sysuse_auto
+
     ws = xw.Book('sampledf.xlsx').sheets['sob']
-    data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age', 'yrs_in_assign', 'yrs_in_grade'], aggfunc='sum', margins_name='Total', margins=True)
+    data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi', 'age', 'yrs_in_assign', 'yrs_in_grade'], aggfunc='sum', margins_name='Total', margins=True)
 
     # core
-    io = FramexlWriter(data, 'G1', cols_index_merge='upi, age')
+    io = FramexlWriter(data, 'G1', index=True)
     ws.range('G1').value = io.content
+    # , cols_index_merge = 'upi, age'
 
     # ws.range('G2, G3, G7:L10').font.color = '#FFF001'
-    a = io.range_index_horizontal_sections(level='cmu_dept_major')
-    b = io.range_index_outer
-    c = io.range_index_levels
-    d = io.range_columnspan('upi', 'yrs_in_assign')
-    # mpg_col = io.get_column_letter_by_name('mpg').cell
+    a1 = io.range_index_hsections(level='cmu_dept_major')
+    a2 = io.range_index_outer
+    a3 = io.range_index_levels
+    a4 = io.range_columnspan('age', 'yrs_in_assign')
+    a5 = io.range_index_merge_inputs('cmu_dept_major')
+    a6 = io.range_index_selected_hsection('cmu_dept_major', 'PGs')
 
+    # mpg_col = io.get_column_letter_by_name('mpg').cell
     # xw.apps.active.api.DisplayAlerts = False
     # ws.range('A4:A9').api.MergeCells = True

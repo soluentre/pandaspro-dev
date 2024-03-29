@@ -119,20 +119,20 @@ class CellPro:
         else:
             return CellPro(resize(self.cell_start, row_resize, col_resize))
 
-    def resize_w(self, row_resize):
-        if self.celltype == 'cell':
-            return self.resize(row_resize, 1)
-        else:
-            bottom_left = offset(self.cell_stop, 0, -(self.width-1))
-            bottom_right = offset(bottom_left, 0, row_resize-1)
-            return CellPro(self.cell_start + ':' + bottom_right)
-
-    def resize_h(self, col_resize):
+    def resize_w(self, col_resize):
         if self.celltype == 'cell':
             return self.resize(1, col_resize)
         else:
+            bottom_left = offset(self.cell_stop, 0, -(self.width-1))
+            bottom_right = offset(bottom_left, 0, col_resize - 1)
+            return CellPro(self.cell_start + ':' + bottom_right)
+
+    def resize_h(self, row_resize):
+        if self.celltype == 'cell':
+            return self.resize(row_resize, 1)
+        else:
             top_right = offset(self.cell_stop, -(self.height - 1), 0)
-            bottom_right = offset(top_right, col_resize - 1, 0)
+            bottom_right = offset(top_right, row_resize - 1, 0)
             return CellPro(self.cell_start + ':' + bottom_right)
 
 
