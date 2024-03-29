@@ -88,14 +88,22 @@ class FramexlWriter:
         self.cell = cell
         self.tr = tr
         self.tc = tc
+        self.header_row_count = header_row_count
+        self.index_column_count = index_column_count
+
+        # data corners - cellpros
         self.start_cell = cellobj.offset(header_row_count, index_column_count)
         self.top_right_cell = cellobj.offset(0, self.tc - 1).cell
         self.bottom_left_cell = cellobj.offset(self.tr - 1, 0).cell
         self.end_cell = cellobj.offset(self.tr - 1, self.tc - 1).cell
+
+        # ranges
         self.range_all = cell + ':' + self.end_cell
         self.range_data = self.start_cell.resize(tr - header_row_count, tc - index_column_count).cell
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
+        self.range_index_outer = CellPro(self.cell).resize(self.tr, self.index_column_count).cell
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
+        self.range_header_outer = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
         self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).index_cell()[0] != 1 else None
         self.cellmap = dfmap
@@ -107,7 +115,7 @@ class FramexlWriter:
     def get_column_letter_by_name(self, colname):
         rowcount = list(self.columns).index(colname)
         col_cell = self.start_cell.offset(0, rowcount)
-        return col_cell.cell
+        return col_cell
 
     def _index_break(self, level: str = None):
         temp = self.content.reset_index()
@@ -117,14 +125,29 @@ class FramexlWriter:
 
         return _count_consecutive_values(temp[level])
 
-    def index_merge_inputs(self, level: str = None):
+    def range_index_merge_inputs(self, level: str = None):
         result_dict = {}
         if self.cols_index_merge is None:
             raise ValueError('index_merge_inputs method requires cols_index_merge to be passed when constructing the FramexlWriter Object')
         else:
-            for index, col in self.cols_index_merge:
-                for rowspan in self._index_break(level=level):
-                    result_dict[f'col{index}_{rowspan}'] = 1
+            for index, col in enumerate(self.cols_index_merge):
+                merge_start_each = self.get_column_letter_by_name(col)
+                for localid, rowspan in enumerate(self._index_break(level=level)):
+                    result_dict[f'col{index}_{localid}_{rowspan}'] = merge_start_each.resize(rowspan, 1).cell
+                    merge_start_each = merge_start_each.offset(rowspan, 0)
+        return result_dict
+
+    def range_index_sections(self, level: str = None):
+        if self.range_index is None:
+            raise ValueError('index_sections method requires the input dataframe to have an index')
+        else:
+            result_dict = {}
+            result_dict['headers'] = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
+            merge_start_each = CellPro(self.cell).offset(self.header_row_count, 0)
+            for localid, rowspan in enumerate(self._index_break(level=level)):
+                result_dict[f'section_{localid}_{rowspan}'] = merge_start_each.resize(rowspan, self.tc).cell
+                merge_start_each = merge_start_each.offset(rowspan, 0)
+        return result_dict
 
 
 if __name__ == '__main__':
@@ -152,7 +175,9 @@ if __name__ == '__main__':
     ws = xw.Book('sampledf.xlsx').sheets['sob']
     d = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age'], aggfunc='sum', margins_name='Total', margins=True)
     ws.range('G1').value = pd.DataFrame(d)
-    a = FramexlWriter(d, 'G1', index=True, cols_index_merge='upi, age').get_column_letter_by_name('age')
+    io = FramexlWriter(d, 'G1', index=True, cols_index_merge='upi, age')
+    a = io.range_index_sections(level='cmu_dept_major')
+    b = io.range_index_outer
 
     # xw.apps.active.api.DisplayAlerts = False
     # ws.range('A4:A9').api.MergeCells = True
