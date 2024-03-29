@@ -1,6 +1,6 @@
 from pandaspro.core.stringfunc import parsewild
 from pandaspro.io.excel._cdformat import CdFormat
-from pandaspro.io.excel._utils import CellPro
+from pandaspro.io.excel._utils import CellPro, index_to_cell
 import pandas as pd
 
 
@@ -53,6 +53,7 @@ class FramexlWriter:
             self.formatrange = self.formatrange[index_mask]
 
         # Calculate the Ranges
+        self.rawdata = content
         content = pd.DataFrame(content.to_dict())
         if header == True and index == True:
             self.export_type = 'htit'
@@ -88,7 +89,6 @@ class FramexlWriter:
             range_header = cellobj.resize(header_row_count, tc)
 
         self.iotype = 'df'
-        self.rawdata = content
         self.columns = self.rawdata.columns
         self.content = export_data
         self.cell = cell
@@ -126,7 +126,7 @@ class FramexlWriter:
         return col_cell
 
     def _index_break(self, level: str = None):
-        temp = self.content.reset_index()
+        temp = self.rawdata.reset_index()
 
         def _count_consecutive_values(series):
             return series.groupby((series != series.shift()).cumsum()).size().tolist()
@@ -173,12 +173,12 @@ class FramexlWriter:
         col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
         col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
         row_index = self.get_column_letter_by_name(start_col).cell_index[0]
-
-
-        top_left = self.get_column_letter_by_name(start_col)
-        top_right = self.get_column_letter_by_name(stop_col)
+        top_left_index = min(col_index1, col_index2)
+        top_right_index = max(col_index1, col_index2)
+        top_left = index_to_cell(row_index, top_left_index)
+        top_right = index_to_cell(row_index, top_right_index)
         start_range = CellPro(top_left + ':' + top_right)
-        return start_range.resize_h(self.tc)
+        return start_range.resize_h(self.tr - self.header_row_count).cell
 
     def range_cdformat(self, colname, rules, applyto):
         a = CdFormat(self.rawdata, colname, rules, applyto)
@@ -209,22 +209,17 @@ if __name__ == '__main__':
     import xlwings as xw
     from pandaspro import sysuse_auto
     ws = xw.Book('sampledf.xlsx').sheets['sob']
-    ws.range('G1').value = pd.DataFrame(sysuse_auto)
-
-    ws = xw.Book('sampledf.xlsx').sheets['sob']
-    # data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age'], aggfunc='sum', margins_name='Total', margins=True)
+    data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age', 'yrs_in_assign', 'yrs_in_grade'], aggfunc='sum', margins_name='Total', margins=True)
 
     # core
-    io = FramexlWriter(sysuse_auto, 'G1', index=False, header=True, cols_index_merge='upi, age')
+    io = FramexlWriter(data, 'G1', cols_index_merge='upi, age')
     ws.range('G1').value = io.content
+
     # ws.range('G2, G3, G7:L10').font.color = '#FFF001'
-    io.range_cdformat('H1', )
-
-
-    # a = io.range_index_horizontal_sections(level='cmu_dept_major')
-    # b = io.range_index_outer
-    # # c = io.range_index_levels
-    # # d = io.range_columnspan('upi', 'age')
+    a = io.range_index_horizontal_sections(level='cmu_dept_major')
+    b = io.range_index_outer
+    c = io.range_index_levels
+    d = io.range_columnspan('upi', 'yrs_in_assign')
     # mpg_col = io.get_column_letter_by_name('mpg').cell
 
     # xw.apps.active.api.DisplayAlerts = False
