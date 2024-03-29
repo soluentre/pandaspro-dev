@@ -199,6 +199,7 @@ class FramexlWriter:
 
         go_down_by, local_height = _find_occurrence_details(temp[level], token)
         result = self._get_column_letter_by_indexname(level).offset(go_down_by, 0).resize(local_height, self.tc).cell
+
         return result
 
     @property
@@ -214,14 +215,20 @@ class FramexlWriter:
             return result_dict
 
     def range_columnspan(self, start_col, stop_col):
+        # Get the col indices and row index
         col_index1 = self._get_column_letter_by_name(start_col).cell_index[1]
         col_index2 = self._get_column_letter_by_name(stop_col).cell_index[1]
         row_index = self._get_column_letter_by_name(start_col).cell_index[0]
+
+        # decide the top row cells with min/max - allow invert orders
         top_left_index = min(col_index1, col_index2)
         top_right_index = max(col_index1, col_index2)
         top_left = index_to_cell(row_index, top_left_index)
         top_right = index_to_cell(row_index, top_right_index)
+
+        # Combine Range
         start_range = CellPro(top_left + ':' + top_right)
+
         return start_range.resize_h(self.tr - self.header_row_count).cell
 
     # def range_cdformat(self, colname, rules, applyto):
