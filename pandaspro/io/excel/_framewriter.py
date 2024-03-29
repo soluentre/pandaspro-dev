@@ -165,6 +165,7 @@ class FramexlWriter:
         top_left = self.get_column_letter_by_name(start_col)
         top_right = self.get_column_letter_by_name(stop_col)
         start_range = CellPro(top_left + ':' + top_right)
+        return start_range.resize()
 
 
 if __name__ == '__main__':

@@ -98,7 +98,9 @@ class CellPro:
         if ':' in cell:
             self.celltype = 'range'
             self.cell_start = cell.split(':')[0].strip()
-            self.cell_stop = cell.split(':')[0].strip()
+            self.cell_stop = cell.split(':')[1].strip()
+            self.width = index_cell(self.cell_stop)[1] - index_cell(self.cell_start)[1] + 1
+            self.height = index_cell(self.cell_stop)[0] - index_cell(self.cell_start)[0] + 1
         else:
             self.celltype = 'cell'
             self.cell_cal = cell
@@ -116,6 +118,23 @@ class CellPro:
             return CellPro(resize(self.cell_cal, row_resize, col_resize))
         else:
             return CellPro(resize(self.cell_start, row_resize, col_resize))
+
+    def resize_w(self, row_resize):
+        if self.celltype == 'cell':
+            return self.resize(row_resize, 1)
+        else:
+            bottom_left = offset(self.cell_stop, 0, -(self.width-1))
+            bottom_right = offset(bottom_left, 0, row_resize-1)
+            return CellPro(self.cell_start + ':' + bottom_right)
+
+    def resize_h(self, col_resize):
+        if self.celltype == 'cell':
+            return self.resize(1, col_resize)
+        else:
+            top_right = offset(self.cell_stop, -(self.height - 1), 0)
+            bottom_right = offset(top_right, col_resize - 1, 0)
+            return CellPro(self.cell_start + ':' + bottom_right)
+
 
     def offset(self, down_offset, right_offset):
         if self.celltype == 'cell':
@@ -312,3 +331,4 @@ def get_cell_lists(rowlist: list,
             i += 1
 
     return result_dict
+
