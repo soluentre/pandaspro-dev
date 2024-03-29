@@ -1,5 +1,5 @@
+import pandas as pd
 from pandaspro import FramePro
-from pandaspro import sysuse_auto
 from pandaspro.core.stringfunc import parsewild
 
 
@@ -8,7 +8,7 @@ class CdFormat:
                  df,
                  col: str,
                  rules: dict,
-                 apply: str | list = 'self'):
+                 applyto: str | list = 'self'):
         self.df = df
         self.col = col
         self.rules = rules
@@ -20,11 +20,11 @@ class CdFormat:
             elif input == 'all':
                 return self.df.columns
             elif isinstance(input, str):
-                return parsewild(apply, self.df.columns)
+                return parsewild(applyto, self.df.columns)
             else:
                 return input
 
-        self.apply = _apply_decide(apply)
+        self.apply = _apply_decide(applyto)
 
     def configure_rules_mask(self):
         self.rules_mask = {}
@@ -36,12 +36,12 @@ class CdFormat:
                 raise ValueError("Simple Conditional Formatting can only accept str inputs in rules dictionary's keys")
 
             elif isinstance(rulename, str) and isinstance(value, str):
-                self.rules_mask[rulename]['mask'] = FramePro(self.df).inlist(self.col, rulename)
+                self.rules_mask[rulename]['mask'] = FramePro(self.df).inlist(self.col, rulename, engine='m')
 
             else:
                 # If rule is given as a list, only range filtering can satisfy
-                if isinstance(value, list) and len(value) == 2 and isinstance(value[0], range):
-                    self.rules_mask[rulename]['mask'] = self.df[self.col].between(value[0].start, value[0].stop, inclusive="left")
+                if isinstance(value, list) and len(value) == 3 and isinstance(value[0], range):
+                    self.rules_mask[rulename]['mask'] = self.df[self.col].between(value[0].start, value[0].stop, inclusive=value[1])
 
                 # ... other types of lists will trigger an error
                 elif isinstance(value, list):
@@ -59,8 +59,15 @@ class CdFormat:
                             mykwargs = mykwargs_list[0]
                         method_call = getattr(FramePro(self.df), engine)
                         self.rules_mask[rulename]['mask'] = method_call(self.col, *myargs, **mykwargs, engine='m')
+
+                    elif isinstance(value['r'], pd.Series):
+                        self.rules_mask[rulename]['mask'] = value['r']
+
                     else:
                         raise ValueError("Please pass a list object when declaring 'r' in certain rule")
+
+                else:
+                    raise ValueError('Edit your rules dictionary prompt')
 
         return self.rules_mask
 
@@ -74,18 +81,26 @@ class CdFormat:
 
 
 if __name__ == '__main__':
-    # rules = {
-    #     'USA': '#FFF000',
-    #     'China': '#e63e31',
-    #     'rule1': {'r': range(0,9), 'f': 'bold'},
-    #     'rule2': {'r': ['inlist',1,2,3, {'invert':True}], 'f': 'bold'}
-    # }
+    from pandaspro import sysuse_auto
+    rules = {
+        'USA': '#FFF000 bold',
+        'China': '#e63e31',
+        'rule1': [range(0,9), 'both', '#e63141'],
+        'rule2': {
+            'r': ['inlist',1,2,3, {'invert':True}],
+            'f': 'bold'
+        }
+    }
+
+    a = sysuse_auto.head(5)
+    mask1 = a.inlist('make', 'AMC Concord', engine='m')
 
     myrule = {
-        'rule1': {'r': ['inlist', 'AMC Concord', 'AMC Pacer', {'invert':True}], 'f': 'bold'}
+        'AMC Concord': '#FFF000',
+        'rule1': {'r': mask1, 'f': 'bold'}
     }
-    a = sysuse_auto
-    myformat = CdFormat('make', rules=myrule)
-    dict1 = myformat.configure_rules_mask(a)
+
+    myformat = CdFormat(a, 'make', rules=myrule)
+    dict1 = myformat.configure_rules_mask()
 
     # FramePro(a).inlist('make', ('AMC Concord'))

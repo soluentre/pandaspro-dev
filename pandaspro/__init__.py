@@ -6,7 +6,7 @@ from pandaspro.core.api import (
 )
 
 from pandaspro.io.api import (
-    index_cell,
+    cell_index,
     resize,
     offset,
     PutxlSet,

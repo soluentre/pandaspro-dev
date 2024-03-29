@@ -252,8 +252,8 @@ if __name__ == '__main__':
     ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
 
-    ps.putxl(df1, 'TF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
-    ps.putxl('SSSSS', 'TF', 'I2', index=False, header=False, sheetreplace=True, debug=True)
+    # ps.putxl(df1, 'TF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
+    # ps.putxl('SSSSS', 'TF', 'I2', index=False, header=False, sheetreplace=True, debug=True)
     #
     # ps.switchtab('new tab')
     # ps.putxl('A1', df1, sheetreplace=True)

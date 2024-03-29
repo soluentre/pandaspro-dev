@@ -99,8 +99,8 @@ class CellPro:
             self.celltype = 'range'
             self.cell_start = cell.split(':')[0].strip()
             self.cell_stop = cell.split(':')[1].strip()
-            self.width = index_cell(self.cell_stop)[1] - index_cell(self.cell_start)[1] + 1
-            self.height = index_cell(self.cell_stop)[0] - index_cell(self.cell_start)[0] + 1
+            self.width = cell_index(self.cell_stop)[1] - cell_index(self.cell_start)[1] + 1
+            self.height = cell_index(self.cell_stop)[0] - cell_index(self.cell_start)[0] + 1
         else:
             self.celltype = 'cell'
             self.cell_cal = cell
@@ -109,7 +109,7 @@ class CellPro:
     @property
     def cell_index(self):
         if self.celltype == 'cell':
-            return index_cell(self.cell_cal)
+            return cell_index(self.cell_cal)
         else:
             raise ValueError('range object does not have index_cell property')
 
@@ -146,7 +146,11 @@ class CellPro:
             return CellPro(newrange)
 
 
-def index_cell(cell: str) -> list:
+def index_to_cell(row_index, column_index):
+    return get_column_letter(column_index) + str(row_index)
+
+
+def cell_index(cell: str) -> list:
     """
     This function converts an Excel cell name (e.g., 'A1') into its corresponding row and column indices using
     openpyxl's utility functions. It separates the alphabetic column identifier(s) and the numeric row identifier,
@@ -173,7 +177,7 @@ def index_cell(cell: str) -> list:
 
     Examples
     --------
-    >>> index_cell('C3')
+    >>> cell_index('C3')
     This would return (3, 3), indicating that the cell is in the 3rd row and 3rd column of the spreadsheet.
     """
 
@@ -221,7 +225,7 @@ def resize(cell: str,
     This would return 'B2:C4', indicating that starting from cell 'B2', the new range extends 3 rows down and 2
     columns to the right, ending at cell 'C4'.
     """
-    row, col = index_cell(cell)
+    row, col = cell_index(cell)
     new_row = row + row_resize - 1
     new_col = col + col_resize - 1
     start_column_letter = get_column_letter(col)
@@ -273,7 +277,7 @@ def offset(cell: str,
     This would return 'D3', indicating that starting from cell 'A1', moving 2 rows down and 3 columns to the
     right lands at cell 'D3'.
     """
-    row, col = index_cell(cell)
+    row, col = cell_index(cell)
     new_row = row + down_offset
     new_col = col + right_offset
     new_column_letter = get_column_letter(new_col)

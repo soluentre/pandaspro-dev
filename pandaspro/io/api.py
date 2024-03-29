@@ -1,5 +1,5 @@
 from pandaspro.io.excel._utils import (
-    index_cell,
+    cell_index,
     resize,
     offset
 )
@@ -8,7 +8,7 @@ from pandaspro.io.excel._base import pwread
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
 __all__ = [
-    'index_cell',
+    'cell_index',
     'resize',
     'offset',
     'PutxlSet',
