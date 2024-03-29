@@ -1,7 +1,8 @@
 import pandas as pd
-from pandaspro import FramePro
+from pandaspro.core.tools.toolObject import toolObject
 from pandaspro.core.stringfunc import parsewild
 
+mytools = toolObject()
 
 class CdFormat:
     def __init__(self,
@@ -36,7 +37,7 @@ class CdFormat:
                 raise ValueError("Simple Conditional Formatting can only accept str inputs in rules dictionary's keys")
 
             elif isinstance(rulename, str) and isinstance(value, str):
-                self.rules_mask[rulename]['mask'] = FramePro(self.df).inlist(self.col, rulename, engine='m')
+                self.rules_mask[rulename]['mask'] = mytools.inlist(self.df, self.col, rulename, engine='m')
 
             else:
                 # If rule is given as a list, only range filtering can satisfy
@@ -57,8 +58,8 @@ class CdFormat:
                             raise ValueError("In 'r' you can only use 1 dictionary for kwargs of the filter engine method")
                         else:
                             mykwargs = mykwargs_list[0]
-                        method_call = getattr(FramePro(self.df), engine)
-                        self.rules_mask[rulename]['mask'] = method_call(self.col, *myargs, **mykwargs, engine='m')
+                        method_call = getattr(mytools, engine)
+                        self.rules_mask[rulename]['mask'] = method_call(self.df, self.col, *myargs, **mykwargs, engine='m')
 
                     elif isinstance(value['r'], pd.Series):
                         self.rules_mask[rulename]['mask'] = value['r']

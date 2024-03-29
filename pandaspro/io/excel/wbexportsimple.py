@@ -1,4 +1,3 @@
-import xlwings as xw
 from pandaspro.io.excel._putexcel import PutxlSet
 from datetime import datetime
 

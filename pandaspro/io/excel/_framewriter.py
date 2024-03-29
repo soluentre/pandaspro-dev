@@ -181,12 +181,9 @@ class FramexlWriter:
         return start_range.resize_h(self.tc)
 
     def range_cdformat(self, colname, rules, applyto):
-        pass
         a = CdFormat(self.rawdata, colname, rules, applyto)
-        a.result_dict = {}
-        b = self.start_cell
-        mystart = self.get_column_letter_by_name(colname)
-
+        cdstart = self.start_cell
+        print(cdstart)
         result = {
             '1': 'J3, J4, J7, J8, J9'
         }
@@ -215,18 +212,20 @@ if __name__ == '__main__':
     ws.range('G1').value = pd.DataFrame(sysuse_auto)
 
     ws = xw.Book('sampledf.xlsx').sheets['sob']
-    data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age'], aggfunc='sum', margins_name='Total', margins=True)
+    # data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age'], aggfunc='sum', margins_name='Total', margins=True)
 
     # core
     io = FramexlWriter(sysuse_auto, 'G1', index=False, header=True, cols_index_merge='upi, age')
     ws.range('G1').value = io.content
-    ws.range('G2, G3, G7:L10').font.color = '#FFF001'
+    # ws.range('G2, G3, G7:L10').font.color = '#FFF001'
+    io.range_cdformat('H1', )
+
 
     # a = io.range_index_horizontal_sections(level='cmu_dept_major')
-    b = io.range_index_outer
-    # c = io.range_index_levels
-    # d = io.range_columnspan('upi', 'age')
-    mpg_col = io.get_column_letter_by_name('mpg').cell
+    # b = io.range_index_outer
+    # # c = io.range_index_levels
+    # # d = io.range_columnspan('upi', 'age')
+    # mpg_col = io.get_column_letter_by_name('mpg').cell
 
     # xw.apps.active.api.DisplayAlerts = False
     # ws.range('A4:A9').api.MergeCells = True

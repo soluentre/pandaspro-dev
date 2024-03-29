@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pandaspro
-from functools import partial
 
 from pandaspro.core.stringfunc import parsewild
 from pandaspro.core.tools.dfilter import dfilter
@@ -10,7 +9,6 @@ from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
 from pandaspro.io.excel._utils import lowervarlist
-from pandaspro.io.excel._putexcel import PutxlSet
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
 
@@ -255,3 +253,4 @@ if __name__ == '__main__':
     a = FramePro({'a': [1, 2, 3], 'b':[3, 4, 5]})
     b = a.inlist('a',1, engine = 'm')
     e = a.inlist('a', 1, engine='b')
+    f = a[a['a'].isin([1,2])]
