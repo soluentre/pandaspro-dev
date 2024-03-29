@@ -95,16 +95,36 @@ def lowervarlist(
 
 class CellPro:
     def __init__(self, cell: str):
+        if ':' in cell:
+            self.celltype = 'range'
+            self.cell_start = cell.split(':')[0].strip()
+            self.cell_stop = cell.split(':')[0].strip()
+        else:
+            self.celltype = 'cell'
+            self.cell_cal = cell
         self.cell = cell
 
-    def index_cell(self):
-        return index_cell(self.cell)
+    @property
+    def cell_index(self):
+        if self.celltype == 'cell':
+            return index_cell(self.cell_cal)
+        else:
+            raise ValueError('range object does not have index_cell property')
 
     def resize(self, row_resize, col_resize):
-        return CellPro(resize(self.cell, row_resize, col_resize))
+        if self.celltype == 'cell':
+            return CellPro(resize(self.cell_cal, row_resize, col_resize))
+        else:
+            return CellPro(resize(self.cell_start, row_resize, col_resize))
 
     def offset(self, down_offset, right_offset):
-        return CellPro(offset(self.cell, down_offset, right_offset))
+        if self.celltype == 'cell':
+            return CellPro(offset(self.cell, down_offset, right_offset))
+        else:
+            newstart = offset(self.cell_start, down_offset, right_offset)
+            newstop = offset(self.cell_stop, down_offset, right_offset)
+            newrange = newstart + ':' + newstop
+            return CellPro(newrange)
 
 
 def index_cell(cell: str) -> list:

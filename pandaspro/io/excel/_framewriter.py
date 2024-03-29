@@ -105,7 +105,7 @@ class FramexlWriter:
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
         self.range_header_outer = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
-        self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).index_cell()[0] != 1 else None
+        self.range_top_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index()[0] != 1 else None
         self.cellmap = dfmap
         if cols_index_merge:
             self.cols_index_merge = cols_index_merge if isinstance(cols_index_merge, list) else parsewild(cols_index_merge, content)
@@ -137,17 +137,34 @@ class FramexlWriter:
                     merge_start_each = merge_start_each.offset(rowspan, 0)
         return result_dict
 
-    def range_index_sections(self, level: str = None):
+    def range_index_horizontal_sections(self, level: str = None):
         if self.range_index is None:
             raise ValueError('index_sections method requires the input dataframe to have an index')
         else:
             result_dict = {}
             result_dict['headers'] = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
-            merge_start_each = CellPro(self.cell).offset(self.header_row_count, 0)
+            range_start_each = CellPro(self.cell).offset(self.header_row_count, 0)
             for localid, rowspan in enumerate(self._index_break(level=level)):
-                result_dict[f'section_{localid}_{rowspan}'] = merge_start_each.resize(rowspan, self.tc).cell
-                merge_start_each = merge_start_each.offset(rowspan, 0)
+                result_dict[f'section_{localid}_{rowspan}'] = range_start_each.resize(rowspan, self.tc).cell
+                range_start_each = range_start_each.offset(rowspan, 0)
         return result_dict
+
+    @property
+    def range_index_levels(self):
+        if self.range_index is None or not isinstance(self.rawdata.index, pd.MultiIndex):
+            raise ValueError('index_levels method requires the input dataframe to be multi-index frame')
+        else:
+            result_dict = {}
+            range_start_each = CellPro(self.cell)
+            for each_index in self.rawdata.index.names:
+                result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
+                range_start_each = range_start_each.offset(0, 1)
+            return result_dict
+
+    def range_columnspan(self, start_col, stop_col):
+        top_left = self.get_column_letter_by_name(start_col)
+        top_right = self.get_column_letter_by_name(stop_col)
+        start_range = CellPro(top_left + ':' + top_right)
 
 
 if __name__ == '__main__':
@@ -176,8 +193,9 @@ if __name__ == '__main__':
     d = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi','age'], aggfunc='sum', margins_name='Total', margins=True)
     ws.range('G1').value = pd.DataFrame(d)
     io = FramexlWriter(d, 'G1', index=True, cols_index_merge='upi, age')
-    a = io.range_index_sections(level='cmu_dept_major')
+    a = io.range_index_horizontal_sections(level='cmu_dept_major')
     b = io.range_index_outer
+    c = io.range_index_levels
 
     # xw.apps.active.api.DisplayAlerts = False
     # ws.range('A4:A9').api.MergeCells = True
