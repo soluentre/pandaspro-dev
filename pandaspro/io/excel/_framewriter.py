@@ -45,7 +45,7 @@ class FramexlWriter:
 
         # if column_list:
         #     if isinstance(column_list, str):
-        #         column_list = parsewild(column_list, dfmap.columns)
+        #         column_list = parse_wild(column_list, dfmap.columns)
         #     self.formatrange = dfmap[column_list]
         # if index_mask:
         #     self.formatrange = self.formatrange[index_mask]

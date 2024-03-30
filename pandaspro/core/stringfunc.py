@@ -98,7 +98,7 @@ def encapsulate_lists(module):
 
 def parse_method(input_string):
     """
-    Parses the given string to extract the method name and parameters dictionary.
+    Parses the given string to extract the method name. If parameters are present, it also extracts them into a dictionary.
     Includes internal helper functions to parse values and intelligently split parameter strings.
     """
 
@@ -147,24 +147,27 @@ def parse_method(input_string):
 
         return params
 
-    # Main parsing logic
-    method_pattern = r'^(.*?)\((.*)\)$'
-    match = re.match(method_pattern, input_string)
+    # Check if the input string contains parentheses
+    if '(' in input_string and ')' in input_string:
+        # Extract method name and parameters if parentheses are present
+        method_pattern = r'^(.*?)\((.*)\)$'
+        match = re.match(method_pattern, input_string)
 
-    if match:
-        method_name = match.group(1)  # Extract method name
-        params_string = match.group(2)  # Extract parameters string
+        if match:
+            method_name = match.group(1)  # Extract method name
+            params_string = match.group(2)  # Extract parameters string
 
-        # Use smart_split_params to handle complex parameter values
-        params_list = smart_split_params(params_string)
-        params_dict = {}
+            # Use smart_split_params to handle complex parameter values
+            params_list = smart_split_params(params_string)
+            params_dict = {}
 
-        # Convert each parameter to a key-value pair in the dictionary
-        for param in params_list:
-            key, value = param.split('=')
-            parsed_value = parse_value(value.strip())  # Parse value to correct type
-            params_dict[key.strip()] = parsed_value
+            # Convert each parameter to a key-value pair in the dictionary
+            for param in params_list:
+                key, value = param.split('=')
+                parsed_value = parse_value(value.strip())  # Parse value to correct type
+                params_dict[key.strip()] = parsed_value
 
-        return method_name, params_dict
-
-    return None, {}
+            return method_name, params_dict
+    else:
+        # If there are no parentheses, return only the method name
+        return input_string, {}

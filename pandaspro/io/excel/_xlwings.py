@@ -574,7 +574,7 @@ def parse_format_rule(rule):
         for pattern, value in patterns.items():
             match = re.fullmatch(pattern, prompt)
             if match:
-                append_dict = {value[0]: value[1](match)}
+                append_dict = {value[0]: value[1](match).replace('"', '').replace('\'', '')}
                 result.update(append_dict)
 
         return result
