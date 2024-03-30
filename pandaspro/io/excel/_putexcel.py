@@ -259,8 +259,11 @@ class PutxlSet:
         '''
         if df_format:
             for rule, rangeinput in df_format.items():
+                # Parse the format to a dictionary, passed to the .format for RangeOperator
+                # parse_format_rule is taken from _xlwings module
                 format_kwargs = parse_format_rule(rule)
 
+                # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
                     if isinstance(local_input, str):
                         parsedlist = [item.strip() for item in local_input.split(',')]
@@ -279,11 +282,19 @@ class PutxlSet:
 
                 if ioranges:
                     for each_range in ioranges:
+                        # Parse the input string as method name + kwargs
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
-                        method = getattr(io, 'range' + range_affix)
-                        range_cells_dict = method(**method_kwargs)
-                        for range_key, range_content in range_cells_dict.items():
-                            RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                        attr_method = getattr(io, 'range_' + range_affix)
+                        if callable(attr_method):
+                            range_cells = attr_method(**method_kwargs)
+                        else:
+                            range_cells = attr_method
+
+                        if isinstance(range_cells, dict):
+                            for range_key, range_content in range_cells.items():
+                                RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                        elif isinstance(range_cells, str):
+                            RangeOperator(self.ws.range(range_cells)).format(**format_kwargs)
 
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
@@ -338,4 +349,15 @@ if __name__ == '__main__':
     # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
-    e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'}, adjust_height=hrconfig, header_wrap=True)
+    e.putxl(
+        wbuse_pivot,
+        cell='B2',
+        index=True,
+        index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
+        adjust_height=hrconfig,
+        header_wrap=True,
+        df_format={
+            'msblue80, align="center': 'index_hsections(level=cmu_dept_major)',
+            'msgreen80, align="center"': 'header_outer',
+        }
+    )
