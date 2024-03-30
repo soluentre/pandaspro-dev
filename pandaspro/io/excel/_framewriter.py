@@ -119,12 +119,12 @@ class FramexlWriter:
         self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
         self.range_bottom_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
 
-    def _get_column_letter_by_indexname(self, levelname):
+    def get_column_letter_by_indexname(self, levelname):
         col_count = list(self.rawdata.index.names).index(levelname)
         col_cell = CellPro(self.cell).offset(self.header_row_count, col_count)
         return col_cell
 
-    def _get_column_letter_by_name(self, colname):
+    def get_column_letter_by_name(self, colname):
         col_count = list(self.columns).index(colname)
         col_cell = self.start_cell.offset(0, col_count)
 
@@ -149,7 +149,7 @@ class FramexlWriter:
         result_dict = {}
 
         # Index Column
-        merge_start_index = self._get_column_letter_by_indexname(level)
+        merge_start_index = self.get_column_letter_by_indexname(level)
         for localid, rowspan in enumerate(self._index_break(level=level)):
             result_dict[f'indexlevel_{localid}_{rowspan}'] = merge_start_index.resize(rowspan, 1).cell
             merge_start_index = merge_start_index.offset(rowspan, 0)
@@ -158,7 +158,7 @@ class FramexlWriter:
         if columns:
             self.cols_index_merge = columns if isinstance(columns, list) else parsewild(columns, self.columns)
             for index, col in enumerate(self.cols_index_merge):
-                merge_start_each = self._get_column_letter_by_name(col)
+                merge_start_each = self.get_column_letter_by_name(col)
                 for localid, rowspan in enumerate(self._index_break(level=level)):
                     result_dict[f'col{index}_{localid}_{rowspan}'] = merge_start_each.resize(rowspan, 1).cell
                     merge_start_each = merge_start_each.offset(rowspan, 0)
@@ -199,7 +199,7 @@ class FramexlWriter:
                 return None, 0
 
         go_down_by, local_height = _find_occurrence_details(temp[level], token)
-        result = self._get_column_letter_by_indexname(level).offset(go_down_by, 0).resize(local_height, self.tc).cell
+        result = self.get_column_letter_by_indexname(level).offset(go_down_by, 0).resize(local_height, self.tc).cell
 
         return result
 
@@ -217,9 +217,9 @@ class FramexlWriter:
 
     def range_columnspan(self, start_col, stop_col):
         # Get the col indices and row index
-        col_index1 = self._get_column_letter_by_name(start_col).cell_index[1]
-        col_index2 = self._get_column_letter_by_name(stop_col).cell_index[1]
-        row_index = self._get_column_letter_by_name(start_col).cell_index[0]
+        col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
+        col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
+        row_index = self.get_column_letter_by_name(start_col).cell_index[0]
 
         # decide the top row cells with min/max - allow invert orders
         top_left_index = min(col_index1, col_index2)

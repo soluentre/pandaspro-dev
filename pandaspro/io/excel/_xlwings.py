@@ -254,7 +254,7 @@ class RangeOperator:
             _alignfunc('center')
             xw.apps.active.api.DisplayAlerts = True
 
-        if not merge:
+        if merge == False:
             if self.xwrange.api.MergeCells:
                 self.xwrange.unmerge()
 

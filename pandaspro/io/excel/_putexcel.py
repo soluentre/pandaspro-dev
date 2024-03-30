@@ -119,6 +119,7 @@ class PutxlSet:
 
             # Section. df format
             index_merge: dict = None,
+            adjust_height: dict = None,
 
             debug: bool = False,
     ) -> None:
@@ -209,10 +210,38 @@ class PutxlSet:
         #         if is_range_filled(self.ws, self.io.range_top_empty_checker):
         #             red_range = RangeOperator(ws.range(self.io.range_data)).format()
 
+        '''
+        For index_merge para, the accepted dict only accepts two keys:
+        1. level: for which level of the index to be set as merge benchmark
+        2. columns: for which columns should apply the merge according to the benchmark index
+        
+        columns can either be a list or a str, and power-wildcard is embedded when using str:
+        >>> ['grade', 'staff_id', 'age']
+        >>> '* Total' 
+        # this will match all columns in the dataframe ends with Total
+        '''
         if index_merge:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
-                print(local_range)
                 RangeOperator(self.ws.range(local_range)).format(merge=True)
+
+        '''
+        For adjust_height para, the accepted dict must use column/index name as keys
+        The direct value follow each column/index name must be a dictionary, 
+        and there must be a key of "width" in it
+        
+        For example:
+        >>> {
+        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
+        >>>     'age': {'width': 15}
+        >>>     'salary': {'width': 30, 'haligh': 'left'}
+        >>> }
+        '''
+        if adjust_height:
+            for name, setting in adjust_height.items():
+                if name in io.columns:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'])
+                if name in io.rawdata.index.names:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'])
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -252,7 +281,7 @@ class PutxlSet:
 if __name__ == '__main__':
 
     import numpy as np
-    from wbhrdata import wbuse_pivot
+    from wbhrdata import wbuse_pivot, hrconfig
     from pandaspro import sysuse_auto, sysuse_countries
 
     df1 = sysuse_auto
@@ -266,4 +295,4 @@ if __name__ == '__main__':
 
 
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
-    e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'})
+    e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'}, adjust_height=hrconfig)
