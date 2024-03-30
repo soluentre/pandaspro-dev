@@ -138,8 +138,10 @@ class RangeOperator:
             underline: bool = None,
             strikeout: bool = None,
             align: str | list = None,
-            wrap: bool = None,
             merge: bool = None,
+            wrap: bool = None,
+            width = None,
+            height = None,
             border: str | list = None,
             fill: str | tuple | list = None,
             fill_pattern: str = None,
@@ -244,7 +246,7 @@ class RangeOperator:
                 for item in align:
                     _alignfunc(item)
 
-        # Merge Attributes
+        # Merge and Wrap Attributes
         ##################################
         if merge:
             xw.apps.active.api.DisplayAlerts = False
@@ -258,6 +260,17 @@ class RangeOperator:
 
         if wrap is not None:
             self.xwrange.api.WrapText = wrap
+
+        # Width and Height Attributes
+        ##################################
+        '''
+        default width and height for a excel cell is 8.54 (around ...) and 14.6
+        '''
+        if width:
+            self.xwrange.api.EntireColumn.ColumnWidth = width
+
+        if height:
+            self.xwrange.api.RowHeight = height
 
         # Border Attributes
         ##################################
@@ -415,5 +428,5 @@ if __name__ == '__main__':
     a = RangeOperator(my_range)
     a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
     a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
-    a.format(wrap=False)    # print(a.range)
+    a.format(width=20, height=15)    # print(a.range)
 
