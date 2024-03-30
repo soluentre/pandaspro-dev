@@ -1,4 +1,5 @@
 import re
+import ast
 from typing import Any, List, Union
 
 
@@ -54,7 +55,7 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
     return newlist
 
 
-def parsewild(promptstring: str, checklist: list, dictmap: dict = None):
+def parse_wild(promptstring: str, checklist: list, dictmap: dict = None):
     """
     This function will return the searched varnames from a python dataframe according to the prompt string
 
@@ -94,3 +95,76 @@ def encapsulate_lists(module):
             lists_dict[name] = value
     return lists_dict
 
+
+def parse_method(input_string):
+    """
+    Parses the given string to extract the method name and parameters dictionary.
+    Includes internal helper functions to parse values and intelligently split parameter strings.
+    """
+
+    def parse_value(value):
+        """
+        Attempts to convert a string value to its corresponding data type.
+        """
+        try:
+            return int(value)
+        except ValueError:
+            try:
+                return float(value)
+            except ValueError:
+                try:
+                    # Safely evaluate string to a complex type (list, tuple, dict)
+                    return ast.literal_eval(value)
+                except (ValueError, SyntaxError):
+                    # Return as string if it's neither a number nor a complex type
+                    return value
+
+    def smart_split_params(params_string):
+        """
+        Intelligently splits the parameters string, taking into account commas
+        within lists, tuples, and dictionaries.
+        """
+        params = []
+        bracket_level = 0  # Tracks the level of nested brackets
+        current_param = ''
+
+        for char in params_string:
+            if char in '([{':
+                bracket_level += 1
+            elif char in ')]}':
+                bracket_level -= 1
+            elif char == ',' and bracket_level == 0:
+                # Only split at top-level commas
+                params.append(current_param.strip())
+                current_param = ''
+                continue
+
+            current_param += char
+
+        # Add the last parameter
+        if current_param:
+            params.append(current_param.strip())
+
+        return params
+
+    # Main parsing logic
+    method_pattern = r'^(.*?)\((.*)\)$'
+    match = re.match(method_pattern, input_string)
+
+    if match:
+        method_name = match.group(1)  # Extract method name
+        params_string = match.group(2)  # Extract parameters string
+
+        # Use smart_split_params to handle complex parameter values
+        params_list = smart_split_params(params_string)
+        params_dict = {}
+
+        # Convert each parameter to a key-value pair in the dictionary
+        for param in params_list:
+            key, value = param.split('=')
+            parsed_value = parse_value(value.strip())  # Parse value to correct type
+            params_dict[key.strip()] = parsed_value
+
+        return method_name, params_dict
+
+    return None, {}

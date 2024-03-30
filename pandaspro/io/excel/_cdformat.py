@@ -1,6 +1,6 @@
 import pandas as pd
 from pandaspro.core.tools.toolObject import toolObject
-from pandaspro.core.stringfunc import parsewild
+from pandaspro.core.stringfunc import parse_wild
 
 mytools = toolObject()
 
@@ -21,7 +21,7 @@ class CdFormat:
             elif input == 'all':
                 return self.df.columns
             elif isinstance(input, str):
-                return parsewild(applyto, self.df.columns)
+                return parse_wild(applyto, self.df.columns)
             else:
                 return input
 

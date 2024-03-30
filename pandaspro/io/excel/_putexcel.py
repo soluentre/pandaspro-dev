@@ -1,9 +1,10 @@
 from pathlib import Path
 import os
 import xlwings as xw
-from pandaspro.core.stringfunc import parsewild
-from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
-from pandaspro.io.excel._xlwings import RangeOperator
+from pandaspro.core.stringfunc import parse_wild
+from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
+from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
+
 
 def is_range_filled(ws, range_str: str = None):
     if range_str is None:
@@ -36,10 +37,10 @@ class PutxlSet:
 
         def _get_open_workbook_by_name(name):
             # Return the open workbook by its name if exists, otherwise return None
-            for app in xw.apps:
-                for wb in app.books:
-                    if wb.name == name:
-                        return wb, app
+            for curr_app in xw.apps:
+                for curr_wb in curr_app.books:
+                    if curr_wb.name == name:
+                        return curr_wb, curr_app
             return None, None
 
         # App and Workbook declaration
@@ -70,13 +71,6 @@ class PutxlSet:
         else:
             sheet = wb.sheets.add(after=wb.sheets.count)
             sheet.name = sheet_name
-
-        # A small function to decide if sheet is blank ...
-        def is_sheet_empty(sheet):
-            used_range = sheet.used_range
-            if used_range.shape == (1, 1) and not used_range.value:
-                return True
-            return False
 
         if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
             wb.sheets['Sheet1'].delete()
@@ -258,11 +252,70 @@ class PutxlSet:
         This parameter will take a dictionary which uses:
         (1) format prompt key words as the keys
         (2) a list of range key words, which may be just a str term (attribute) ... 
-            or a term with bracket indicating a method 
+            or a cpdFramexl object 
+            
+        >>> ... df_format('msblue80': 'header')
+        >>> ... df_format('msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']))
         '''
         if df_format:
-            for rule, rangelist in df_format.items():
-                parserule
+            def _parse_range(range_prompt: str = None) -> dict:
+                def enhanced_parse_string_v2(input_string):
+                    # 在函数内定义正则表达式模式
+                    method_pattern = r'^(.*?)\((.*)\)$'
+                    match = re.match(method_pattern, input_string)
+
+                    if match:
+                        method_name = match.group(1)  # 方法名
+                        params_string = match.group(2)  # 参数字符串
+
+                        # 使用智能分割函数分割参数
+                        params_list = smart_split_params(params_string)
+                        params_dict = {}
+
+                        for param in params_list:
+                            key, value = param.split('=')
+                            # 对值进行进一步处理
+                            parsed_value = parse_value(value.strip())
+                            params_dict[key.strip()] = parsed_value
+
+                        return method_name, params_dict
+                    else:
+                        return None, {}
+
+                test_string_v2 = "columnspan(level=cmu_dept_major, size=12, coefficients=[1, 2.5, 3], options=('yes', 'no'))"
+                method_name_v2, params_dict_v2 = enhanced_parse_string_v2(test_string_v2)
+
+
+                return {}
+
+            for rule, rangeinput in df_format.items():
+                format_kwargs = parse_format_rule(rule)
+
+                def _declare_ranges(local_input):
+                    if isinstance(local_input, str):
+                        parsedlist = [item.strip() for item in local_input.split(',')]
+                        cpdframexl_dict = None
+                    elif isinstance(local_input, list):
+                        parsedlist = local_input
+                        cpdframexl_dict = None
+                    elif isinstance(local_input, cpdFramexl):
+                        parsedlist = None
+                        cpdframexl_dict = getattr(io, 'range' + local_input.name)(**local_input.paras)
+                    else:
+                        raise ValueError('Unsupported type in df_format dictionary values')
+                    return parsedlist, cpdframexl_dict
+
+                ioranges, dict_from_cpdframexl = _declare_ranges(rangeinput)
+
+                if ioranges:
+                    for each_range in ioranges:
+                        range_cells_dict = _parse_range(each_range)
+                        for range_key, range_content in range_cells_dict.items():
+                            RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+
+                if dict_from_cpdframexl:
+                    for range_key, range_content in dict_from_cpdframexl.items():
+                        RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -301,7 +354,6 @@ class PutxlSet:
 
 if __name__ == '__main__':
 
-    import numpy as np
     from wbhrdata import wbuse_pivot, hrconfig
     from pandaspro import sysuse_auto, sysuse_countries
 
@@ -313,7 +365,5 @@ if __name__ == '__main__':
     # ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
-
-
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
     e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'}, adjust_height=hrconfig, header_wrap=True)

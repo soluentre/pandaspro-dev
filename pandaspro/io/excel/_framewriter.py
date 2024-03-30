@@ -1,4 +1,4 @@
-from pandaspro.core.stringfunc import parsewild
+from pandaspro.core.stringfunc import parse_wild
 from pandaspro.io.excel._utils import CellPro, index_to_cell
 import pandas as pd
 
@@ -145,7 +145,7 @@ class FramexlWriter:
             self,
             level: str = None,
             columns: str | list = None
-    ):
+    ) -> dict:
         result_dict = {}
 
         # Index Column
@@ -156,7 +156,7 @@ class FramexlWriter:
 
         # Selected Columns
         if columns:
-            self.cols_index_merge = columns if isinstance(columns, list) else parsewild(columns, self.columns)
+            self.cols_index_merge = columns if isinstance(columns, list) else parse_wild(columns, self.columns)
             for index, col in enumerate(self.cols_index_merge):
                 merge_start_each = self.get_column_letter_by_name(col)
                 for localid, rowspan in enumerate(self._index_break(level=level)):
@@ -165,7 +165,7 @@ class FramexlWriter:
 
         return result_dict
 
-    def range_index_hsections(self, level: str = None):
+    def range_index_hsections(self, level: str = None) -> dict:
         if self.range_index is None:
             raise ValueError('index_sections method requires the input dataframe to have an index')
         else:
@@ -177,7 +177,7 @@ class FramexlWriter:
 
         return result_dict
 
-    def range_index_selected_hsection(self, level: str = None, token: str = 'Total'):
+    def range_index_selected_hsection(self, level: str = None, token: str = 'Total') -> str:
         temp = self.rawdata.reset_index()
 
         def _find_occurrence_details(series, indexname):
@@ -203,8 +203,9 @@ class FramexlWriter:
 
         return result
 
+    ''' this is returning the whole level by level ranges in selection '''
     @property
-    def range_index_levels(self):
+    def range_index_levels(self) -> dict:
         if self.range_index is None or not isinstance(self.rawdata.index, pd.MultiIndex):
             raise ValueError('index_levels method requires the input dataframe to be multi-index frame')
         else:
@@ -240,6 +241,12 @@ class FramexlWriter:
     #         '1': 'J3, J4, J7, J8, J9'
     #     }
     #     return result
+
+
+class cpdFramexl:
+    def __init__(self, name, **kwargs):
+        self.name = name
+        self.paras = kwargs
 
 
 if __name__ == '__main__':

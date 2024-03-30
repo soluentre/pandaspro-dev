@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pandaspro
 
-from pandaspro.core.stringfunc import parsewild
+from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.inrange import inrange
 from pandaspro.core.tools.tab import tab
@@ -140,7 +140,7 @@ class FramePro(pd.DataFrame):
             print('Nothing to check/browse in an empty dataframe')
             return []
         else:
-            return parsewild(promptstring, self.columns)
+            return parse_wild(promptstring, self.columns)
 
     def br(self, promptstring):
         if self.cvar(promptstring) == []:
