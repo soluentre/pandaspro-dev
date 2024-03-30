@@ -218,7 +218,7 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
-    def range_columnspan(self, start_col, stop_col):
+    def range_columnspan(self, start_col, stop_col, header=False):
         # Get the col indices and row index
         col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
         col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
@@ -233,7 +233,12 @@ class FramexlWriter:
         # Combine Range
         start_range = CellPro(top_left + ':' + top_right)
 
-        return start_range.resize_h(self.tr - self.header_row_count).cell
+        final = start_range.resize_h(self.tr - self.header_row_count).cell
+        if header:
+            final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+            print('final exe', final)
+
+        return final
 
     # def range_cdformat(self, colname, rules, applyto):
     #     a = CdFormat(self.rawdata, colname, rules, applyto)

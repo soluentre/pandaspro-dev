@@ -289,6 +289,7 @@ class PutxlSet:
                 if ioranges:
                     for each_range in ioranges:
                         # Parse the input string as method name + kwargs
+                        print(parse_method(each_range)[1])
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
@@ -354,6 +355,7 @@ if __name__ == '__main__':
     # ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
+    # from _xlwings import cpdStyle
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
     e.putxl(
         wbuse_pivot,
@@ -363,7 +365,7 @@ if __name__ == '__main__':
         adjust_height=hrconfig,
         header_wrap=True,
         df_format={
-            'msblue80, align="center': 'index_hsections(level=cmu_dept_major)',
+            'msblue80, align=center, border=outer_thick': ['index_hsections(level=cmu_dept_major)', 'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)'],
             'msgreen80, align="center"': 'header_outer',
         }
     )
