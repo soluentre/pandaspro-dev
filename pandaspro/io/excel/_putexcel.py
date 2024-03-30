@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 import xlwings as xw
-from pandaspro.core.stringfunc import parse_wild
+from pandaspro.core.stringfunc import parse_wild, parse_method
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
 
@@ -258,36 +258,6 @@ class PutxlSet:
         >>> ... df_format('msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']))
         '''
         if df_format:
-            def _parse_range(range_prompt: str = None) -> dict:
-                def enhanced_parse_string_v2(input_string):
-                    # 在函数内定义正则表达式模式
-                    method_pattern = r'^(.*?)\((.*)\)$'
-                    match = re.match(method_pattern, input_string)
-
-                    if match:
-                        method_name = match.group(1)  # 方法名
-                        params_string = match.group(2)  # 参数字符串
-
-                        # 使用智能分割函数分割参数
-                        params_list = smart_split_params(params_string)
-                        params_dict = {}
-
-                        for param in params_list:
-                            key, value = param.split('=')
-                            # 对值进行进一步处理
-                            parsed_value = parse_value(value.strip())
-                            params_dict[key.strip()] = parsed_value
-
-                        return method_name, params_dict
-                    else:
-                        return None, {}
-
-                test_string_v2 = "columnspan(level=cmu_dept_major, size=12, coefficients=[1, 2.5, 3], options=('yes', 'no'))"
-                method_name_v2, params_dict_v2 = enhanced_parse_string_v2(test_string_v2)
-
-
-                return {}
-
             for rule, rangeinput in df_format.items():
                 format_kwargs = parse_format_rule(rule)
 
@@ -309,7 +279,9 @@ class PutxlSet:
 
                 if ioranges:
                     for each_range in ioranges:
-                        range_cells_dict = _parse_range(each_range)
+                        range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
+                        method = getattr(io, 'range' + range_affix)
+                        range_cells_dict = method(**method_kwargs)
                         for range_key, range_content in range_cells_dict.items():
                             RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
 
