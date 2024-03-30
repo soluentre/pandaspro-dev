@@ -365,7 +365,12 @@ if __name__ == '__main__':
         adjust_height=hrconfig,
         header_wrap=True,
         df_format={
-            'msblue80, align=center, border=outer_thick': ['index_hsections(level=cmu_dept_major)', 'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)'],
+            'border=inner_thin': ['all'],
+            'msblue80, align=center, border=outer_thick': [
+                'index_hsections(level=cmu_dept_major)',
+                'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)',
+                'index_levels'
+            ],
             'msgreen80, align="center"': 'header_outer',
         }
     )
