@@ -138,6 +138,7 @@ class RangeOperator:
             underline: bool = None,
             strikeout: bool = None,
             align: str | list = None,
+            wrap: bool = None,
             merge: bool = None,
             border: str | list = None,
             fill: str | tuple | list = None,
@@ -251,9 +252,12 @@ class RangeOperator:
             _alignfunc('center')
             xw.apps.active.api.DisplayAlerts = True
 
-        elif not merge:
+        if not merge:
             if self.xwrange.api.MergeCells:
                 self.xwrange.unmerge()
+
+        if wrap is not None:
+            self.xwrange.api.WrapText = wrap
 
         # Border Attributes
         ##################################
@@ -411,5 +415,5 @@ if __name__ == '__main__':
     a = RangeOperator(my_range)
     a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
     a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
-
+    a.format(wrap=False)    # print(a.range)
 
