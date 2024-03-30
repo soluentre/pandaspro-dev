@@ -265,46 +265,46 @@ class RangeOperator:
             if isinstance(border, str) and border.strip() == 'none':
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
+
+            if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
+                border_para = _border_custom[border.strip()]
+            elif isinstance(border, str) and border.strip() != 'none':
+                border_para = [i.strip() for i in border.split(',')]
+            elif isinstance(border, list):
+                border_para = [i.strip() for i in border]
             else:
-                if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
-                    border_para = _border_custom[border.strip()]
-                elif isinstance(border, str):
-                    border_para = [i.strip() for i in border.split(',')]
-                elif isinstance(border, list):
-                    border_para = [i.strip() for i in border]
+                raise ValueError(
+                    'Invalid boarder specification, please use check_para=True to see the valid lists.')
+
+            for item in border_para:
+                if isinstance(item, str) and item in list(_border_weight_map.keys()):
+                    weight = _border_weight_map[item]
+                elif isinstance(item, str) and item in list(_border_side_map.keys()):
+                    border_side = item
+                elif isinstance(item, str) and item in list(_border_style_map.keys()):
+                    border_style = item
                 else:
                     raise ValueError(
                         'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
-                for item in border_para:
-                    if isinstance(item, str) and item in list(_border_weight_map.keys()):
-                        weight = _border_weight_map[item]
-                    elif isinstance(item, str) and item in list(_border_side_map.keys()):
-                        border_side = item
-                    elif isinstance(item, str) and item in list(_border_style_map.keys()):
-                        border_style = item
-                    else:
-                        raise ValueError(
-                            'Invalid boarder specification, please use check_para=True to see the valid lists.')
-
-                if border_side == 'none':
-                    for i in range(1, 12):
-                        self.xwrange.api.Borders(i).LineStyle = 0
-                elif border_side == 'all':
-                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders.Weight = weight
-                elif border_side == 'inner':
-                    self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(11).Weight = weight
-                    self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(12).Weight = weight
-                elif border_side == 'outer':
-                    for i in range(7,11):
-                        self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
-                        self.xwrange.api.Borders(i).Weight = weight
-                elif border_side in _border_side_map.keys():
-                    self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
+            if border_side == 'none':
+                for i in range(1, 12):
+                    self.xwrange.api.Borders(i).LineStyle = 0
+            elif border_side == 'all':
+                self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders.Weight = weight
+            elif border_side == 'inner':
+                self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(11).Weight = weight
+                self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(12).Weight = weight
+            elif border_side == 'outer':
+                for i in range(7,11):
+                    self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders(i).Weight = weight
+            elif border_side in _border_side_map.keys():
+                self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
 
         # Fill Attributes
         ##################################
