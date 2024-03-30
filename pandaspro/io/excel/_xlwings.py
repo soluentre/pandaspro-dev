@@ -82,6 +82,61 @@ _border_custom = {
     'outer_thick': ['outer', 'continue', 'thick']
 }
 
+_cpdpuxl_color_map = {
+    "darkred": "#C00000",
+    "red": "#FF0000",
+    "orange": "#FFC000",
+    "yellow": "#FFFF00",
+    "lightgreen": "#92D050",
+    "green": "#00B050",
+    "lightblue": "#00B0F0",
+    "blue": "#0070C0",
+    "darkblue": "#002060",
+    "purple": "#7030A0",
+    "grey": "#808080",
+    "grey25": "#BFBFBF",
+    "white": "#FFFFFF",
+    "bluegray": "#44546A",
+    "msblue": "#4472C4",
+    "msorange": "#ED7D31",
+    "msgray": "#A5A5A5",
+    "msyellow": "#FFC000",
+    "mslightblue": "#5B9BD5",
+    "msgreen": "#70AD47",
+    "bluegray80": "#D6DCE4",
+    "msblue80": "#D9E1F2",
+    "msorange80": "#FCE4D6",
+    "msgray80": "#EDEDED",
+    "msyellow80": "#FFF2CC",
+    "mslightblue80": "#DDEBF7",
+    "msgreen80": "#E2EFDA",
+    "bluegray60": "#ACB9CA",
+    "msblue60": "#B4C6E7",
+    "msorange60": "#F8CBAD",
+    "msgray60": "#DBDBDB",
+    "msyellow60": "#FFE699",
+    "mslightblue60": "#BDD7EE",
+    "msgreen60": "#C6E0B4",
+}
+
+
+def print_cell_attributes(file, sheet_name, lcrange):
+    lcsheet = xw.Book(file).sheets[sheet_name]
+    color_range = lcsheet.range(lcrange)
+
+    cell_colors = {}
+    for cell in color_range:
+        cell_address = cell.address
+        rgb_int = int(cell.api.Font.Color)
+        red = rgb_int % 256
+        green = (rgb_int // 256) % 256
+        blue = (rgb_int // 256 ** 2) % 256
+        hex_color = f"#{red:02X}{green:02X}{blue:02X}"
+        cell_colors[cell_address] = hex_color
+
+    for address, color in cell_colors.items():
+        print(f"Cell {address} has color {color}")
+
 
 def _extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
@@ -254,6 +309,7 @@ class RangeOperator:
             _alignfunc('center')
             xw.apps.active.api.DisplayAlerts = True
 
+        # noinspection PySimplifyBooleanCheck
         if merge == False:
             if self.xwrange.api.MergeCells:
                 self.xwrange.unmerge()
@@ -316,7 +372,7 @@ class RangeOperator:
                     self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(12).Weight = weight
                 elif border_side == 'outer':
-                    for i in range(7,11):
+                    for i in range(7, 11):
                         self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
                         self.xwrange.api.Borders(i).Weight = weight
                 elif border_side in _border_side_map.keys():
@@ -386,15 +442,15 @@ class RangeOperator:
                         self.xwrange.api.Interior.Pattern = _fpattern_map[patternlist[0]]
                     if len(colorlist) == 1:
                         if '#' in colorlist[0]:
-                            colorint = hex_to_int(colorlist[0])
+                            color_int = hex_to_int(colorlist[0])
                         else:
                             colortuple = tuple(map(int, colorlist[0].replace('(', '').replace(')', '').split(',')))
-                            colorint = xw.utils.rgb_to_int(colortuple)
+                            color_int = xw.utils.rgb_to_int(colortuple)
 
                         if firstpattern is None or firstpattern == 'solid':
-                            self.xwrange.api.Interior.Color = colorint
+                            self.xwrange.api.Interior.Color = color_int
                         else:
-                            self.xwrange.api.Interior.PatternColor = colorint
+                            self.xwrange.api.Interior.PatternColor = color_int
 
         if fill_pattern:
             self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
@@ -417,16 +473,95 @@ class RangeOperator:
         self.xwrange.clear()
 
 
+class cpdStyle:
+    def __init__(self, **kwargs):
+        self.format_dict = kwargs
+
+    def __hash__(self):
+        # Convert the format_dict to a tuple of items, which is hashable, and then hash it
+        # Note: This assumes that all values in the dictionary are also hashable
+        return hash(tuple(sorted(self.format_dict.items())))
+
+    def __eq__(self, other):
+        # Check if the other object is an instance of cpdStyle and if their format_dicts are equal
+        return isinstance(other, cpdStyle) and self.format_dict == other.format_dict
+
+
+def parse_format_rule(rule):
+    if isinstance(rule, cpdStyle):
+        return rule.format_dict
+
+    elif not isinstance(rule, str):
+        raise ValueError('format prompt key word must be str')
+
+    promptlist = [prompt.strip() for prompt in rule.split(',')]
+    return_dict = {}
+
+    def _parse_str_format_key(prompt):
+        result = {}
+        keysmatch = {
+            'italic': {'italic': True},
+            'noitalic': {'italic': False},
+            'bold': {'bold': True},
+            'nobold': {'bold': False},
+            'underline': {'underline': True},
+            'nounderline': {'underline': False},
+            'strikeout': {'strikeout': True},
+            'nostrikeout': {'strikeout': False},
+            'merge': {'merge': True},
+            'nomerge': {'merge': False},
+            'wrap': {'wrap': True},
+            'nowrap': {'wrap': False},
+        }
+        patterns = {
+            r'font_name=(.*)': ['font_name', lambda local_match: local_match.group(1)],
+            r'font_size=(.*)': ['font_size', lambda local_match: float(local_match.group(1))],
+            r'font_color=(.*)': ['font_color', lambda local_match: local_match.group(1)],
+            r'align=(.*)': ['align', lambda local_match: local_match.group(1)],
+            r'width=(.*)': ['width', lambda local_match: float(local_match.group(1))],
+            r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
+            r'border=(.*)': ['border', lambda local_match: float(local_match.group(1))],
+            r'(#[A-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
+        }
+
+        if prompt in keysmatch.keys():
+            result.update(keysmatch['prompt'])
+
+        if prompt in _cpdpuxl_color_map.keys():
+            lc_hex = _cpdpuxl_color_map[prompt]
+            result.update({'fill': lc_hex})
+
+        for pattern, value in patterns.items():
+            match = re.fullmatch(pattern, prompt)
+            if match:
+                append_dict = {value[0]: value[1](match)}
+                result.update(append_dict)
+
+        return result
+
+    for term in promptlist:
+        return_dict.update(_parse_str_format_key(term))
+
+    return return_dict
+
+
 if __name__ == '__main__':
     wb = xw.Book('sampledf.xlsx')
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range("H2:I4")
+    # my_range = sheet.range("H2:I4")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
-    a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
-    a.format(width=20, height=15)    # print(a.range)
+    # a = RangeOperator(my_range)
+    # a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
+    # a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
+    # a.format(width=20, height=15)    # print(a.range)
 
+    # my_range = sheet.range("A1:B12")
+    # a = RangeOperator(my_range)
+    # style = cpdStyle(font=['bold', 'strikeout', 12.5, (0,0,0)])
+    # a.format(**style.format_dict)
+
+    print_cell_attributes('sampledf.xlsx', 'Sheet3', 'A1:A34')
+    print(parse_format_rule('red, font_size=12'))

@@ -3,7 +3,7 @@ import os
 import xlwings as xw
 from pandaspro.core.stringfunc import parsewild
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
-
+from pandaspro.io.excel._xlwings import RangeOperator
 
 def is_range_filled(ws, range_str: str = None):
     if range_str is None:
@@ -119,11 +119,15 @@ class PutxlSet:
 
             # Section. df format
             index_merge: dict = None,
+            header_wrap: bool = None,
             adjust_height: dict = None,
+            df_format: dict = None,
 
             debug: bool = False,
     ) -> None:
 
+        # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
+        ################################
         if hasattr(content, 'df'):
             content = content.df
 
@@ -131,11 +135,10 @@ class PutxlSet:
             for col in content.columns:
                 content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
 
-        from pandaspro.io.excel._xlwings import RangeOperator
+        # Sheetreplace? If a sheet_name is specified, then override the current sheet
+        ################################
         replace_type = self.globalreplace if self.globalreplace else replace
 
-        # If a sheet_name is specified, then override the current sheet
-        ################################
         if sheet_name and sheet_name != self.worksheet:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
                 ws = self.wb.sheets[sheet_name]
@@ -205,6 +208,10 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
+        '''
+        Extra Format (not in the group of format parameters): highlight area in existing-content excel
+        This is embedded and will be triggered automatically if not replacing sheet 
+        '''
         # if not_replace_warning:
         #     for direction in ['top', 'right', 'bottom', 'left']:
         #         if is_range_filled(self.ws, self.io.range_top_empty_checker):
@@ -224,6 +231,9 @@ class PutxlSet:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
                 RangeOperator(self.ws.range(local_range)).format(merge=True)
 
+        if header_wrap:
+            RangeOperator(self.ws.range(io.range_header)).format(wrap=True)
+
         '''
         For adjust_height para, the accepted dict must use column/index name as keys
         The direct value follow each column/index name must be a dictionary, 
@@ -242,6 +252,17 @@ class PutxlSet:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'])
                 if name in io.rawdata.index.names:
                     RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'])
+
+        '''
+        df_format: the main function to add format to ranges
+        This parameter will take a dictionary which uses:
+        (1) format prompt key words as the keys
+        (2) a list of range key words, which may be just a str term (attribute) ... 
+            or a term with bracket indicating a method 
+        '''
+        if df_format:
+            for rule, rangelist in df_format.items():
+                parserule
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -295,4 +316,4 @@ if __name__ == '__main__':
 
 
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
-    e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'}, adjust_height=hrconfig)
+    e.putxl(wbuse_pivot, cell='B2', index=True, index_merge={'level': 'cmu_dept_major', 'columns': '* Total'}, adjust_height=hrconfig, header_wrap=True)
