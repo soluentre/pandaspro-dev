@@ -144,7 +144,7 @@ class FramexlWriter:
     def range_index_merge_inputs(
             self,
             level: str = None,
-            cols_index_merge: str | list = None
+            columns: str | list = None
     ):
         result_dict = {}
 
@@ -155,8 +155,8 @@ class FramexlWriter:
             merge_start_index = merge_start_index.offset(rowspan, 0)
 
         # Selected Columns
-        if cols_index_merge:
-            self.cols_index_merge = cols_index_merge if isinstance(cols_index_merge, list) else parsewild(cols_index_merge, self.columns)
+        if columns:
+            self.cols_index_merge = columns if isinstance(columns, list) else parsewild(columns, self.columns)
             for index, col in enumerate(self.cols_index_merge):
                 merge_start_each = self._get_column_letter_by_name(col)
                 for localid, rowspan in enumerate(self._index_break(level=level)):

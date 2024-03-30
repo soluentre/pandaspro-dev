@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import xlwings as xw
+from pandaspro.core.stringfunc import parsewild
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
 
 
@@ -98,7 +99,7 @@ class PutxlSet:
             replace: str = None,
             sheetreplace: bool = False,
 
-            # Section 1. String Format
+            # Section. String Format
             font: str | tuple = None,
             font_name: str = None,
             font_size: int = None,
@@ -116,7 +117,9 @@ class PutxlSet:
             fill_bg: str | tuple = None,
             appendix: bool = False,
 
-            #
+            # Section. df format
+            index_merge: dict = None,
+
             debug: bool = False,
     ) -> None:
 
@@ -201,10 +204,15 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
-        if not_replace_warning:
-            for direction in ['top', 'right', 'bottom', 'left']:
-                if is_range_filled(self.ws, self.io.range_top_empty_checker):
-                    red_range = RangeOperator(ws.range(self.io.range_data)).format()
+        # if not_replace_warning:
+        #     for direction in ['top', 'right', 'bottom', 'left']:
+        #         if is_range_filled(self.ws, self.io.range_top_empty_checker):
+        #             red_range = RangeOperator(ws.range(self.io.range_data)).format()
+
+        if index_merge:
+            for key, local_range in io.range_index_merge_inputs(**index_merge).items():
+                print(local_range)
+                RangeOperator(self.ws.range(local_range)).format(merge=True)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -243,25 +251,64 @@ class PutxlSet:
 
 if __name__ == '__main__':
 
+    import numpy as np
+    import wbhrdata.config.api as conf
+    from wbhrdata.crossreport.combined_reports.combined1_acs_ratio import combined1_acs
     from pandaspro import sysuse_auto, sysuse_countries
     df = sysuse_auto
     df1 = sysuse_countries
 
-    ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
-    ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
-    ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
-    ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
-    ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
+    # ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
+    # ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
+    # ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
+    # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
+    # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
 
-    # ps.putxl(df1, 'TF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
-    # ps.putxl('SSSSS', 'TF', 'I2', index=False, header=False, sheetreplace=True, debug=True)
-    #
-    # ps.switchtab('new tab')
-    # ps.putxl('A1', df1, sheetreplace=True)
-    # ps.putxl('G1', df)
+    r = combined1_acs(wfpv='latest', sobv='latest', region='AFW', region_dict_bool=True)
+    sob = r.sobdata.cWashington
+    wfp = r.wfpdata.cWashington
 
-    # io = FramexlWriter(content=df, cell='M5', index=False, header=True)
-    # ps.putxl('M5', df)
-    # print(io.bottom_left_cell)
-    # print(io.top_right_cell)
-    # print(io.range_top_checker)
+    major_order = ['Front Offices', 'PGs', 'CMUs', 'Total']
+
+
+    def create_table(data):
+        if data.dbtype == 'wfpafrica':
+            data['upi'] = 1
+
+        data.inlist('grade', 'GC', engine='c', rename='GC', inplace=True)
+        data.inlist('grade', 'GD', engine='c', rename='GD', inplace=True)
+        data.inlist('acs', 1, engine='c', rename='# ACS Staff', inplace=True)
+        data.inlist('grade', conf.geplus, engine='c', rename='# GE+ Staff', inplace=True)
+
+        cmudept = data.pivot_table(
+            index=['cmu_dept_major', 'cmu_dept'],
+            values=['GC', 'GD', '# ACS Staff', '# GE+ Staff'],
+            aggfunc='sum',
+            margins=True,
+            margins_name='Total'
+        ).reindex(major_order, level='cmu_dept_major')[['GC', 'GD', '# ACS Staff', '# GE+ Staff']]
+        cmudept['Ratio'] = cmudept['# GE+ Staff'] / cmudept['# ACS Staff']
+
+        cmudept_total = data.pivot_table(
+            index=['cmu_dept_major'],
+            values=['GC', 'GD', '# ACS Staff', '# GE+ Staff'],
+            aggfunc='sum',
+            margins=True,
+            margins_name='Total'
+        ).reindex(major_order, level='cmu_dept_major').rename(
+            columns={
+                'GC': 'GC Total',
+                'GD': 'GD Total',
+                '# ACS Staff': '# ACS Total',
+                '# GE+ Staff': '# GE+ Total',
+            }
+        )[['GC Total', 'GD Total', '# ACS Total', '# GE+ Total']]
+        cmudept_total['Ratio Total'] = cmudept_total['# GE+ Total'] / cmudept_total['# ACS Total']
+        result = cmudept.join(cmudept_total)
+        result.replace([np.inf, -np.inf, 0], np.nan, inplace=True)
+        return result
+
+
+    ex_data = create_table(sob)
+    # e = PutxlSet('sampledf.xlsx', sheet_name='region')
+    # e.putxl(create_table(sob), cell='B2', index=True, index_merge={'level': 'cmu_dept_major'})

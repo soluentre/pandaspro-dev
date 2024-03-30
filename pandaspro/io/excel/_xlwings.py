@@ -222,19 +222,19 @@ class RangeOperator:
 
         # Align Attributes
         ##################################
-        if align:
-            def _alignfunc(alignkey):
-                if align in ['center', 'justify', 'distributed']:
-                    self.xwrange.api.VerticalAlignment = _alignment_map['v' + alignkey][1]
-                    self.xwrange.api.HorizontalAlignment = _alignment_map['h' + alignkey][1]
-                elif _alignment_map[alignkey][0] == 'v':
-                    self.xwrange.api.VerticalAlignment = _alignment_map[alignkey][1]
-                elif _alignment_map[alignkey][0] == 'h':
-                    self.xwrange.api.HorizontalAlignment = _alignment_map[alignkey][1]
-                elif align not in _alignment_map.keys():
-                    raise ValueError(f'Alignment {alignkey} is not supported')
-                return
+        def _alignfunc(alignkey):
+            if alignkey in ['center', 'justify', 'distributed']:
+                self.xwrange.api.VerticalAlignment = _alignment_map['v' + alignkey][1]
+                self.xwrange.api.HorizontalAlignment = _alignment_map['h' + alignkey][1]
+            elif _alignment_map[alignkey][0] == 'v':
+                self.xwrange.api.VerticalAlignment = _alignment_map[alignkey][1]
+            elif _alignment_map[alignkey][0] == 'h':
+                self.xwrange.api.HorizontalAlignment = _alignment_map[alignkey][1]
+            elif align not in _alignment_map.keys():
+                raise ValueError(f'Alignment {alignkey} is not supported')
+            return
 
+        if align:
             if isinstance(align, str):
                 for item in align.split(','):
                     item = item.strip()
@@ -248,6 +248,7 @@ class RangeOperator:
         if merge:
             xw.apps.active.api.DisplayAlerts = False
             self.xwrange.api.MergeCells = merge
+            _alignfunc('center')
             xw.apps.active.api.DisplayAlerts = True
 
         elif not merge:
