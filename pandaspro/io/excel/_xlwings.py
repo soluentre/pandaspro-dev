@@ -127,6 +127,17 @@ def color_to_int(color: str | tuple):
         return None
 
 
+def list_str_w_color(mystr: str):
+    if extract_tuple(mystr):
+        color, remaining = extract_tuple(mystr)
+        remaining_list = [i for i in remaining.replace(' ', '').split(',') if i != '']
+        cleanlist = remaining_list + [color]
+        return cleanlist
+    if bool(re.findall(r'#[0-9A-F]{6}$', mystr, re.IGNORECASE)):
+        cleanlist = mystr.replace(' ', '').split(',')
+        return cleanlist
+
+
 class RangeOperator:
 
     def __init__(self, xwrange: xw.Range) -> None:
@@ -376,10 +387,8 @@ class RangeOperator:
                 self.xwrange.api.Interior.Color = foreground_color_int
 
             elif isinstance(fill, str):
-                def parse_my_str():
-                    pass
-                fill_list_from_str = parse_my_str(fill)
-                fill_with_mylist(fill_list_from_str)
+                cleanlist = list_str_w_color(fill)
+                fill_with_mylist(cleanlist)
 
 
                 # patternkeys = '(' + '|'.join(_fpattern_map.keys()) + ')'
@@ -441,11 +450,11 @@ if __name__ == '__main__':
     sheet = wb.sheets[0]  # Reference to the first sheet
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
-    my_range = sheet.range("H2:I4")
+    my_range = sheet.range("A8:B9")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border='outer, thicker')    # print(a.range)
-    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
+    a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], fill = 'horstripe, (0,255,0)')    # print(a.range)
+    # a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
 
 
