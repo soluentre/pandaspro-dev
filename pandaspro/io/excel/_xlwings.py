@@ -74,12 +74,12 @@ _border_weight_map = {
 
 _border_custom = {
     'none': None,
-    'all_thin': ['all', 'continue', 'thin'],
-    'all_thick': ['all', 'continue', 'thick'],
-    'inner_thin': ['inner', 'continue', 'thin'],
-    'inner_thick': ['inner', 'continue', 'thick'],
-    'outer_thin': ['outer', 'continue', 'thin'],
-    'outer_thick': ['outer', 'continue', 'thick']
+    'all_thin': ['all', 'continue', 'thin', '#000000'],
+    'all_thick': ['all', 'continue', 'thick', '#000000'],
+    'inner_thin': ['inner', 'continue', 'thin', '#000000'],
+    'inner_thick': ['inner', 'continue', 'thick', '#000000'],
+    'outer_thin': ['outer', 'continue', 'thin', '#000000'],
+    'outer_thick': ['outer', 'continue', 'thick', '#000000']
 }
 
 _cpdpuxl_color_map = {
@@ -138,7 +138,7 @@ def print_cell_attributes(file, sheet_name, lcrange):
         print(f"Cell {address} has color {color}")
 
 
-def _extract_tuple(s):
+def extract_tuple(s):
     pattern = r'\((\d+,\s*\d+,\s*\d+)\)'
     matches = list(re.finditer(pattern, s))
     if len(matches) == 0:
@@ -158,15 +158,7 @@ def _is_number(s: str):
     return bool(pattern.match(s))
 
 
-def hex_to_int(hex: str):
-    hex = hex.lstrip('#')
-    red = int(hex[:2], 16)
-    green = int(hex[2:4], 16)
-    blue = int(hex[4:], 16)
-    return red | (green << 8) | (blue << 16)
-
-
-def is_valid_hex_color(s):
+def _is_valid_hex_color(s):
     pattern = r'^#[0-9A-F]{6}$'
     return bool(re.match(pattern, s, re.IGNORECASE))
 
@@ -175,6 +167,28 @@ def _is_valid_rgb(rgb):
     if not isinstance(rgb, (list, tuple)) or len(rgb) != 3:
         return False
     return all(isinstance(n, int) and 0 <= n <= 255 for n in rgb)
+
+
+def color_to_int(color: str | tuple):
+    if isinstance(color, str) and _is_valid_hex_color(color):
+        local_hex = color.lstrip('#')
+        red = int(local_hex[:2], 16)
+        green = int(local_hex[2:4], 16)
+        blue = int(local_hex[4:], 16)
+        return red | (green << 8) | (blue << 16)
+    elif isinstance(color, tuple) and _is_valid_rgb(color):
+        return xw.utils.rgb_to_int(color)
+    else:
+        return None
+
+
+def list_str_w_color(mystr: str):
+    color, remaining = extract_tuple(mystr)
+    result = [i for i in remaining.replace(' ', '').split(',') if i != '']
+    if color is not None:
+        result = result + [color]
+
+    return result
 
 
 class RangeOperator:
@@ -219,11 +233,12 @@ class RangeOperator:
             elif isinstance(font, (int, float)):
                 self.xwrange.font.size = font
             elif isinstance(font, str):
-                color, remaining = _extract_tuple(font)
+                color, remaining = extract_tuple(font)
                 if color:
                     self.xwrange.font.color = color
                 for item in remaining.split(','):
                     item = item.strip()
+                    # noinspection RegExpSimplifiable
                     if _is_number(item):
                         self.xwrange.font.size = item
                     elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
@@ -244,7 +259,7 @@ class RangeOperator:
                         self.xwrange.font.color = item
                     elif isinstance(item, (int, float)):
                         self.xwrange.font.size = item
-                    elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
+                    elif re.fullmatch(r'#[\dA-Fa-f]{6}', item):
                         self.xwrange.font.color = item
                     elif isinstance(item, str) and item == 'bold':
                         self.xwrange.font.bold = True
@@ -331,141 +346,166 @@ class RangeOperator:
         # Border Attributes
         ##################################
         if border:
-            border_side = 'all'
-            border_style = 'continue'
-            weight = 1
 
             if isinstance(border, str) and border.strip() == 'none':
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
+
+            if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
+                border_para = _border_custom[border.strip()]
+
+            elif isinstance(border, str) and border.strip() != 'none':
+                border_para = list_str_w_color(border)
+
+            elif isinstance(border, list):
+                border_para = [i.strip() for i in border]
+
             else:
-                if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
-                    border_para = _border_custom[border.strip()]
-                elif isinstance(border, str):
-                    border_para = [i.strip() for i in border.split(',')]
-                elif isinstance(border, list):
-                    border_para = [i.strip() for i in border]
-                else:
-                    raise ValueError(
-                        'Invalid boarder specification, please use check_para=True to see the valid lists.')
+                raise ValueError(
+                    'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
-                for item in border_para:
-                    if isinstance(item, str) and item in list(_border_weight_map.keys()):
-                        weight = _border_weight_map[item]
-                    elif isinstance(item, str) and item in list(_border_side_map.keys()):
-                        border_side = item
-                    elif isinstance(item, str) and item in list(_border_style_map.keys()):
-                        border_style = item
-                    else:
-                        raise ValueError(
-                            'Invalid boarder specification, please use check_para=True to see the valid lists.')
+            def find_border_side(mylist):
+                result = []
+                for local_item in mylist:
+                    if isinstance(local_item, str) and local_item in list(_border_side_map.keys()):
+                        result.append(local_item)
+                return result
 
-                if border_side == 'none':
-                    for i in range(1, 12):
-                        self.xwrange.api.Borders(i).LineStyle = 0
-                elif border_side == 'all':
-                    self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders.Weight = weight
-                elif border_side == 'inner':
-                    self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(11).Weight = weight
-                    self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(12).Weight = weight
-                elif border_side == 'outer':
-                    for i in range(7, 11):
-                        self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
-                        self.xwrange.api.Borders(i).Weight = weight
-                elif border_side in _border_side_map.keys():
-                    self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(_border_side_map[border_side]).Weight = weight
+            def find_border_style(mylist):
+                result = []
+                for local_item in mylist:
+                    if isinstance(local_item, str) and local_item in list(_border_style_map.keys()):
+                        result.append(local_item)
+                return result
+
+            def find_border_weight(mylist):
+                result = []
+                for local_item in mylist:
+                    if isinstance(local_item, str) and local_item in list(_border_weight_map.keys()):
+                        result.append(local_item)
+                return result
+
+            def find_border_color(mylist):
+                result = []
+                for local_item in mylist:
+                    if isinstance(local_item, str) and _is_valid_hex_color(local_item):
+                        result.append(local_item)
+                    elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
+                        result.append(local_item)
+                return result
+
+            # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
+            sidelist = find_border_side(border_para)
+            stylelist = find_border_style(border_para)
+            weightlist = find_border_weight(border_para)
+            colorlist = find_border_color(border_para)
+            leftover = [item for item in border_para if item not in sidelist + stylelist + weightlist + colorlist]
+            if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]) or len(leftover) > 0:
+                raise ValueError(
+                    'Invalid input. At most 1 side, 1 style, 1 weight and 1 color can be specified.')
+
+            # Create patter and color parameter
+            border_side = sidelist[0] if len(sidelist) == 1 else None
+            border_style = stylelist[0] if len(stylelist) == 1 else 'continue'
+            border_weight = _border_weight_map[weightlist[0]] if len(weightlist) == 1 else 'thin'
+            border_color = color_to_int(colorlist[0]) if len(colorlist) == 1 else '#000000'
+
+            if border_side == 'none':
+                for i in range(1, 12):
+                    self.xwrange.api.Borders(i).LineStyle = 0
+
+            elif border_side == 'all':
+                self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders.Weight = border_weight
+                self.xwrange.api.Borders.Color = border_color
+
+            elif border_side == 'inner':
+                self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(11).Weight = border_weight
+                self.xwrange.api.Borders(11).Color = border_color
+                self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(12).Weight = border_weight
+                self.xwrange.api.Borders(12).Color = border_color
+
+            elif border_side == 'outer':
+                for i in range(7, 11):
+                    self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
+                    self.xwrange.api.Borders(i).Weight = border_weight
+                    self.xwrange.api.Borders(i).Color = border_color
+
+            elif border_side in _border_side_map.keys():
+                self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
+                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = border_weight
+                self.xwrange.api.Borders(_border_side_map[border_side]).Color = border_color
 
         # Fill Attributes
         ##################################
         if fill:
-            if isinstance(fill, list):
-                patternlist, colorlist = [], []
+            def fill_with_mylist(fill_list):
+                def find_pattern(mylist):
+                    result = []
+                    for local_item in mylist:
+                        if isinstance(local_item, (tuple, list, str)) and local_item in _fpattern_map.keys():
+                            result.append(local_item)
+                    return result
 
-                for item in fill:
-                    if isinstance(item, (tuple, list, str)) and item in _fpattern_map.keys():
-                        patternlist.append(item)
-                    if isinstance(item, str) and is_valid_hex_color(item):
-                        colorlist.append(item)
-                    elif isinstance(item, (list, tuple)) and _is_valid_rgb(item):
-                        colorlist.append(item)
+                def find_colors(mylist):
+                    result = []
+                    for local_item in mylist:
+                        if isinstance(local_item, str) and _is_valid_hex_color(local_item):
+                            result.append(local_item)
+                        elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
+                            result.append(local_item)
+                    return result
 
-                leftover = [item for item in fill if item not in patternlist + colorlist]
-                if len(leftover) > 0:
-                    raise ValueError('Invalid input. Please check if pattern or color are specified correctly.')
-                else:
-                    if (len(fill) == 1) or (len(fill) == 2 and 'solid' in fill):
-                        for item in fill:
-                            if isinstance(item, tuple):
-                                self.xwrange.api.Interior.Color = xw.utils.rgb_to_int(item)
-                            elif item in list(_fpattern_map.keys()):
-                                self.xwrange.api.Interior.Pattern = _fpattern_map[item]
-                            elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
-                                self.xwrange.api.Interior.Color = hex_to_int(item)
-                    elif len(fill) == 2 and 'solid' not in fill:
-                        for item in fill:
-                            if isinstance(item, tuple):
-                                self.xwrange.api.Interior.PatternColor = xw.utils.rgb_to_int(item)
-                            elif item in list(_fpattern_map.keys()):
-                                self.xwrange.api.Interior.Pattern = _fpattern_map[item]
-                            elif re.fullmatch(r'#[0-9A-Fa-f]{6}', item):
-                                self.xwrange.api.Interior.PatternColor = hex_to_int(item)
+                # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
+                patternlist_fill = find_pattern(fill_list)
+                colorlist_fill = find_colors(fill_list)
+                leftover_fill = [term for term in fill_list if term not in patternlist_fill + colorlist_fill]
+                if len(leftover_fill) > 0 or len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
+                    raise ValueError(
+                        'Invalid input. Please check if pattern or color are specified correctly. At most 1 color and 1 pattern')
+
+                # Create patter and color parameter
+                parse_fill_pattern = patternlist_fill[0] if len(patternlist_fill) == 1 else None
+                parse_fill_color = colorlist_fill[0] if len(colorlist_fill) == 1 else None
+
+                if parse_fill_pattern:
+                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern]
+
+                if parse_fill_color:
+                    if parse_fill_pattern == 'solid':
+                        self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
                     else:
-                        raise ValueError(
-                            "Can only accept 2 parameters (one for pattern and one for color) at most when passing a list object to 'fill'.")
+                        self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
+
+            if isinstance(fill, list):
+                fill_with_mylist(fill)
 
             elif isinstance(fill, tuple):
                 foreground_color_int = xw.utils.rgb_to_int(fill)
                 self.xwrange.api.Interior.Color = foreground_color_int
+
             elif isinstance(fill, str):
-                patternkeys = '(' + '|'.join(_fpattern_map.keys()) + ')'
-                compiled_patternkeys = re.compile(patternkeys, re.IGNORECASE)
-                patternlist = re.findall(compiled_patternkeys, fill)
-                firstpattern = patternlist[0] if len(patternlist) >= 1 else None
-
-                colorrule = r'#(?:[0-9a-fA-F]{3}){1,2}|\(\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*,\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*,\s*(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*\)'
-                colorlist = re.findall(colorrule, fill)
-
-                leftover = fill
-                for item in patternlist + colorlist:
-                    leftover = leftover.replace(item, '').strip()
-
-                if len(leftover.replace(',', '')) > 0:
-                    raise ValueError('Incorrect pattern or color specified, please check')
-                elif len(patternlist) > 1 or len(colorlist) > 1:
-                    raise ValueError('Can not specify more than one color or more than one pattern, respectively.')
-                else:
-                    if len(patternlist) == 1:
-                        self.xwrange.api.Interior.Pattern = _fpattern_map[patternlist[0]]
-                    if len(colorlist) == 1:
-                        if '#' in colorlist[0]:
-                            color_int = hex_to_int(colorlist[0])
-                        else:
-                            colortuple = tuple(map(int, colorlist[0].replace('(', '').replace(')', '').split(',')))
-                            color_int = xw.utils.rgb_to_int(colortuple)
-
-                        if firstpattern is None or firstpattern == 'solid':
-                            self.xwrange.api.Interior.Color = color_int
-                        else:
-                            self.xwrange.api.Interior.PatternColor = color_int
+                cleanlist = list_str_w_color(fill)
+                fill_with_mylist(cleanlist)
 
         if fill_pattern:
             self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
 
-        if isinstance(fill_fg, tuple):
-            foreground_color_int = xw.utils.rgb_to_int(fill_fg)
-            self.xwrange.api.Interior.PatternColor = foreground_color_int
-        elif isinstance(fill_fg, str):
-            self.xwrange.api.Interior.PatternColor = hex_to_int(fill_fg)
+        if fill_fg:
+            if isinstance(fill_fg, tuple):
+                foreground_color_int = xw.utils.rgb_to_int(fill_fg)
+                self.xwrange.api.Interior.PatternColor = foreground_color_int
+            elif isinstance(fill_fg, str):
+                self.xwrange.api.Interior.PatternColor = color_to_int(fill_fg)
 
-        if isinstance(fill_bg, tuple):
-            background_color_int = xw.utils.rgb_to_int(fill_bg)
-            self.xwrange.api.Interior.Color = background_color_int
-        elif isinstance(fill_bg, str):
-            self.xwrange.api.Interior.Color = hex_to_int(fill_bg)
+        if fill_bg:
+            if isinstance(fill_bg, tuple):
+                background_color_int = xw.utils.rgb_to_int(fill_bg)
+                self.xwrange.api.Interior.Color = background_color_int
+            elif isinstance(fill_bg, str):
+                self.xwrange.api.Interior.Color = color_to_int(fill_bg)
 
         return
 
@@ -551,6 +591,7 @@ if __name__ == '__main__':
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
     # my_range = sheet.range("H2:I4")
+    my_range = sheet.range("F8:I11")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     # a = RangeOperator(my_range)
@@ -565,3 +606,7 @@ if __name__ == '__main__':
 
     print_cell_attributes('sampledf.xlsx', 'Sheet3', 'A1:A34')
     print(parse_format_rule('red, font_size=12'))
+    a = RangeOperator(my_range)
+    a.format(font=['bold', 'strikeout', 12.5, (0, 0, 0)], fill='horstripe, (0,255,0)',
+             border='thicker, inner, #FF00FF')  # print(a.range)
+    # a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)

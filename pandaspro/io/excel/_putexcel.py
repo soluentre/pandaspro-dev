@@ -203,13 +203,19 @@ class PutxlSet:
         # Format the sheet (Shelley, Li)
         ################################
         '''
-        Extra Format (not in the group of format parameters): highlight area in existing-content excel
-        This is embedded and will be triggered automatically if not replacing sheet 
-        '''
-        # if not_replace_warning:
-        #     for direction in ['top', 'right', 'bottom', 'left']:
-        #         if is_range_filled(self.ws, self.io.range_top_empty_checker):
-        #             red_range = RangeOperator(ws.range(self.io.range_data)).format()
+         Extra Format (not in the group of format parameters): highlight area in existing-content excel
+         This is embedded and will be triggered automatically if not replacing sheet 
+         '''
+        if not_replace_warning:
+            matchdict = {
+                'top': self.io.range_top_empty_checker,
+                'bottom': self.io.range_bottom_empty_checker,
+                'left': self.io.range_left_empty_checker,
+                'right': self.io.range_right_empty_checker
+            }
+            for direction in list(matchdict.keys()):
+                if is_range_filled(self.ws, matchdict[direction]):
+                    RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
