@@ -213,7 +213,7 @@ class PutxlSet:
             }
             for direction in list(matchdict.keys()):
                 if is_range_filled(self.ws, matchdict[direction]):
-                    RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker'])
+                    RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
 
         if index_merge:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
@@ -261,4 +261,4 @@ if __name__ == '__main__':
     small = sysuse_auto.head(5)[['make', 'price']]
     e = PutxlSet('test.xlsx')
     e.putxl(sysuse_auto, cell='B2')
-    e.putxl(small, cell='D5')
+    e.putxl(small, cell='O3')
