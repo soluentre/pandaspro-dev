@@ -16,7 +16,8 @@ from pandaspro.io.api import (
 
 from pandaspro.sampledf.api import (
     sysuse_countries,
-    sysuse_auto
+    sysuse_auto,
+    wbuse_pivot
 )
 
 excel_d = WorkbookExportSimplifier().declare_workbook
