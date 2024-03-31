@@ -445,7 +445,7 @@ class RangeOperator:
                 def find_pattern(mylist):
                     result = []
                     for local_item in mylist:
-                        if isinstance(local_item, (tuple, list, str)) and local_item in _fpattern_map.keys():
+                        if isinstance(local_item, (tuple, list, str)) and local_item.lower() in _fpattern_map.keys():
                             result.append(local_item)
                     return result
 
@@ -471,7 +471,7 @@ class RangeOperator:
                 parse_fill_color = colorlist_fill[0] if len(colorlist_fill) == 1 else None
 
                 if parse_fill_pattern:
-                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern]
+                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern.lower()]
 
                 if parse_fill_color:
                     if parse_fill_pattern == 'solid':
@@ -491,7 +491,7 @@ class RangeOperator:
                 fill_with_mylist(cleanlist)
 
         if fill_pattern:
-            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
+            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern.lower()]
 
         if fill_fg:
             if isinstance(fill_fg, tuple):
@@ -591,7 +591,7 @@ if __name__ == '__main__':
 
     # Step 2: Specify the range you want to work with in Excel, e.g., "A1:B2"
     # my_range = sheet.range("H2:I4")
-    my_range = sheet.range("F8:I11")
+    my_range = sheet.range("H2:I4")
 
     # Step 3: Create an object of the RangeOperator class with the specified range
     # a = RangeOperator(my_range)
@@ -604,9 +604,9 @@ if __name__ == '__main__':
     # style = cpdStyle(font=['bold', 'strikeout', 12.5, (0,0,0)])
     # a.format(**style.format_dict)
 
-    print_cell_attributes('sampledf.xlsx', 'Sheet3', 'A1:A34')
-    print(parse_format_rule('red, font_size=12'))
+    # print_cell_attributes('sampledf.xlsx', 'Sheet3', 'A1:A34')
+    # print(parse_format_rule('red, font_size=12'))
     a = RangeOperator(my_range)
-    a.format(font=['bold', 'strikeout', 12.5, (0, 0, 0)], fill='horstripe, (0,255,0)',
+    a.format(font=['bold', 'strikeout', 12.5, (0, 0, 0)], fill='None, #00ff00',
              border='thicker, inner, #FF00FF')  # print(a.range)
     # a.format(font=['bold', 'strikeout', 12.5, (0,0,0)], border=['inner', 'thin'])    # print(a.range)
