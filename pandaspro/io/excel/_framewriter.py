@@ -22,9 +22,6 @@ class FramexlWriter:
             cell: str,
             index: bool = False,
             header: bool = True,
-            cd_column: str = None,
-            cd_rules: dict = None,
-            cd_applyto: str = None
     ) -> None:
         cellobj = CellPro(cell)
         header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
@@ -32,10 +29,11 @@ class FramexlWriter:
 
         # Calculate the Ranges
         self.rawdata = content
-        content = pd.DataFrame(content.to_dict())
+        content = pd.DataFrame(content)
         if header == True and index == True:
             self.export_type = 'htit'
             tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
+            xl_header_count, xl_index_count = header_row_count, index_column_count
             export_data = content
             range_index = cellobj.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
             range_indexnames = cellobj.resize(header_row_count, header_row_count)
@@ -43,6 +41,7 @@ class FramexlWriter:
         elif header == False and index == True:
             self.export_type = 'hfit'
             tr, tc = content.shape[0], content.shape[1] + index_column_count
+            xl_header_count, xl_index_count = 0, index_column_count
             export_data = content.reset_index().to_numpy().tolist()
             range_index = cellobj.resize(tr, index_column_count)
             range_indexnames = 'N/A'
@@ -50,6 +49,7 @@ class FramexlWriter:
         elif header == False and index == False:
             self.export_type = 'hfif'
             tr, tc = content.shape[0], content.shape[1]
+            xl_header_count, xl_index_count = 0, 0
             export_data = content.to_numpy().tolist()
             range_index = 'N/A'
             range_indexnames = 'N/A'
@@ -57,6 +57,7 @@ class FramexlWriter:
         else:
             self.export_type = 'htif'
             tr, tc = content.shape[0] + header_row_count, content.shape[1]
+            xl_header_count, xl_index_count = header_row_count, 0
             if isinstance(content.columns, pd.MultiIndex):
                 column_export = [list(lst) for lst in list(zip(*content.columns.values))]
             else:
@@ -68,32 +69,27 @@ class FramexlWriter:
             range_header = cellobj.resize(header_row_count, tc)
 
         # Calculate the Map
-        dfmapstart = cellobj.offset(header_row_count, index_column_count)
-        dfmap = content.copy()
+        dfmapstart = cellobj.offset(xl_header_count, xl_index_count)
+        dfmap = self.rawdata.copy()
         dfmap = dfmap.astype(str)
 
-        # Create a cells Map
-        i = 0
-        for dfmap_index, row in dfmap.iterrows():
-            j = 0
-            for col in dfmap.columns:
-                dfmap.loc[dfmap_index, col] = dfmapstart.offset(i, j).cell
-                j += 1
-            i += 1
-
-        self.formatrange = "Please provide the column_list/index_mask to select a sub-range"
+        for dfmap_index in range(len(dfmap)):
+            for j, col in enumerate(dfmap.columns):
+                dfmap.iloc[dfmap_index, j] = dfmapstart.offset(dfmap_index, j).cell
 
         self.iotype = 'df'
         self.columns = self.rawdata.columns
         self.content = export_data
         self.cell = cell
+        self.index_bool = index
+        self.header_bool = header
         self.tr = tr
         self.tc = tc
         self.header_row_count = header_row_count
         self.index_column_count = index_column_count
 
         # data corners - cellpros
-        self.start_cellobj = cellobj.offset(header_row_count, index_column_count)
+        self.start_cellobj = cellobj.offset(xl_header_count, xl_index_count)
         self.start_cell = self.start_cellobj.cell
         self.top_right_cell = cellobj.offset(0, self.tc - 1).cell
         self.bottom_left_cell = cellobj.offset(self.tr - 1, 0).cell
@@ -109,13 +105,12 @@ class FramexlWriter:
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
 
         # format relevant
-        self.cellmap = dfmap
+        self.dfmap = dfmap
         self.cols_index_merge = None
 
         # Conditional Formatting
-        self.cd_column = cd_column
-        self.cd_rules = cd_rules
-        self.cd_applyto = cd_applyto
+        self.cd_dfmap_1col = None
+        self.cd_cellrange_1col = None
 
         # Special - Checker for sheetreplace
         self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
@@ -124,6 +119,9 @@ class FramexlWriter:
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
 
     def get_column_letter_by_indexname(self, levelname):
+        if not self.index_bool:
+            raise ValueError('Cannot return a range with get_column_letter_by_indexname method when index = False is specified')
+
         col_count = list(self.rawdata.index.names).index(levelname)
         col_cell = CellPro(self.cell).offset(self.header_row_count, col_count)
         return col_cell
@@ -242,59 +240,45 @@ class FramexlWriter:
 
         return final
 
-    def map(self):
-        return self.cell, self.start_cellobj.cell
-    # def range_cdformat(self):
-    #     mycd = CdFormat(self.rawdata, self.cd_column, self.cd_rules, self.cd_applyto)
-    #     result = {}
-    #     for key, sections in mycd.rules_mask:
-    #         result[key]['cells'] = self.dfmap
-    #     return mycd.rules_mask
+    def range_cdformat(
+            self,
+            column,
+            rules = None,
+            applyto = 'self'
+    ):
+        mycd = CdFormat(
+            df=self.rawdata,
+            column=column,
+            cd_rules=rules,
+            applyto=applyto
+        )
+        apply_columns = mycd.apply
+        cd_dfmap_1col = {}
+        print(self.dfmap, self.start_cellobj.cell)
+        for key, mask_rule in mycd.rules_mask.items():
+            cd_dfmap_1col[key] = {}
+            cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
+            cd_dfmap_1col[key]['format'] = mask_rule['format']
+        print(cd_dfmap_1col)
+        self.cd_dfmap_1col = cd_dfmap_1col
+
+        def _df_to_mystring(df):
+            lcarray = df.values.flatten()
+            long_string = ','.join([str(value) for value in lcarray])
+            return long_string
+
+        cd_cellrange_1col = {}
+        for key, mask_rule in mycd.rules_mask.items():
+            cd_cellrange_1col[key] = {}
+            temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
+            cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
+            cd_cellrange_1col[key]['format'] = mask_rule['format']
+        self.cd_cellrange_1col = cd_cellrange_1col
+
+        return cd_cellrange_1col
 
 
 class cpdFramexl:
     def __init__(self, name, **kwargs):
         self.name = name
         self.paras = kwargs
-
-
-if __name__ == '__main__':
-
-    # a = FramexlWriter(sysuse_auto, 'G1', column_list='Country', index=True)
-    # print(a.formatrange)
-    #
-    # paintdict = {
-    #     'all': {
-    #         'logic': 'grade == 1 and grade <2',
-    #         'format': {
-    #             'fill': '#FFF000',
-    #             'font': 'bold 12'
-    #         }
-    #     }
-    # }
-
-    import wbhrdata as wb
-    import xlwings as xw
-    # from pandaspro import sysuse_auto
-
-    ws = xw.Book('sampledf.xlsx').sheets['sob']
-    data = wb.sob(region='AFE').pivot_table(index=['cmu_dept_major', 'cmu_dept'], values=['upi', 'age', 'yrs_in_assign', 'yrs_in_grade'], aggfunc='sum', margins_name='Total', margins=True)
-
-    # core
-    io = FramexlWriter(data, 'G1', index=True)
-    ws.range('G1').value = io.content
-    # , cols_index_merge = 'upi, age'
-
-    # ws.range('G2, G3, G7:L10').font.color = '#FFF001'
-    a1 = io.range_index_hsections(level='cmu_dept_major')
-    a2 = io.range_index_outer
-    a3 = io.range_index_levels
-    a4 = io.range_columnspan('age', 'yrs_in_assign')
-    a5 = io.range_index_merge_inputs('cmu_dept_major')
-    a6 = io.range_index_selected_hsection('cmu_dept_major', 'PGs')
-    a7 = io.map()
-    print(a7)
-
-    # mpg_col = io.get_column_letter_by_name('mpg').cell
-    # xw.apps.active.api.DisplayAlerts = False
-    # ws.range('A4:A9').api.MergeCells = True

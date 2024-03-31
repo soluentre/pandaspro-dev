@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 import xlwings as xw
-from pandaspro.core.stringfunc import parse_wild, parse_method
+from pandaspro.core.stringfunc import parse_method
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
 
@@ -208,14 +208,14 @@ class PutxlSet:
          This is embedded and will be triggered automatically if not replacing sheet 
          '''
         if not_replace_warning:
-            matchdict = {
+            match_dict = {
                 'top': self.io.range_top_empty_checker,
                 'bottom': self.io.range_bottom_empty_checker,
                 'left': self.io.range_left_empty_checker,
                 'right': self.io.range_right_empty_checker
             }
-            for direction in list(matchdict.keys()):
-                if is_range_filled(self.ws, matchdict[direction]):
+            for direction in list(match_dict.keys()):
+                if is_range_filled(self.ws, match_dict[direction]):
                     RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
 
         '''
@@ -261,8 +261,8 @@ class PutxlSet:
         (2) a list of range key words, which may be just a str term (attribute) ... 
             or a cpdFramexl object 
             
-        >>> ... df_format('msblue80': 'header')
-        >>> ... df_format('msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']))
+        >>> ... df_format={'msblue80': 'header'}
+        >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
         '''
         if df_format:
             for rule, rangeinput in df_format.items():
@@ -310,8 +310,31 @@ class PutxlSet:
 
         # Conditional Format (1 column based)
         ################################
+        '''
+        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
+        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
+        
+        key 1: column = indicating the conditional formatting columns
+        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
+        (default = self)
+        
+        >>> ... cd_format={'column': 'age', 'rules': {...}}
+        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
+        '''
         if cd_format:
-            pass
+            # Use the io.range_cdformat to convert the inputs into a dict with readable cellranges and formats
+            cleaned_rules = io.range_cdformat(**cd_format)
+
+            # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
+            for rulename, lc_content in cleaned_rules.items():
+                cellrange = lc_content['cellrange']
+                cd_format_rule = lc_content['format']
+                # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
+                # parse_format_rule is taken from _xlwings module
+                cd_format_kwargs = parse_format_rule(cd_format_rule)
+                RangeOperator(self.ws.range(cellrange)).format(**cd_format_kwargs)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -362,9 +385,10 @@ if __name__ == '__main__':
     # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
     # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
     # from _xlwings import cpdStyle
+    data = wbuse_pivot.reset_index().set_index('cmu_dept_major')
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
     e.putxl(
-        wbuse_pivot,
+        data,
         cell='B2',
         index=True,
         index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
@@ -375,13 +399,12 @@ if __name__ == '__main__':
             'msblue80, align=center, border=outer_thick': [
                 'index_hsections(level=cmu_dept_major)',
                 'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)',
-                'index_levels'
             ],
             'msgreen80, align="center"': 'header_outer',
         },
         cd_format={
-            'grade': {
-
-            }
-        }
+            'column': 'cmu_dept',
+            'rules': {'EAW': '#FF0000'}
+        },
+        sheetreplace=True
     )

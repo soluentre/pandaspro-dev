@@ -48,6 +48,7 @@ def inrange(
 
 
 if __name__ == '__main__':
+    import numpy as np
     from pandaspro import sysuse_auto
     auto = sysuse_auto
-    a = auto.inrange('price', 4098, 4099, inclusive='right').df
+    a = auto.inrange('price', -np.inf, 4000, inclusive='right').df
