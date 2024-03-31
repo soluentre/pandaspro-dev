@@ -4,26 +4,28 @@ from pandaspro.core.stringfunc import parse_wild
 
 mytools = toolObject()
 
+
 class CdFormat:
     def __init__(self,
                  df,
                  col: str,
-                 rules: dict,
+                 cd_rules: dict,
                  applyto: str | list = 'self'):
         self.df = df
         self.col = col
-        self.rules = rules
+        self.rules = cd_rules
         self.rules_mask = None
+        self.locate = None
 
-        def _apply_decide(input):
-            if input == 'self':
+        def _apply_decide(local_input):
+            if local_input == 'self':
                 return [col]
-            elif input == 'all':
+            elif local_input == 'all':
                 return self.df.columns
-            elif isinstance(input, str):
+            elif isinstance(local_input, str):
                 return parse_wild(applyto, self.df.columns)
             else:
-                return input
+                return local_input
 
         self.apply = _apply_decide(applyto)
 
@@ -75,10 +77,8 @@ class CdFormat:
     def locate_cells(self):
         self.locate = {}
         for key, value in self.configure_rules_mask().items():
-            subrange = self.self.df[value['mask']][self.apply]
+            subrange = self.df[value['mask']][self.apply]
             self.locate['cells'] = subrange
-
-
 
 
 if __name__ == '__main__':
@@ -86,9 +86,9 @@ if __name__ == '__main__':
     rules = {
         'USA': '#FFF000 bold',
         'China': '#e63e31',
-        'rule1': [range(0,9), 'both', '#e63141'],
+        'rule1': [range(0, 9), 'both', '#e63141'],
         'rule2': {
-            'r': ['inlist',1,2,3, {'invert':True}],
+            'r': ['inlist', 1, 2, 3, {'invert': True}],
             'f': 'bold'
         }
     }
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         'rule1': {'r': mask1, 'f': 'bold'}
     }
 
-    myformat = CdFormat(a, 'make', rules=myrule)
+    myformat = CdFormat(a, 'make', cd_rules=myrule)
     dict1 = myformat.configure_rules_mask()
 
     # FramePro(a).inlist('make', ('AMC Concord'))

@@ -116,6 +116,7 @@ class PutxlSet:
             header_wrap: bool = None,
             adjust_height: dict = None,
             df_format: dict = None,
+            cd_format: dict = None,
 
             debug: bool = False,
     ) -> None:
@@ -307,6 +308,11 @@ class PutxlSet:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
 
+        # Conditional Format (1 column based)
+        ################################
+        if cd_format:
+            pass
+
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
         current_sheets = [sheet.name for sheet in self.wb.sheets]
@@ -372,5 +378,10 @@ if __name__ == '__main__':
                 'index_levels'
             ],
             'msgreen80, align="center"': 'header_outer',
+        },
+        cd_format={
+            'grade': {
+
+            }
         }
     )
