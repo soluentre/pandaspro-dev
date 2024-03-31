@@ -399,12 +399,14 @@ if __name__ == '__main__':
             'msblue80, align=center, border=outer_thick': [
                 'index_hsections(level=cmu_dept_major)',
                 'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)',
+                'index_outer'
             ],
             'msgreen80, align="center"': 'header_outer',
         },
         cd_format={
             'column': 'cmu_dept',
-            'rules': {'EAW': '#FF0000'}
+            'rules': {'EAW': 'fill=none'},
+            'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
         },
         sheetreplace=True
     )

@@ -562,6 +562,7 @@ def parse_format_rule(rule):
             r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
             r'border=(.*)': ['border', lambda local_match: local_match.group(1)],
             r'(#[A-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
+            r'fill=(.*)': ['fill', lambda local_match: local_match.group(1)],
         }
 
         if prompt in keysmatch.keys():
@@ -584,6 +585,3 @@ def parse_format_rule(rule):
 
     return return_dict
 
-
-if __name__ == '__main__':
-    print(list_str_w_color('#D9E1F2'))
