@@ -445,7 +445,7 @@ class RangeOperator:
                 def find_pattern(mylist):
                     result = []
                     for local_item in mylist:
-                        if isinstance(local_item, (tuple, list, str)) and local_item in _fpattern_map.keys():
+                        if isinstance(local_item, (tuple, list, str)) and local_item.lower() in _fpattern_map.keys():
                             result.append(local_item)
                     return result
 
@@ -471,7 +471,7 @@ class RangeOperator:
                 parse_fill_color = colorlist_fill[0] if len(colorlist_fill) == 1 else None
 
                 if parse_fill_pattern:
-                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern]
+                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern.lower()]
 
                 if parse_fill_color:
                     if parse_fill_pattern == 'solid' or parse_fill_pattern is None:
@@ -491,7 +491,7 @@ class RangeOperator:
                 fill_with_mylist(cleanlist)
 
         if fill_pattern:
-            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern]
+            self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern.lower()]
 
         if fill_fg:
             if isinstance(fill_fg, tuple):
