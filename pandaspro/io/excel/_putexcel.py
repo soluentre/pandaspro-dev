@@ -290,7 +290,6 @@ class PutxlSet:
                 if ioranges:
                     for each_range in ioranges:
                         # Parse the input string as method name + kwargs
-                        print(parse_method(each_range)[1])
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
@@ -405,7 +404,7 @@ if __name__ == '__main__':
         },
         cd_format={
             'column': 'cmu_dept',
-            'rules': {'EAW': 'fill=none'},
+            'rules': {'EAW': 'fill=None'},
             'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
         },
         sheetreplace=True

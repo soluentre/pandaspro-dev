@@ -236,7 +236,6 @@ class FramexlWriter:
         final = start_range.resize_h(self.tr - self.header_row_count).cell
         if header:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
-            print('final exe', final)
 
         return final
 
@@ -254,12 +253,10 @@ class FramexlWriter:
         )
         apply_columns = mycd.apply
         cd_dfmap_1col = {}
-        print(self.dfmap, self.start_cellobj.cell)
         for key, mask_rule in mycd.rules_mask.items():
             cd_dfmap_1col[key] = {}
             cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
             cd_dfmap_1col[key]['format'] = mask_rule['format']
-        print(cd_dfmap_1col)
         self.cd_dfmap_1col = cd_dfmap_1col
 
         def _df_to_mystring(df):
