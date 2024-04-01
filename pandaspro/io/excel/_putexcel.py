@@ -92,6 +92,7 @@ class PutxlSet:
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
+            replace_warning: bool = False,
 
             # Section. String Format
             font: str | tuple = None,
@@ -142,6 +143,7 @@ class PutxlSet:
                 ws.name = sheet_name
         else:
             ws = self.ws
+        self.ws = ws
 
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
         ################################
@@ -164,12 +166,6 @@ class PutxlSet:
             new_sheet.name = original_name
             ws = new_sheet
             self.ws = ws
-            not_replace_warning = False
-        else:
-            if not isinstance(content, str):
-                not_replace_warning = True
-            else:
-                not_replace_warning = False
 
         # Declare IO Object
         ################################
@@ -207,7 +203,7 @@ class PutxlSet:
          Extra Format (not in the group of format parameters): highlight area in existing-content excel
          This is embedded and will be triggered automatically if not replacing sheet 
          '''
-        if not_replace_warning:
+        if replace_warning:
             match_dict = {
                 'top': self.io.range_top_empty_checker,
                 'bottom': self.io.range_bottom_empty_checker,
@@ -387,7 +383,7 @@ if __name__ == '__main__':
     data = wbuse_pivot.reset_index().set_index('cmu_dept_major')
     e = PutxlSet('sampledf.xlsx', sheet_name='region')
     e.putxl(
-        data,
+        wbuse_pivot,
         cell='B2',
         index=True,
         index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
@@ -402,10 +398,10 @@ if __name__ == '__main__':
             ],
             'msgreen80, align="center"': 'header_outer',
         },
-        cd_format={
-            'column': 'cmu_dept',
-            'rules': {'EAW': 'fill=None'},
-            'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
-        },
+        # cd_format={
+        #     'column': 'cmu_dept',
+        #     'rules': {'EAW': 'fill=None'},
+        #     'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
+        # },
         sheetreplace=True
     )

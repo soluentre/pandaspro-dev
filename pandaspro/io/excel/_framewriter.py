@@ -115,7 +115,7 @@ class FramexlWriter:
         # Special - Checker for sheetreplace
         self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
         self.range_bottom_empty_checker = CellPro(self.bottom_left_cell).offset(1, 0).resize(1, self.tc).cell if CellPro(self.bottom_left_cell).cell_index[0] != 1 else None
-        self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[0] != 1 else None
+        self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[1] != 1 else None
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
 
     def get_column_letter_by_indexname(self, levelname):
@@ -236,6 +236,9 @@ class FramexlWriter:
         final = start_range.resize_h(self.tr - self.header_row_count).cell
         if header:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+
+        if header == 'only':
+            final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.header_row_count)
 
         return final
 

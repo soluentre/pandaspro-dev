@@ -96,27 +96,41 @@ _cpdpuxl_color_map = {
     "grey": "#808080",
     "grey25": "#BFBFBF",
     "white": "#FFFFFF",
-    "bluegray": "#44546A",
+    "msbluegray": "#44546A",
     "msblue": "#4472C4",
     "msorange": "#ED7D31",
     "msgray": "#A5A5A5",
     "msyellow": "#FFC000",
-    "mslightblue": "#5B9BD5",
+    "msdarkblue": "#5B9BD5",
     "msgreen": "#70AD47",
     "bluegray80": "#D6DCE4",
-    "msblue80": "#D9E1F2",
-    "msorange80": "#FCE4D6",
-    "msgray80": "#EDEDED",
-    "msyellow80": "#FFF2CC",
-    "mslightblue80": "#DDEBF7",
-    "msgreen80": "#E2EFDA",
+    "blue80": "#D9E1F2",
+    "orange80": "#FCE4D6",
+    "gray80": "#EDEDED",
+    "yellow80": "#FFF2CC",
+    "darkblue80": "#DDEBF7",
+    "green80": "#E2EFDA",
     "bluegray60": "#ACB9CA",
-    "msblue60": "#B4C6E7",
-    "msorange60": "#F8CBAD",
-    "msgray60": "#DBDBDB",
-    "msyellow60": "#FFE699",
-    "mslightblue60": "#BDD7EE",
-    "msgreen60": "#C6E0B4",
+    "blue60": "#B4C6E7",
+    "orange60": "#F8CBAD",
+    "gray60": "#DBDBDB",
+    "yellow60": "#FFE699",
+    "darkblue60": "#BDD7EE",
+    "green60": "#C6E0B4",
+    "bluegrayd25": "#333F4F",
+    "blued25": "#2F75B5",
+    "oranged25": "#C65911",
+    "grayd25": "#7B7B7B",
+    "yellowd25": "#BF8F00",
+    "darkblued25": "#305496",
+    "greend25": "#548235",
+    "bluegrayd50": "#222B35",
+    "blued50": "#1F4E78",
+    "oranged50": "#833C0C",
+    "grayd50": "#525252",
+    "yellowd50": "#806000",
+    "darkblued50": "#203764",
+    "greend50": "#375623"
 }
 
 
@@ -585,3 +599,6 @@ def parse_format_rule(rule):
 
     return return_dict
 
+if __name__ == '__main__':
+    file = r'C:\Users\wb539289\OneDrive - WBG\Desktop\temp.xlsx'
+    print_cell_attributes(file, 'Sheet1', 'A1:A14')
