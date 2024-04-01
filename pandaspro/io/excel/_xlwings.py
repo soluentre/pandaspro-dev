@@ -118,19 +118,19 @@ _cpdpuxl_color_map = {
     "darkblue60": "#BDD7EE",
     "green60": "#C6E0B4",
     "bluegrayd25": "#333F4F",
-    "blued25": "#2F75B5",
+    "blued25": "#305496",
     "oranged25": "#C65911",
     "grayd25": "#7B7B7B",
     "yellowd25": "#BF8F00",
-    "darkblued25": "#305496",
+    "lightblued25": "#2F75B5",
     "greend25": "#548235",
     "bluegrayd50": "#222B35",
-    "blued50": "#1F4E78",
-    "oranged50": "#833C0C",
+    "blued50": "#203764",
+    "oranged60": "#833C0C",
     "grayd50": "#525252",
     "yellowd50": "#806000",
-    "darkblued50": "#203764",
-    "greend50": "#375623"
+    "lightblued50": "#1F4E78",
+    "greend50": "#375623",
 }
 
 
@@ -600,7 +600,3 @@ def parse_format_rule(rule):
         return_dict.update(_parse_str_format_key(term))
 
     return return_dict
-
-if __name__ == '__main__':
-    file = r'C:\Users\wb539289\OneDrive - WBG\Desktop\temp.xlsx'
-    print_cell_attributes(file, 'Sheet1', 'A1:A14')
