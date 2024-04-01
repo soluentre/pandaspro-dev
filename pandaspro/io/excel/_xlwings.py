@@ -293,6 +293,8 @@ class RangeOperator:
             self.xwrange.font.size = font_size
 
         if font_color:
+            if font_color in _cpdpuxl_color_map.keys():
+                font_color = _cpdpuxl_color_map[font_color]
             self.xwrange.font.color = font_color
 
         if italic is not None:

@@ -3,6 +3,7 @@ import os
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
+from pandaspro.io.excel._utils import CellPro
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
 
 
@@ -287,6 +288,8 @@ class PutxlSet:
                     for each_range in ioranges:
                         # Parse the input string as method name + kwargs
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
+                        if debug:
+                            print("Parsing the methods:", range_affix, method_kwargs)
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
                             range_cells = attr_method(**method_kwargs)
@@ -295,8 +298,12 @@ class PutxlSet:
 
                         if isinstance(range_cells, dict):
                             for range_key, range_content in range_cells.items():
+                                if debug:
+                                    print("d_format Dictionary Reading", range_content, "as", range_affix)
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
                         elif isinstance(range_cells, str):
+                            if debug:
+                                print("d_format Dictionary Reading", range_cells, "as", range_affix)
                             RangeOperator(self.ws.range(range_cells)).format(**format_kwargs)
 
                 if dict_from_cpdframexl:

@@ -234,11 +234,12 @@ class FramexlWriter:
         start_range = CellPro(top_left + ':' + top_right)
 
         final = start_range.resize_h(self.tr - self.header_row_count).cell
-        if header:
+        # noinspection PySimplifyBooleanCheck
+        if header == True:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
 
         if header == 'only':
-            final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.header_row_count)
+            final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
 
         return final
 
