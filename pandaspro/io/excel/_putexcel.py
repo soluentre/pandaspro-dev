@@ -270,7 +270,7 @@ class PutxlSet:
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
                     if isinstance(local_input, str):
-                        parsedlist = [item.strip() for item in local_input.split(',')]
+                        parsedlist = [item.strip() for item in local_input.split(';')]
                         cpdframexl_dict = None
                     elif isinstance(local_input, list):
                         parsedlist = local_input
@@ -286,6 +286,8 @@ class PutxlSet:
 
                 if ioranges:
                     for each_range in ioranges:
+                        if debug:
+                            print("IO Ranges - Each Range", each_range, type(each_range))
                         # Parse the input string as method name + kwargs
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
                         if debug:

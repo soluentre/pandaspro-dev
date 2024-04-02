@@ -160,6 +160,7 @@ def extract_tuple(s):
     elif len(matches) == 1:
         match = matches[0]
         tuple_str = match.group(1)
+        # split tuple of RGB color by comma: ,
         color_tuple = tuple(map(int, tuple_str.split(',')))
         remaining_str = s[:match.start()] + s[match.end():]
         return color_tuple, remaining_str.strip()
@@ -198,7 +199,7 @@ def color_to_int(color: str | tuple):
 
 def list_str_w_color(mystr: str):
     color, remaining = extract_tuple(mystr)
-    result = [i for i in remaining.replace(' ', '').split(',') if i != '']
+    result = [i.strip() for i in remaining.split(';') if i != '']
     if color is not None:
         result = result + [color]
 
@@ -262,7 +263,7 @@ class RangeOperator:
                 color, remaining = extract_tuple(font)
                 if color:
                     self.xwrange.font.color = color
-                for item in remaining.split(','):
+                for item in remaining.split(';'):
                     item = item.strip()
                     # noinspection RegExpSimplifiable
                     if _is_number(item):
@@ -340,7 +341,7 @@ class RangeOperator:
 
         if align:
             if isinstance(align, str):
-                for item in align.split(','):
+                for item in align.split(';'):
                     item = item.strip()
                     _alignfunc(item)
             elif isinstance(align, list):
@@ -554,7 +555,7 @@ def parse_format_rule(rule):
     elif not isinstance(rule, str):
         raise ValueError('format prompt key word must be str')
 
-    promptlist = [prompt.strip() for prompt in rule.split(',')]
+    promptlist = [prompt.strip() for prompt in rule.split(';')]
     return_dict = {}
 
     def _parse_str_format_key(prompt):
