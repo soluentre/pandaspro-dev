@@ -116,7 +116,7 @@ class PutxlSet:
             # Section. df format
             index_merge: dict = None,
             header_wrap: bool = None,
-            adjust_height: dict = None,
+            adjust_width: dict = None,
             df_format: dict = None,
             cd_format: dict = None,
 
@@ -233,7 +233,7 @@ class PutxlSet:
             RangeOperator(self.ws.range(io.range_header)).format(wrap=True)
 
         '''
-        For adjust_height para, the accepted dict must use column/index name as keys
+        For adjust_width para, the accepted dict must use column/index name as keys
         The direct value follow each column/index name must be a dictionary, 
         and there must be a key of "width" in it
         
@@ -244,8 +244,8 @@ class PutxlSet:
         >>>     'salary': {'width': 30, 'haligh': 'left'}
         >>> }
         '''
-        if adjust_height:
-            for name, setting in adjust_height.items():
+        if adjust_width:
+            for name, setting in adjust_width.items():
                 if name in io.columns:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'])
                 if name in io.rawdata.index.names:

@@ -588,7 +588,7 @@ def parse_format_rule(rule):
         }
 
         if prompt in keysmatch.keys():
-            result.update(keysmatch['prompt'])
+            result.update(keysmatch[prompt])
 
         if prompt in _cpdpuxl_color_map.keys():
             lc_hex = _cpdpuxl_color_map[prompt]
