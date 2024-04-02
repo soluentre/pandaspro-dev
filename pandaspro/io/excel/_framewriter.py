@@ -218,22 +218,27 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
-    def range_cspan(self, s = None, e = None, header = False):
+    def range_cspan(self, s = None, e = None, c = None, header = False):
         # Get the col indices and row index
         col_index1 = self.get_column_letter_by_name(s).cell_index[1]
         col_index2 = self.get_column_letter_by_name(e).cell_index[1]
         row_index = self.get_column_letter_by_name(s).cell_index[0]
 
-        # decide the top row cells with min/max - allow invert orders
+        # Decide the top row cells with min/max - allow invert orders
         top_left_index = min(col_index1, col_index2)
         top_right_index = max(col_index1, col_index2)
         top_left = index_to_cell(row_index, top_left_index)
         top_right = index_to_cell(row_index, top_right_index)
 
         # Combine Range
-        start_range = CellPro(top_left + ':' + top_right)
+        if c: # Para C: declare column only
+            selected_column = self.get_column_letter_by_name(c)
+            start_range = selected_column
+        else:
+            start_range = CellPro(top_left + ':' + top_right)
 
         final = start_range.resize_h(self.tr - self.header_row_count).cell
+
         # noinspection PySimplifyBooleanCheck
         if header == True:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
