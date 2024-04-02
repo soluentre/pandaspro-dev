@@ -218,7 +218,7 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
-    def range_cspan(self, s, e, header=False):
+    def range_cspan(self, s = None, e = None, header = False):
         # Get the col indices and row index
         col_index1 = self.get_column_letter_by_name(s).cell_index[1]
         col_index2 = self.get_column_letter_by_name(e).cell_index[1]
