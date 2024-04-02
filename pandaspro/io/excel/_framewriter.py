@@ -218,11 +218,11 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
-    def range_columnspan(self, start_col, stop_col, header=False):
+    def range_cspan(self, s, e, header=False):
         # Get the col indices and row index
-        col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
-        col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
-        row_index = self.get_column_letter_by_name(start_col).cell_index[0]
+        col_index1 = self.get_column_letter_by_name(s).cell_index[1]
+        col_index2 = self.get_column_letter_by_name(e).cell_index[1]
+        row_index = self.get_column_letter_by_name(s).cell_index[0]
 
         # decide the top row cells with min/max - allow invert orders
         top_left_index = min(col_index1, col_index2)

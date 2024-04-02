@@ -400,7 +400,7 @@ if __name__ == '__main__':
             'border=inner_thin': ['all'],
             'msblue80, align=center, border=outer_thick': [
                 'index_hsections(level=cmu_dept_major)',
-                'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)',
+                'cspan(s=GC Total, e=Ratio Total, header=True)',
                 'index_outer'
             ],
             'msgreen80, align="center"': 'header_outer',
