@@ -212,6 +212,8 @@ class RangeOperator:
 
     def format(
             self,
+            width=None,
+            height=None,
             font: str | tuple | list = None,
             font_name: str = None,
             font_size: str = None,
@@ -220,11 +222,10 @@ class RangeOperator:
             bold: bool = None,
             underline: bool = None,
             strikeout: bool = None,
+            number_format: str = None,
             align: str | list = None,
             merge: bool = None,
             wrap: bool = None,
-            width = None,
-            height = None,
             border: str | list = None,
             fill: str | tuple | list = None,
             fill_pattern: str = None,
@@ -238,6 +239,17 @@ class RangeOperator:
                   f'align: {list(_alignment_map.keys())}; \n'
                   f'fill_pattern: {list(_fpattern_map.keys())};\n'
                   f'border_custom: {list(_border_custom.keys())};\n')
+
+        # Width and Height Attributes
+        ##################################
+        '''
+        default width and height for a excel cell is 8.54 (around ...) and 14.6
+        '''
+        if width:
+            self.xwrange.api.EntireColumn.ColumnWidth = width
+
+        if height:
+            self.xwrange.api.RowHeight = height
 
         # Font Attributes
         ##################################
@@ -309,6 +321,9 @@ class RangeOperator:
         if strikeout is not None:
             self.xwrange.api.Font.Strikethrough = strikeout
 
+        if number_format is not None:
+            self.xwrange.number_format = number_format
+
         # Align Attributes
         ##################################
         def _alignfunc(alignkey):
@@ -347,17 +362,6 @@ class RangeOperator:
 
         if wrap is not None:
             self.xwrange.api.WrapText = wrap
-
-        # Width and Height Attributes
-        ##################################
-        '''
-        default width and height for a excel cell is 8.54 (around ...) and 14.6
-        '''
-        if width:
-            self.xwrange.api.EntireColumn.ColumnWidth = width
-
-        if height:
-            self.xwrange.api.RowHeight = height
 
         # Border Attributes
         ##################################
@@ -570,12 +574,13 @@ def parse_format_rule(rule):
             'nowrap': {'wrap': False},
         }
         patterns = {
+            r'width=(.*)': ['width', lambda local_match: float(local_match.group(1))],
+            r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
             r'font_name=(.*)': ['font_name', lambda local_match: local_match.group(1)],
             r'font_size=(.*)': ['font_size', lambda local_match: float(local_match.group(1))],
             r'font_color=(.*)': ['font_color', lambda local_match: local_match.group(1)],
             r'align=(.*)': ['align', lambda local_match: local_match.group(1)],
-            r'width=(.*)': ['width', lambda local_match: float(local_match.group(1))],
-            r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
+            r'number_format=(.*)': ['number_format', lambda local_match: local_match.group(1)],
             r'border=(.*)': ['border', lambda local_match: local_match.group(1)],
             r'(#[A-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
             r'fill=(.*)': ['fill', lambda local_match: local_match.group(1)],
@@ -591,7 +596,11 @@ def parse_format_rule(rule):
         for pattern, value in patterns.items():
             match = re.fullmatch(pattern, prompt)
             if match:
-                append_dict = {value[0]: value[1](match).replace('"', '').replace('\'', '')}
+                if isinstance(value[1](match), str):
+                    value_to_pass = value[1](match).replace('"', '').replace('\'', '')
+                else:
+                    value_to_pass = value[1](match)
+                append_dict = {value[0]: value_to_pass}
                 result.update(append_dict)
 
         return result
