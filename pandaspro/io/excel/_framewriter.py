@@ -218,11 +218,11 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
-    def range_columns(self, prompt, header = False):
-        if isinstance(prompt, str):
-            clean_list = parse_wild(prompt, self.columns)
-        elif isinstance(prompt, list):
-            clean_list = prompt
+    def range_columns(self, c, header = False):
+        if isinstance(c, str):
+            clean_list = parse_wild(c, self.columns)
+        elif isinstance(c, list):
+            clean_list = c
         else:
             raise ValueError('range_columns only accept str/list as inputs')
 
