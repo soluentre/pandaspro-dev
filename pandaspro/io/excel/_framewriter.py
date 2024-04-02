@@ -218,6 +218,27 @@ class FramexlWriter:
                 range_start_each = range_start_each.offset(0, 1)
             return result_dict
 
+    def range_columns(self, prompt, header = False):
+        if isinstance(prompt, str):
+            clean_list = parse_wild(prompt, self.columns)
+        elif isinstance(prompt, list):
+            clean_list = prompt
+        else:
+            raise ValueError('range_columns only accept str/list as inputs')
+
+        result_list = []
+        for colname in clean_list:
+            start_range = self.get_column_letter_by_name(colname)
+            each_range = start_range.resize_h(self.tr - self.header_row_count).cell
+            # noinspection PySimplifyBooleanCheck
+            if header == True:
+                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+            if header == 'only':
+                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
+            result_list.append(each_range)
+
+        return ', '.join(result_list)
+
     def range_cspan(self, s = None, e = None, c = None, header = False):
         # Declaring starting and ending columns
         if s and e:
@@ -241,11 +262,9 @@ class FramexlWriter:
             raise ValueError('At least 1 set of Paras: (1) s+e or (2) c must be declared ')
 
         final = start_range.resize_h(self.tr - self.header_row_count).cell
-
         # noinspection PySimplifyBooleanCheck
         if header == True:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
-
         if header == 'only':
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
 
