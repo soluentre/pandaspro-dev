@@ -219,23 +219,26 @@ class FramexlWriter:
             return result_dict
 
     def range_cspan(self, s = None, e = None, c = None, header = False):
-        # Get the col indices and row index
-        col_index1 = self.get_column_letter_by_name(s).cell_index[1]
-        col_index2 = self.get_column_letter_by_name(e).cell_index[1]
-        row_index = self.get_column_letter_by_name(s).cell_index[0]
+        # Declaring starting and ending columns
+        if s and e:
+            col_index1 = self.get_column_letter_by_name(s).cell_index[1]
+            col_index2 = self.get_column_letter_by_name(e).cell_index[1]
+            row_index = self.get_column_letter_by_name(s).cell_index[0]
 
-        # Decide the top row cells with min/max - allow invert orders
-        top_left_index = min(col_index1, col_index2)
-        top_right_index = max(col_index1, col_index2)
-        top_left = index_to_cell(row_index, top_left_index)
-        top_right = index_to_cell(row_index, top_right_index)
+            # Decide the top row cells with min/max - allow invert orders
+            top_left_index = min(col_index1, col_index2)
+            top_right_index = max(col_index1, col_index2)
+            top_left = index_to_cell(row_index, top_left_index)
+            top_right = index_to_cell(row_index, top_right_index)
+            start_range = CellPro(top_left + ':' + top_right)
 
-        # Combine Range
-        if c:  # Para C: declare column only
+        # Declaring only 1 column
+        elif c:  # Para C: declare column only
             selected_column = self.get_column_letter_by_name(c)
             start_range = selected_column
+
         else:
-            start_range = CellPro(top_left + ':' + top_right)
+            raise ValueError('At least 1 set of Paras: (1) s+e or (2) c must be declared ')
 
         final = start_range.resize_h(self.tr - self.header_row_count).cell
 
