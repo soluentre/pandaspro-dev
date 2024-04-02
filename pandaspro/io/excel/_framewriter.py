@@ -231,7 +231,7 @@ class FramexlWriter:
         top_right = index_to_cell(row_index, top_right_index)
 
         # Combine Range
-        if c: # Para C: declare column only
+        if c:  # Para C: declare column only
             selected_column = self.get_column_letter_by_name(c)
             start_range = selected_column
         else:
