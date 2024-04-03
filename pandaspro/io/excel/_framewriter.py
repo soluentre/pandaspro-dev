@@ -130,8 +130,8 @@ class FramexlWriter:
         col_count = list(self.columns).index(colname)
         col_cell = self.start_cellobj.offset(0, col_count)
 
-        if self.export_type in ['htif', 'hfif']:
-            col_cell = col_cell.offset(0, -self.index_column_count)
+        # if self.export_type in ['htif', 'hfif']:
+        #     col_cell = col_cell.offset(0, -self.index_column_count)
 
         return col_cell
 

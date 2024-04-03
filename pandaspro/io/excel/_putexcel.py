@@ -240,6 +240,7 @@ class PutxlSet:
         >>> }
         '''
         if adjust_width:
+            print(io.get_column_letter_by_name('Name (Full)').cell)
             for name, setting in adjust_width.items():
                 if name in io.columns:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'], debug=debug)
