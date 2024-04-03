@@ -78,7 +78,6 @@ class PutxlSet:
 
         self.app = app
         self.workbook = workbook
-        self.worksheet = sheet_name
         self.wb = wb
         self.ws = sheet
         self.globalreplace = alwaysreplace
@@ -136,22 +135,19 @@ class PutxlSet:
         ################################
         replace_type = self.globalreplace if self.globalreplace else replace
 
-        if sheet_name and sheet_name != self.worksheet:
+        if sheet_name and sheet_name != self.ws.name:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
-                ws = self.wb.sheets[sheet_name]
+                self.ws = self.wb.sheets[sheet_name]
             else:
-                ws = self.wb.sheets.add(after=self.wb.sheets.count)
-                ws.name = sheet_name
-        else:
-            ws = self.ws
-        self.ws = ws
+                self.ws = self.wb.sheets.add(after=self.wb.sheets.count)
+                self.ws.name = sheet_name
 
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
         ################################
         if sheetreplace or replace_type == 'sheet':
             _sheetmap = {sheet.index: sheet.name for sheet in self.wb.sheets}
-            original_index = ws.index
-            original_name = ws.name
+            original_index = self.ws.index
+            original_name = self.ws.name
             total_count = self.wb.sheets.count
             if debug:
                 print(f">>> Row 121: original index is {original_index}")
@@ -163,16 +159,15 @@ class PutxlSet:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
                 if debug:
                     print(f">>> Row 132: New sheet added before the sheet !'{_sheetmap[original_index + 1]}'")
-            ws.delete()
+            self.ws.delete()
             new_sheet.name = original_name
-            ws = new_sheet
-            self.ws = ws
+            self.ws = new_sheet
 
         # Declare IO Object
         ################################
         if isinstance(content, str):
             io = StringxlWriter(content=content, cell=cell)
-            RangeOperator(ws.range(io.cell)).format(
+            RangeOperator(self.ws.range(io.cell)).format(
                 font=font,
                 font_name=font_name,
                 font_size=font_size,
@@ -191,11 +186,11 @@ class PutxlSet:
                 appendix=appendix
             )
             self.io = io
-            ws.range(io.cell).value = io.content
+            self.ws.range(io.cell).value = io.content
 
         else:
             io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-            ws.range(io.cell).value = io.content
+            self.ws.range(io.cell).value = io.content
             self.io = io
 
         # Format the sheet (Shelley, Li)
@@ -213,7 +208,7 @@ class PutxlSet:
             }
             for direction in list(match_dict.keys()):
                 if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
