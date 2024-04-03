@@ -378,9 +378,3 @@ class PutxlSet:
             sheet.name = sheet_name
         self.ws = sheet
         return
-
-
-if __name__ == '__main__':
-
-    wb = xw.Book(r'C:\Users\wb539289\python_projects\pandaspro_dev\sampledf.xlsx')
-    print(wb.name)
