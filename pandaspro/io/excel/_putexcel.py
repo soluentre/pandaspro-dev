@@ -343,6 +343,16 @@ class PutxlSet:
 
         self.wb.save()
 
+        # Print Export Success Message to Console ...
+        ################################
+        if hasattr(content, 'frame_name'):
+            name = content.frame_name
+            if len(name) > 30:
+                name = name.replace('.xlsx','')[0:26] + ' (...) .xlsx'
+        else:
+            name = "Unnamed Frame Object"
+        print(f"{name} successfully exported to <<{self.wb.name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+
         if debug:
             print(f"\n>>> Cell Range Analysis")
             print(f" ----------------------")
@@ -372,40 +382,5 @@ class PutxlSet:
 
 if __name__ == '__main__':
 
-    from wbhrdata import wbuse_pivot, hrconfig
-    from pandaspro import sysuse_auto, sysuse_countries
-
-    df1 = sysuse_auto
-    df2 = sysuse_countries
-
-    # ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
-    # ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
-    # from _xlwings import cpdStyle
-    data = wbuse_pivot.reset_index().set_index('cmu_dept_major')
-    e = PutxlSet('sampledf.xlsx', sheet_name='region')
-    e.putxl(
-        wbuse_pivot,
-        cell='B2',
-        index=True,
-        index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
-        adjust_height=hrconfig,
-        header_wrap=True,
-        df_format={
-            'border=inner_thin': ['all'],
-            'msblue80, align=center, border=outer_thick': [
-                'index_hsections(level=cmu_dept_major)',
-                'cspan(s=GC Total, e=Ratio Total, header=True)',
-                'index_outer'
-            ],
-            'msgreen80, align="center"': 'header_outer',
-        },
-        # cd_format={
-        #     'column': 'cmu_dept',
-        #     'rules': {'EAW': 'fill=None'},
-        #     'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
-        # },
-        sheetreplace=True
-    )
+    wb = xw.Book(r'C:\Users\wb539289\python_projects\pandaspro_dev\sampledf.xlsx')
+    print(wb.name)
