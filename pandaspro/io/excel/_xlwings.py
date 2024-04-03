@@ -413,6 +413,8 @@ class RangeOperator:
                         result.append(local_item)
                     elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
                         result.append(local_item)
+                    elif local_item in _cpdpuxl_color_map:
+                        result.append(_cpdpuxl_color_map[local_item])
                 return result
 
             # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
