@@ -336,7 +336,7 @@ class PutxlSet:
                     cd_format_kwargs = parse_format_rule(cd_format_rule)
                     if debug:
                         print("Conditional Formatting Debug >>>")
-                        print(cellrange)
+                        print(cd_format_kwargs)
 
                     if len(cellrange) <= 30:
                         RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)

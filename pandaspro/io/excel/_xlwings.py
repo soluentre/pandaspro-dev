@@ -189,7 +189,7 @@ def color_to_int(color: str | tuple):
 
 def list_str_w_color(mystr: str):
     color, remaining = extract_tuple(mystr)
-    result = [i.strip() for i in remaining.split(';') if i != '']
+    result = [i.strip() for i in remaining.split(',') if i != '']
     if color is not None:
         result = result + [color]
 
