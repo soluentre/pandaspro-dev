@@ -72,16 +72,6 @@ _border_weight_map = {
     'thicker': 4
 }
 
-_border_custom = {
-    'none': None,
-    'all_thin': ['all', 'continue', 'thin', '#000000'],
-    'all_thick': ['all', 'continue', 'thick', '#000000'],
-    'inner_thin': ['inner', 'continue', 'thin', '#000000'],
-    'inner_thick': ['inner', 'continue', 'thick', '#000000'],
-    'outer_thin': ['outer', 'continue', 'thin', '#000000'],
-    'outer_thick': ['outer', 'continue', 'thick', '#000000']
-}
-
 _cpdpuxl_color_map = {
     "darkred": "#C00000",
     "red": "#FF0000",
@@ -232,14 +222,14 @@ class RangeOperator:
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
-            appendix: bool = False
+            appendix: bool = False,
+            debug: bool = False
     ) -> None:
 
         if appendix:
             print('Please choose one value from the corresponding parameter: \n'
                   f'align: {list(_alignment_map.keys())}; \n'
-                  f'fill_pattern: {list(_fpattern_map.keys())};\n'
-                  f'border_custom: {list(_border_custom.keys())};\n')
+                  f'fill_pattern: {list(_fpattern_map.keys())};\n')
 
         # Width and Height Attributes
         ##################################
@@ -372,9 +362,6 @@ class RangeOperator:
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
 
-            if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
-                border_para = _border_custom[border.strip()]
-
             elif isinstance(border, str) and border.strip() != 'none':
                 border_para = list_str_w_color(border)
 
@@ -385,11 +372,20 @@ class RangeOperator:
                 raise ValueError(
                     'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
+            def deal_with_combined_border(complex_border, type_dict, return_list):
+                separate_list = complex_border.split("_")
+                for term in separate_list:
+                    if term in type_dict.keys():
+                        return_list.append(term)
+
             def find_border_side(mylist):
                 result = []
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_side_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_side_map, result)
+
                 return result
 
             def find_border_style(mylist):
@@ -397,6 +393,9 @@ class RangeOperator:
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_style_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_style_map, result)
+
                 return result
 
             def find_border_weight(mylist):
@@ -404,6 +403,9 @@ class RangeOperator:
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_weight_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_weight_map, result)
+
                 return result
 
             def find_border_color(mylist):
@@ -415,17 +417,30 @@ class RangeOperator:
                         result.append(local_item)
                     elif local_item in _cpdpuxl_color_map:
                         result.append(_cpdpuxl_color_map[local_item])
+                    else:
+                        deal_with_combined_border(local_item, _cpdpuxl_color_map, result)
+
                 return result
 
             # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
             sidelist = find_border_side(border_para)
+            if len(sidelist) == 0:
+                sidelist = ['all']
             stylelist = find_border_style(border_para)
+            if len(stylelist) == 0:
+                stylelist = ['continue']
             weightlist = find_border_weight(border_para)
+            if len(weightlist) == 0:
+                weightlist = ['thin']
             colorlist = find_border_color(border_para)
-            leftover = [item for item in border_para if item not in sidelist + stylelist + weightlist + colorlist]
-            if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]) or len(leftover) > 0:
+            if len(colorlist) == 0:
+                colorlist = ['#000000']
+            if debug:
+                print('Created lists from border para', sidelist, stylelist, weightlist, colorlist)
+
+            if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]):
                 raise ValueError(
-                    'Invalid input. At most 1 side, 1 style, 1 weight and 1 color can be specified.')
+                    'Invalid input. At most 1 side, 1 style, 1 weight and 1 color can be specified')
 
             # Create patter and color parameter
             border_side = sidelist[0] if len(sidelist) == 1 else None

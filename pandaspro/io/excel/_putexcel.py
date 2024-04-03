@@ -3,7 +3,7 @@ import os
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
-from pandaspro.io.excel._utils import CellPro
+from pandaspro.io.excel._utils import cell_range_combine
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
 
 
@@ -208,7 +208,7 @@ class PutxlSet:
             }
             for direction in list(match_dict.keys()):
                 if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'], debug=debug)
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
@@ -222,10 +222,10 @@ class PutxlSet:
         '''
         if index_merge:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
-                RangeOperator(self.ws.range(local_range)).format(merge=True)
+                RangeOperator(self.ws.range(local_range)).format(merge=True, debug=debug)
 
         if header_wrap:
-            RangeOperator(self.ws.range(io.range_header)).format(wrap=True)
+            RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
 
         '''
         For adjust_width para, the accepted dict must use column/index name as keys
@@ -242,9 +242,9 @@ class PutxlSet:
         if adjust_width:
             for name, setting in adjust_width.items():
                 if name in io.columns:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'])
+                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'], debug=debug)
                 if name in io.rawdata.index.names:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'])
+                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'], debug=debug)
 
         '''
         df_format: the main function to add format to ranges
@@ -297,15 +297,15 @@ class PutxlSet:
                             for range_key, range_content in range_cells.items():
                                 if debug:
                                     print("d_format Dictionary Reading", range_content, "as", range_affix)
-                                RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                                RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str):
                             if debug:
                                 print("d_format Dictionary Reading", range_cells, "as", range_affix)
-                            RangeOperator(self.ws.range(range_cells)).format(**format_kwargs)
+                            RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
 
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
-                        RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                        RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
 
         # Conditional Format (1 column based)
         ################################
@@ -334,11 +334,21 @@ class PutxlSet:
                     # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
                     # parse_format_rule is taken from _xlwings module
                     cd_format_kwargs = parse_format_rule(cd_format_rule)
-                    RangeOperator(self.ws.range(cellrange)).format(**cd_format_kwargs)
+                    if debug:
+                        print("Conditional Formatting Debug >>>")
+                        print(cellrange)
+
+                    if len(cellrange) <= 30:
+                        RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
+                    else:
+                        cellrange_dict = cell_range_combine(cellrange)
+                        for range_list in cellrange_dict.values():
+                            for combined_range in range_list:
+                                RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
 
             # Decide if cd_format is a dict or not
             if isinstance(cd_format, dict):
-                cd_paint(cd_paint())
+                cd_paint(cd_format)
 
             if isinstance(cd_format, list):
                 for rule in cd_format:
