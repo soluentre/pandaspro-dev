@@ -86,6 +86,7 @@ _cpdpuxl_color_map = {
     "grey": "#808080",
     "grey25": "#BFBFBF",
     "white": "#FFFFFF",
+    "black": "#000000",
     "msbluegray": "#44546A",
     "msblue": "#4472C4",
     "msorange": "#ED7D31",
@@ -494,13 +495,20 @@ class RangeOperator:
                             result.append(local_item)
                         elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
                             result.append(local_item)
+                        elif local_item in _cpdpuxl_color_map.keys():
+                            result.append(_cpdpuxl_color_map[local_item])
                     return result
 
                 # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
                 patternlist_fill = find_pattern(fill_list)
+                if len(patternlist_fill) == 0:
+                    patternlist_fill = ['solid']
                 colorlist_fill = find_colors(fill_list)
-                leftover_fill = [term for term in fill_list if term not in patternlist_fill + colorlist_fill]
-                if len(leftover_fill) > 0 or len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
+                if len(colorlist_fill) == 0:
+                    colorlist_fill = ['none']
+                if debug:
+                    print("Check Fill >>> ", patternlist_fill, colorlist_fill)
+                if len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
                     raise ValueError(
                         'Invalid input. Please check if pattern or color are specified correctly. At most 1 color and 1 pattern')
 
