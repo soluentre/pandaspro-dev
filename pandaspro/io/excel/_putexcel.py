@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 import os
 import xlwings as xw
@@ -220,6 +221,8 @@ class PutxlSet:
         >>> ['grade', 'staff_id', 'age']
         >>> '* Total' 
         # this will match all columns in the dataframe ends with Total
+        
+        Example: {'level': 'cmu_dept', 'columns': '*Total'}
         '''
         if index_merge:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
@@ -241,7 +244,6 @@ class PutxlSet:
         >>> }
         '''
         if adjust_width:
-            print(io.get_column_letter_by_name('Name (Full)').cell)
             for name, setting in adjust_width.items():
                 if name in io.columns:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'], debug=debug)
@@ -368,6 +370,8 @@ class PutxlSet:
         use style_sheets command to view pre-defined formats
         '''
         if style:
+            from pandaspro.io.excel.style_sheets import style_sheets
+
             # First parse string to lists
             if isinstance(style, str):
                 loop_list = str2list(style)
@@ -376,10 +380,35 @@ class PutxlSet:
             else:
                 raise ValueError('Invalid object for style parameter, only str or list accepted')
 
+            # Reorder the items in loop
+            checked_dict = {}
+            for element in loop_list:
+                if element in style_sheets:
+                    checked_dict[element] = element
+                elif re.match(r'index_merge\(([^,]+),?\s*(.*)\)', element):
+                    checked_dict['index_merge'] = element
+                else:
+                    raise ValueError(f'Specified style {element} not in style sheets')
+
+            checked_list = []
+            for key in style_sheets.keys():
+                if key in checked_dict.keys():
+                    checked_list.append(checked_dict[key])
+
             # Loop and apply style by checking the style py module
-            from pandaspro.io.excel.style_sheets import style_sheets
-            for each_style in loop_list:
-                apply_style = style_sheets[each_style]
+            for each_style in checked_list:
+                match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_style)
+                if match:
+                    index_name = match.group(1)
+                    columns = match.group(2) if match.group(2) != '' else 'None'
+                    content_border = style_sheets['index_merge']['border=outer_thick']
+                    content_border[1] = content_border[1].replace('__index__', index_name)
+                    style_sheets['index_merge']['merge'] = style_sheets['index_merge']['merge'].replace(
+                        '__index__', index_name).replace('__columns__', columns)
+                    apply_style = style_sheets['index_merge']
+                else:
+                    apply_style = style_sheets[each_style]
+
                 apply_df_format(apply_style)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
@@ -427,5 +456,7 @@ class PutxlSet:
 
 if __name__ == '__main__':
     from pandaspro import sysuse_auto
+    sysuse_auto = sysuse_auto.sort_values('rep78')
+    sysuse_auto = sysuse_auto.set_index('rep78')
     ps = PutxlSet('sampledf.xlsx')
-    ps.putxl(sysuse_auto, 'newtab', 'B2', style='blue')
+    ps.putxl(sysuse_auto, 'newtab', 'B2', index=True, style='index_merge(rep78); blue', sheetreplace=True)

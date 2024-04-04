@@ -208,15 +208,12 @@ class FramexlWriter:
     ''' this is returning the whole level by level ranges in selection '''
     @property
     def range_index_levels(self) -> dict:
-        if self.range_index is None or not isinstance(self.rawdata.index, pd.MultiIndex):
-            raise ValueError('index_levels method requires the input dataframe to be multi-index frame')
-        else:
-            result_dict = {}
-            range_start_each = CellPro(self.cell)
-            for each_index in self.rawdata.index.names:
-                result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
-                range_start_each = range_start_each.offset(0, 1)
-            return result_dict
+        result_dict = {}
+        range_start_each = CellPro(self.cell)
+        for each_index in self.rawdata.index.names:
+            result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
+            range_start_each = range_start_each.offset(0, 1)
+        return result_dict
 
     def range_columns(self, c, header = False):
         if isinstance(c, str):
