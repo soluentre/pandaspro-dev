@@ -15,5 +15,8 @@ style_sheets = {
             'index_levels',
             'index_hsections(level=__index__)'
         ]
+    },
+    'total': {
+        'border=outer_thick': 'columns(c=Total)'
     }
 }
