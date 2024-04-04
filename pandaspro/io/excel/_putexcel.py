@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 import xlwings as xw
-from pandaspro.core.stringfunc import parse_method
+from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
 from pandaspro.io.excel._utils import cell_range_combine
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
@@ -118,6 +118,7 @@ class PutxlSet:
             adjust_width: dict = None,
             df_format: dict = None,
             cd_format: list | dict = None,
+            style: str | list = None,
 
             debug: bool = False,
     ) -> None:
@@ -247,6 +248,8 @@ class PutxlSet:
                 if name in io.rawdata.index.names:
                     RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'], debug=debug)
 
+        # Format with defined rules using a Dictionary
+        ################################
         '''
         df_format: the main function to add format to ranges
         This parameter will take a dictionary which uses:
@@ -257,8 +260,8 @@ class PutxlSet:
         >>> ... df_format={'msblue80': 'header'}
         >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
         '''
-        if df_format:
-            for rule, rangeinput in df_format.items():
+        def apply_df_format(mydict):
+            for rule, rangeinput in mydict.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 format_kwargs = parse_format_rule(rule)
@@ -308,6 +311,9 @@ class PutxlSet:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
 
+        if df_format:
+            apply_df_format(df_format)
+
         # Conditional Format (1 column based)
         ################################
         '''
@@ -355,6 +361,27 @@ class PutxlSet:
                 for rule in cd_format:
                     cd_paint(rule)
 
+        # Pre-defined Styles
+        ################################
+        '''
+        style: the main function to add pre-defined format to core export data ranges (exc. headers and indices)
+        use style_sheets command to view pre-defined formats
+        '''
+        if style:
+            # First parse string to lists
+            if isinstance(style, str):
+                loop_list = str2list(style)
+            elif isinstance(style, list):
+                loop_list = style
+            else:
+                raise ValueError('Invalid object for style parameter, only str or list accepted')
+
+            # Loop and apply style by checking the style py module
+            from pandaspro.io.excel.style_sheets import style_sheets
+            for each_style in loop_list:
+                apply_style = style_sheets[each_style]
+                apply_df_format(apply_style)
+
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
         current_sheets = [sheet.name for sheet in self.wb.sheets]
@@ -365,13 +392,11 @@ class PutxlSet:
 
         # Print Export Success Message to Console ...
         ################################
-        if hasattr(content, 'frame_name'):
-            name = content.frame_name
-            if len(name) > 30:
-                name = name.replace('.xlsx','')[0:26] + ' (...) .xlsx'
-        else:
-            name = "Unnamed Frame Object"
-        print(f"{name} successfully exported to <<{self.wb.name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+        if not isinstance(content, str):
+            name = self.wb.name
+            if len(name) > 24:
+                name = name.replace('.xlsx', '')[0:20] + ' (...) .xlsx'
+            print(f"Frame with size {content.shape} successfully exported to <<{name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
 
         if debug:
             print(f"\n>>> Cell Range Analysis")
@@ -398,3 +423,9 @@ class PutxlSet:
             sheet.name = sheet_name
         self.ws = sheet
         return
+
+
+if __name__ == '__main__':
+    from pandaspro import sysuse_auto
+    ps = PutxlSet('sampledf.xlsx')
+    ps.putxl(sysuse_auto, 'newtab', 'B2', style='blue')
