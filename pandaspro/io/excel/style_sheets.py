@@ -7,7 +7,7 @@ style_sheets = {
     'blue': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': 'all',
-        'blue80; font_color=black': 'header_outer'
+        'blue80; font_color=black; wrap': 'header_outer'
     },
     'index_merge': {
         'merge': 'index_merge_inputs(level=__index__, columns=__columns__)',
