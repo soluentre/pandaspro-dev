@@ -17,6 +17,6 @@ style_sheets = {
         ]
     },
     'total': {
-        'border=outer_thick': 'columns(c=Total)'
+        'border=outer_thick': 'columns(c=Total, header=True)'
     }
 }
