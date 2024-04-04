@@ -408,7 +408,7 @@ class PutxlSet:
                     apply_style = style_sheets['index_merge']
                 else:
                     apply_style = style_sheets[each_style]
-                print(apply_style)
+
                 apply_df_format(apply_style)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
