@@ -279,26 +279,29 @@ class FramexlWriter:
             cd_rules=rules,
             applyto=applyto
         )
-        apply_columns = mycd.apply
-        cd_dfmap_1col = {}
-        for key, mask_rule in mycd.rules_mask.items():
-            cd_dfmap_1col[key] = {}
-            cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
-            cd_dfmap_1col[key]['format'] = mask_rule['format']
-        self.cd_dfmap_1col = cd_dfmap_1col
+        if mycd.col_not_exist:
+            cd_cellrange_1col = {'cellrange': 'no cells', 'format': ''}
+        else:
+            apply_columns = mycd.apply
+            cd_dfmap_1col = {}
+            for key, mask_rule in mycd.rules_mask.items():
+                cd_dfmap_1col[key] = {}
+                cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
+                cd_dfmap_1col[key]['format'] = mask_rule['format']
+            self.cd_dfmap_1col = cd_dfmap_1col
 
-        def _df_to_mystring(df):
-            lcarray = df.values.flatten()
-            long_string = ','.join([str(value) for value in lcarray])
-            return long_string
+            def _df_to_mystring(df):
+                lcarray = df.values.flatten()
+                long_string = ','.join([str(value) for value in lcarray])
+                return long_string
 
-        cd_cellrange_1col = {}
-        for key, mask_rule in mycd.rules_mask.items():
-            cd_cellrange_1col[key] = {}
-            temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
-            cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
-            cd_cellrange_1col[key]['format'] = mask_rule['format']
-        self.cd_cellrange_1col = cd_cellrange_1col
+            cd_cellrange_1col = {}
+            for key, mask_rule in mycd.rules_mask.items():
+                cd_cellrange_1col[key] = {}
+                temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
+                cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
+                cd_cellrange_1col[key]['format'] = mask_rule['format']
+            self.cd_cellrange_1col = cd_cellrange_1col
 
         return cd_cellrange_1col
 

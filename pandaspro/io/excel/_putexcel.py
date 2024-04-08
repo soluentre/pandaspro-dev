@@ -120,6 +120,7 @@ class PutxlSet:
             df_format: dict = None,
             cd_format: list | dict = None,
             style: str | list = None,
+            cd: str | list = None,
 
             debug: bool = False,
     ) -> None:
@@ -331,48 +332,55 @@ class PutxlSet:
         >>> ... cd_format={'column': 'age', 'rules': {...}}
         >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
         '''
-        if cd_format:
-
+        def apply_cd_format(mydict):
             def cd_paint(lcinput):
                 cleaned_rules = io.range_cdformat(**lcinput)
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
                 for rulename, lc_content in cleaned_rules.items():
+                    cellrange = lc_content['cellrange']
+                    cd_format_rule = lc_content['format']
                     if debug:
                         print("Cd format name and content >>>")
                         print(rulename, lc_content)
-                    cellrange = lc_content['cellrange']
-                    cd_format_rule = lc_content['format']
-                    # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
-                    # parse_format_rule is taken from _xlwings module
-                    cd_format_kwargs = parse_format_rule(cd_format_rule)
-                    if debug:
-                        print("Cd format kwargs >>>")
-                        print(cd_format_kwargs)
 
-                    if len(cellrange) <= 30:
-                        print(cellrange)
-                        RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
+                    if cellrange == 'no cells':
+                        return
                     else:
-                        cellrange_dict = cell_range_combine(cellrange.split(','))
+                        # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
+                        # parse_format_rule is taken from _xlwings module
+                        cd_format_kwargs = parse_format_rule(cd_format_rule)
                         if debug:
-                            print(cellrange_dict)
-                        for range_list in cellrange_dict.values():
-                            for combined_range in range_list:
-                                RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
+                            print("Cd format kwargs >>>")
+                            print(cd_format_kwargs)
+
+                        if len(cellrange) <= 30:
+                            print(cellrange)
+                            RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
+                        else:
+                            cellrange_dict = cell_range_combine(cellrange.split(','))
+                            if debug:
+                                print(cellrange_dict)
+                            for range_list in cellrange_dict.values():
+                                for combined_range in range_list:
+                                    RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
 
             # Decide if cd_format is a dict or not
-            if isinstance(cd_format, dict):
-                cd_paint(cd_format)
+            if isinstance(mydict, dict):
+                cd_paint(mydict)
 
-            if isinstance(cd_format, list):
-                for rule in cd_format:
+            if isinstance(mydict, list):
+                for rule in mydict:
                     cd_paint(rule)
+
+        if cd_format:
+            apply_cd_format(cd_format)
+
 
         # Pre-defined Styles
         ################################
         '''
-        style: the main function to add pre-defined format to core export data ranges (exc. headers and indices)
+        style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
         '''
         if style:
@@ -416,6 +424,54 @@ class PutxlSet:
                     apply_style = style_sheets[each_style]
 
                 apply_df_format(apply_style)
+
+        # Pre-defined Conditional Formattings
+        ################################
+        '''
+        cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
+        use cd_sheets command to view pre-defined formats
+        '''
+        if cd:
+            from pandaspro.io.excel.cd_sheets import cd_sheets
+
+            # First parse string to lists
+            if isinstance(cd, str):
+                loop_list = str2list(cd)
+            elif isinstance(cd, list):
+                loop_list = cd
+            else:
+                raise ValueError('Invalid object for cd parameter, only str or list accepted')
+
+            # Reorder the items in loop
+            checked_dict = {}
+            for element in loop_list:
+                if element in cd_sheets:
+                    checked_dict[element] = element
+                elif re.match(r'index_merge\(([^,]+),?\s*(.*)\)', element):
+                    checked_dict['index_merge'] = element
+                else:
+                    raise ValueError(f'Specified cd {element} not in cd sheets')
+
+            checked_list = []
+            for key in cd_sheets.keys():
+                if key in checked_dict.keys():
+                    checked_list.append(checked_dict[key])
+
+            # Loop and apply cd by checking the cd py module
+            for each_cd in checked_list:
+                match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_cd)
+                if match:
+                    index_name = match.group(1)
+                    columns = match.group(2) if match.group(2) != '' else 'None'
+                    content_border = cd_sheets['index_merge']['border=outer_thick']
+                    content_border[1] = content_border[1].replace('__index__', index_name)
+                    cd_sheets['index_merge']['merge'] = cd_sheets['index_merge']['merge'].replace(
+                        '__index__', index_name).replace('__columns__', columns)
+                    apply_cd = cd_sheets['index_merge']
+                else:
+                    apply_cd = cd_sheets[each_cd]
+
+                apply_df_format(apply_cd)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -461,8 +517,10 @@ class PutxlSet:
 
 
 if __name__ == '__main__':
-    from pandaspro import sysuse_auto
-    sysuse_auto = sysuse_auto.sort_values('rep78')
-    sysuse_auto = sysuse_auto.set_index('rep78')
-    ps = PutxlSet('sampledf.xlsx')
-    ps.putxl(sysuse_auto, 'newtab', 'B2', index=True, style='index_merge(rep78); blue', sheetreplace=True)
+    # from pandaspro import sysuse_auto
+    # sysuse_auto = sysuse_auto.sort_values('rep78')
+    # sysuse_auto = sysuse_auto.set_index('rep78')
+    # ps = PutxlSet('sampledf.xlsx')
+    # ps.putxl(sysuse_auto, 'newtab', 'B2', index=True, style='index_merge(rep78); blue', sheetreplace=True)
+    wb = xw.Book('sampledf.xlsx')
+    wb.sheets['newtab'].range('A1').value = 1

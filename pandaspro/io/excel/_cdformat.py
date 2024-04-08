@@ -6,16 +6,19 @@ mytools = toolObject()
 
 
 class CdFormat:
-    def __init__(self,
-                 df,
-                 column: str,
-                 cd_rules: dict,
-                 applyto: str | list = 'self'):
+    def __init__(
+            self,
+             df,
+             column: str,
+             cd_rules: dict,
+             applyto: str | list = 'self'
+    ):
         self.df = df
         self.column = column
         self.cd_rules = cd_rules
         self.rules_mask = None
         self.locate = None
+        self.col_not_exist = None if column in df.columns else True
 
         def _apply_decide(local_input):
             if local_input == 'self':
@@ -30,7 +33,8 @@ class CdFormat:
                 raise TypeError('Unexpected type of applyto parameter, only str/list being accepted')
 
         self.apply = _apply_decide(applyto)
-        self.rules_mask = self._configure_rules_mask()
+        if column in df.columns:
+            self.rules_mask = self._configure_rules_mask()
 
     def _configure_rules_mask(self):
         result = {}

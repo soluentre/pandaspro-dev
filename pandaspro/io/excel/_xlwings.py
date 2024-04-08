@@ -608,7 +608,7 @@ def parse_format_rule(rule):
             r'align=(.*)': ['align', lambda local_match: local_match.group(1)],
             r'number_format=(.*)': ['number_format', lambda local_match: local_match.group(1)],
             r'border=(.*)': ['border', lambda local_match: local_match.group(1)],
-            r'(#[A-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
+            r'(#[a-zA-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
             r'fill=(.*)': ['fill', lambda local_match: local_match.group(1)],
         }
 

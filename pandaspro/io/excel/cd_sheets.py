@@ -1,5 +1,5 @@
-style_sheets = {
-    'black': {
+cd_sheets = {
+    'ti': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': 'all',
         'black; font_color=white': 'header_outer'
