@@ -443,36 +443,14 @@ class PutxlSet:
             else:
                 raise ValueError('Invalid object for cd parameter, only str or list accepted')
 
-            # Reorder the items in loop
-            checked_dict = {}
-            for element in loop_list:
-                if element in cd_sheets:
-                    checked_dict[element] = element
-                elif re.match(r'index_merge\(([^,]+),?\s*(.*)\)', element):
-                    checked_dict['index_merge'] = element
-                else:
-                    raise ValueError(f'Specified cd {element} not in cd sheets')
-
-            checked_list = []
-            for key in cd_sheets.keys():
-                if key in checked_dict.keys():
-                    checked_list.append(checked_dict[key])
-
             # Loop and apply cd by checking the cd py module
-            for each_cd in checked_list:
-                match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_cd)
-                if match:
-                    index_name = match.group(1)
-                    columns = match.group(2) if match.group(2) != '' else 'None'
-                    content_border = cd_sheets['index_merge']['border=outer_thick']
-                    content_border[1] = content_border[1].replace('__index__', index_name)
-                    cd_sheets['index_merge']['merge'] = cd_sheets['index_merge']['merge'].replace(
-                        '__index__', index_name).replace('__columns__', columns)
-                    apply_cd = cd_sheets['index_merge']
-                else:
-                    apply_cd = cd_sheets[each_cd]
-
-                apply_df_format(apply_cd)
+            for each_cd in loop_list:
+                apply_cd = cd_sheets[each_cd]
+                if isinstance(apply_cd, list):
+                    for each_cd_sub in apply_cd:
+                        apply_cd_format(each_cd_sub)
+                elif isinstance(apply_cd, dict):
+                    apply_df_format(apply_cd)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
