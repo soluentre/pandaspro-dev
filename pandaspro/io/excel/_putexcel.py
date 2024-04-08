@@ -100,10 +100,10 @@ class PutxlSet:
             font_name: str = None,
             font_size: int = None,
             font_color: str | tuple = None,
-            italic: bool = False,
-            bold: bool = False,
-            underline: bool = False,
-            strikeout: bool = False,
+            italic: bool = None,
+            bold: bool = None,
+            underline: bool = None,
+            strikeout: bool = None,
             align: str | list = None,
             merge: bool = None,
             border: str | list = None,
@@ -338,19 +338,25 @@ class PutxlSet:
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
                 for rulename, lc_content in cleaned_rules.items():
+                    if debug:
+                        print("Cd format name and content >>>")
+                        print(rulename, lc_content)
                     cellrange = lc_content['cellrange']
                     cd_format_rule = lc_content['format']
                     # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
                     # parse_format_rule is taken from _xlwings module
                     cd_format_kwargs = parse_format_rule(cd_format_rule)
                     if debug:
-                        print("Conditional Formatting Debug >>>")
+                        print("Cd format kwargs >>>")
                         print(cd_format_kwargs)
 
                     if len(cellrange) <= 30:
+                        print(cellrange)
                         RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                     else:
                         cellrange_dict = cell_range_combine(cellrange.split(','))
+                        if debug:
+                            print(cellrange_dict)
                         for range_list in cellrange_dict.values():
                             for combined_range in range_list:
                                 RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
