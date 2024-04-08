@@ -355,7 +355,6 @@ class PutxlSet:
                             print(cd_format_kwargs)
 
                         if len(cellrange) <= 30:
-                            print(cellrange)
                             RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                         else:
                             cellrange_dict = cell_range_combine(cellrange.split(','))

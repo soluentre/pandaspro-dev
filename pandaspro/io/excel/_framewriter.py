@@ -280,7 +280,7 @@ class FramexlWriter:
             applyto=applyto
         )
         if mycd.col_not_exist:
-            cd_cellrange_1col = {'cellrange': 'no cells', 'format': ''}
+            cd_cellrange_1col = {'void_rule': {'cellrange': 'no cells', 'format': ''}}
         else:
             apply_columns = mycd.apply
             cd_dfmap_1col = {}
