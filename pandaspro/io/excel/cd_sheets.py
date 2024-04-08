@@ -1,22 +1,48 @@
 cd_sheets = {
-    'ti': {
-        'border=inner_thin; align=center': 'all',
-        'border=outer_thick': 'all',
-        'black; font_color=white': 'header_outer'
-    },
-    'blue': {
-        'border=inner_thin; align=center': 'all',
-        'border=outer_thick': 'all',
-        'blue80; font_color=black; wrap': 'header_outer'
-    },
-    'index_merge': {
-        'merge': 'index_merge_inputs(level=__index__, columns=__columns__)',
-        'border=outer_thick': [
-            'index_levels',
-            'index_hsections(level=__index__)'
-        ]
-    },
-    'total': {
-        'border=outer_thick': 'columns(c=Total, header=True)'
-    }
+    'ti': {}
 }
+
+a = [{'column': 'FY19 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY20 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY21 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY22 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY23 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY24 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY25 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY26 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY27 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY28 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}},
+ {'column': 'FY29 Talent',
+  'rules': {'Top Talent': '#63be7b',
+   'Emerging Talent': '#ffeb84',
+   'Solid Talent': '#bfbfbf'}}]
