@@ -25,3 +25,7 @@ from pandaspro.sampledf.api import (
 )
 
 excel_d = WorkbookExportSimplifier().declare_workbook
+
+__all__ = [
+    'FramePro'
+]

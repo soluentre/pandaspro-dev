@@ -46,40 +46,40 @@ class PutxlSet:
             return None, None
 
         # App and Workbook declaration
-        wb, app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
-        if wb:
+        open_wb, app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
+        if open_wb:
             if noisily:
                 print(f"{workbook} is already open, closing ...")
-            wb.save()
-            wb.close()
+            open_wb.save()
+            open_wb.close()
             if not app.books:  # Check if the app has no more workbooks open; if true, then quit the app
                 app.quit()
         elif noisily:
             print(f"Working on {workbook} now ...")
 
         if not os.path.exists(workbook):  # Check if the file already exists
-            wb = xw.Book()  # If not, create a new Excel file
-            wb.save(workbook)
+            open_wb = xw.Book()  # If not, create a new Excel file
+            open_wb.save(workbook)
         else:
-            wb = xw.Book(workbook)
+            open_wb = xw.Book(workbook)
 
         # Worksheet declaration
         if sheet_name is None:
-            sheet_name = wb.sheets[0].name
+            sheet_name = open_wb.sheets[0].name
 
-        current_sheets = [sheet.name for sheet in wb.sheets]
+        current_sheets = [sheet.name for sheet in open_wb.sheets]
         if sheet_name in current_sheets:
-            sheet = wb.sheets[sheet_name]
+            sheet = open_wb.sheets[sheet_name]
         else:
-            sheet = wb.sheets.add(after=wb.sheets.count)
+            sheet = open_wb.sheets.add(after=open_wb.sheets.count)
             sheet.name = sheet_name
 
-        if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
-            wb.sheets['Sheet1'].delete()
+        if 'Sheet1' in current_sheets and is_sheet_empty(open_wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
+            open_wb.sheets['Sheet1'].delete()
 
         self.app = app
         self.workbook = workbook
-        self.wb = wb
+        self.wb = open_wb
         self.ws = sheet
         self.globalreplace = alwaysreplace
         self.io = None
@@ -119,6 +119,7 @@ class PutxlSet:
             adjust_width: dict = None,
             df_format: dict = None,
             cd_format: list | dict = None,
+            design: str = None,
             style: str | list = None,
             cd: str | list = None,
 
@@ -198,10 +199,17 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
+
+        if design:
+            from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
+            adjust_width = local_design[design]['adjust_width']
+            style = local_design[design]['style']
+            cd = local_design[design]['cd']
+
         '''
-         Extra Format (not in the group of format parameters): highlight area in existing-content excel
-         This is embedded and will be triggered automatically if not replacing sheet 
-         '''
+        Extra Format (not in the group of format parameters): highlight area in existing-content excel
+        This is embedded and will be triggered automatically if not replacing sheet 
+        '''
         if replace_warning:
             match_dict = {
                 'top': self.io.range_top_empty_checker,
@@ -377,7 +385,6 @@ class PutxlSet:
         if cd_format:
             apply_cd_format(cd_format)
 
-
         # Pre-defined Styles
         ################################
         '''
@@ -385,7 +392,7 @@ class PutxlSet:
         use style_sheets command to view pre-defined formats
         '''
         if style:
-            from pandaspro.io.excel.style_sheets import style_sheets
+            from pandaspro.user_config.style_sheets import style_sheets
 
             # First parse string to lists
             if isinstance(style, str):
@@ -426,14 +433,14 @@ class PutxlSet:
 
                 apply_df_format(apply_style)
 
-        # Pre-defined Conditional Formattings
+        # Pre-defined Conditional Formatting
         ################################
         '''
         cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
         use cd_sheets command to view pre-defined formats
         '''
         if cd:
-            from pandaspro.io.excel.cd_sheets import cd_sheets
+            from pandaspro.user_config.cd_sheets import cd_sheets
 
             # First parse string to lists
             if isinstance(cd, str):
@@ -496,10 +503,11 @@ class PutxlSet:
 
 
 if __name__ == '__main__':
-    # from pandaspro import sysuse_auto
+    from wbhrdata import wbuse_pivotplus, sob
+    import wbhrdata as wb
     # sysuse_auto = sysuse_auto.sort_values('rep78')
     # sysuse_auto = sysuse_auto.set_index('rep78')
-    # ps = PutxlSet('sampledf.xlsx')
-    # ps.putxl(sysuse_auto, 'newtab', 'B2', index=True, style='index_merge(rep78); blue', sheetreplace=True)
-    wb = xw.Book('sampledf.xlsx')
-    wb.sheets['newtab'].range('A1').value = 1
+    ps = PutxlSet('sampledf.xlsx')
+    ps.putxl(sob()[wb.c.sobroster['brief']].head(2000).er, 'newtab2', 'B2', index=True, design='wbblue')
+    # wb = xw.Book('sampledf.xlsx')
+    # wb.sheets['newtab'].range('A1').value = 1

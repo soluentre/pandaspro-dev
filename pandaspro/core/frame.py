@@ -112,8 +112,9 @@ class FramePro(pd.DataFrame):
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
+            design: str = None,
             style: str | list = None,
-
+            cd: str | list = None,
             override: bool = None,
     ):
         declaredwb = WorkbookExportSimplifier.get_last_declared_workbook()
@@ -129,7 +130,9 @@ class FramePro(pd.DataFrame):
             header=header,
             replace=replace,
             sheetreplace=sheetreplace,
-            style=style
+            design=design,
+            style=style,
+            cd=cd
         )
 
         # ? Seems to return the declaredwb object to change
