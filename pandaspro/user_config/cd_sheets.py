@@ -1,4 +1,21 @@
 cd_sheets = {
+    "grade": [
+        {
+            "column": "Grade",
+            "rules": {
+                "GA": '#FCE4D6',
+                "GB": '#FCE4D6',
+                "GC": '#FCE4D6',
+                "GD": '#FCE4D6',
+                "GE": '#FFF2CC',
+                "GF": '#DDEBF7',
+                "GG": '#E2EFDA',
+                "GH": '#DEC8EE',
+                "GI": '#FFC9C9',
+            },
+            "applyto": 'all'
+        },
+    ],
     "ti": [
         {
             "column": "FY19 Talent",

@@ -508,6 +508,6 @@ if __name__ == '__main__':
     # sysuse_auto = sysuse_auto.sort_values('rep78')
     # sysuse_auto = sysuse_auto.set_index('rep78')
     ps = PutxlSet('sampledf.xlsx')
-    ps.putxl(sob()[wb.c.sobroster['brief']].head(2000).er, 'newtab2', 'B2', index=True, design='wbblue')
+    ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue')
     # wb = xw.Book('sampledf.xlsx')
     # wb.sheets['newtab'].range('A1').value = 1
