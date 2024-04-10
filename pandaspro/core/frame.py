@@ -147,7 +147,7 @@ class FramePro(pd.DataFrame):
             return parse_wild(promptstring, self.columns)
 
     def br(self, promptstring):
-        if self.cvar(promptstring) == []:
+        if not self.cvar(promptstring):
             print('Nothing to check/browse in an empty dataframe')
             return self
         else:
@@ -251,10 +251,3 @@ class FramePro(pd.DataFrame):
 
 
 pd.DataFrame.excel_e = FramePro.excel_e
-
-
-if __name__ == '__main__':
-    a = FramePro({'a': [1, 2, 3], 'b':[3, 4, 5]})
-    b = a.inlist('a',1, engine = 'm')
-    e = a.inlist('a', 1, engine='b')
-    f = a[a['a'].isin([1,2])]
