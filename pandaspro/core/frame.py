@@ -64,6 +64,7 @@ class FramePro(pd.DataFrame):
             debug=debug,
         )
         if debug:
+            print("This is debugger for inlist method: ", result)
             print(type(result))
         if engine == 'm':
             return result
