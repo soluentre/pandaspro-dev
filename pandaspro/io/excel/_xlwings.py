@@ -455,22 +455,22 @@ class RangeOperator:
                     self.xwrange.api.Borders(i).LineStyle = 0
 
             elif border_side == 'all':
-                self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders.Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders.Color = color_to_int(border_color)
 
             elif border_side == 'inner':
-                self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders(11).Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders(11).Color = color_to_int(border_color)
-                self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders(12).Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
                 self.xwrange.api.Borders(12).Color = color_to_int(border_color)
 
             elif border_side == 'outer':
                 for i in range(7, 11):
-                    self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(i).Weight = _border_weight_map[border_weight]
+                    self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
                     self.xwrange.api.Borders(i).Color = color_to_int(border_color)
 
             elif border_side in _border_side_map.keys():
