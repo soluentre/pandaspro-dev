@@ -274,18 +274,6 @@ class PutxlSet:
 
         # Format with defined rules using a Dictionary
         ################################
-        '''
-        df_format: the main function to add format to ranges
-        This parameter will take a dictionary which uses:
-        (1) format prompt key words as the keys
-        (2) a list of range key words, which may be just a str term (attribute) ... 
-            or a cpdFramexl object 
-            
-        >>> ... df_format={'msblue80': 'header'}
-        >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
-        
-        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
-        '''
         def apply_df_format(mydict):
             for rule, rangeinput in mydict.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
@@ -337,71 +325,6 @@ class PutxlSet:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
 
-        if df_format:
-            apply_df_format(df_format)
-
-        # Conditional Format (1 column based)
-        ################################
-        '''
-        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
-        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
-        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
-        
-        key 1: column = indicating the conditional formatting columns
-        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
-        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
-        (default = self)
-        
-        >>> ... cd_format={'column': 'age', 'rules': {...}}
-        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
-        '''
-        def apply_cd_format(mydict):
-            def cd_paint(lcinput):
-                cleaned_rules = io.range_cdformat(**lcinput)
-
-                # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
-                for rulename, lc_content in cleaned_rules.items():
-                    cellrange = lc_content['cellrange']
-                    cd_format_rule = lc_content['format']
-                    if debug:
-                        print("Cd format name and content >>>")
-                        print(rulename, lc_content)
-
-                    if cellrange == 'no cells':
-                        return
-                    else:
-                        # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
-                        # parse_format_rule is taken from _xlwings module
-                        cd_format_kwargs = parse_format_rule(cd_format_rule)
-                        if debug:
-                            print("Cd format kwargs >>>")
-                            print(cd_format_kwargs)
-
-                        if cellrange == '':
-                            pass
-                        elif len(cellrange) <= 30:
-                            RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
-                        else:
-                            cellrange_dict = cell_range_combine(cellrange.split(','))
-                            if debug:
-                                print(cellrange_dict)
-                            for range_list in cellrange_dict.values():
-                                for combined_range in range_list:
-                                    RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
-
-            # Decide if cd_format is a dict or not
-            if isinstance(mydict, dict):
-                cd_paint(mydict)
-
-            if isinstance(mydict, list):
-                for rule in mydict:
-                    cd_paint(rule)
-
-        if cd_format:
-            apply_cd_format(cd_format)
-
-        # Pre-defined Styles
-        ################################
         '''
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
@@ -448,8 +371,65 @@ class PutxlSet:
 
                 apply_df_format(apply_style)
 
-        # Pre-defined Conditional Formatting
+        '''
+        df_format: the main function to add format to ranges
+        This parameter will take a dictionary which uses:
+        (1) format prompt key words as the keys
+        (2) a list of range key words, which may be just a str term (attribute) ... 
+            or a cpdFramexl object 
+
+        >>> ... df_format={'msblue80': 'header'}
+        >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
+
+        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
+        '''
+        if df_format:
+            apply_df_format(df_format)
+
+        # Conditional Format (1 column based)
         ################################
+        def apply_cd_format(mydict):
+            def cd_paint(lcinput):
+                cleaned_rules = io.range_cdformat(**lcinput)
+
+                # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
+                for rulename, lc_content in cleaned_rules.items():
+                    cellrange = lc_content['cellrange']
+                    cd_format_rule = lc_content['format']
+                    if debug:
+                        print("Cd format name and content >>>")
+                        print(rulename, lc_content)
+
+                    if cellrange == 'no cells':
+                        return
+                    else:
+                        # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
+                        # parse_format_rule is taken from _xlwings module
+                        cd_format_kwargs = parse_format_rule(cd_format_rule)
+                        if debug:
+                            print("Cd format kwargs >>>")
+                            print(cd_format_kwargs)
+
+                        if cellrange == '':
+                            pass
+                        elif len(cellrange) <= 30:
+                            RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
+                        else:
+                            cellrange_dict = cell_range_combine(cellrange.split(','))
+                            if debug:
+                                print(cellrange_dict)
+                            for range_list in cellrange_dict.values():
+                                for combined_range in range_list:
+                                    RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
+
+            # Decide if cd_format is a dict or not
+            if isinstance(mydict, dict):
+                cd_paint(mydict)
+
+            if isinstance(mydict, list):
+                for rule in mydict:
+                    cd_paint(rule)
+
         '''
         cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
         use cd_sheets command to view pre-defined formats
@@ -473,6 +453,22 @@ class PutxlSet:
                         apply_cd_format(each_cd_sub)
                 elif isinstance(apply_cd, dict):
                     apply_df_format(apply_cd)
+
+        '''
+        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
+        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
+
+        key 1: column = indicating the conditional formatting columns
+        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
+        (default = self)
+
+        >>> ... cd_format={'column': 'age', 'rules': {...}}
+        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
+        '''
+        if cd_format:
+            apply_cd_format(cd_format)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
