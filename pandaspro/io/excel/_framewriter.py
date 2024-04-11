@@ -271,7 +271,6 @@ class FramexlWriter:
             cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
             cd_cellrange_1col[key]['format'] = mask_rule['format']
         self.cd_cellrange_1col = cd_cellrange_1col
-
         return cd_cellrange_1col
 
 
@@ -279,3 +278,16 @@ class cpdFramexl:
     def __init__(self, name, **kwargs):
         self.name = name
         self.paras = kwargs
+
+if __name__ == '__main__':
+    from pandaspro import wbuse_pivot
+    import numpy as np
+
+    io = FramexlWriter(wbuse_pivot, 'B2', index=True)
+    out = io.range_cdformat(
+        column='GC',
+        rules={
+            'EAW': '#FF0000',
+        },
+        applyto='all'
+    )

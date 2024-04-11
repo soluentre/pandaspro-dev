@@ -67,6 +67,7 @@ _border_style_map = {
 }
 
 _border_weight_map = {
+    'thiner': 1,
     'thin': 2,
     'thick': 3,
     'thicker': 4
@@ -407,9 +408,10 @@ class RangeOperator:
             # Create patter and color parameter
             border_side = sidelist[0] if len(sidelist) == 1 else None
             border_style = stylelist[0] if len(stylelist) == 1 else 'continue'
-            border_weight = _border_weight_map[weightlist[0]] if len(weightlist) == 1 else 'thin'
-            border_color = color_to_int(colorlist[0]) if len(colorlist) == 1 else '#000000'
+            border_weight = weightlist[0] if len(weightlist) == 1 else 'thin'
+            border_color = colorlist[0] if len(colorlist) == 1 else '#000000'
 
+            print(border_side, border_style, border_weight, border_color)
             if border_side == 'none':
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
@@ -435,8 +437,10 @@ class RangeOperator:
 
             elif border_side in _border_side_map.keys():
                 self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
-                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = border_weight
-                self.xwrange.api.Borders(_border_side_map[border_side]).Color = border_color
+                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders(_border_side_map[border_side]).Color = color_to_int(border_color)
+
+                print(f'{_border_side_map[border_side]} {_border_style_map[border_style]} {_border_weight_map[border_weight]}')
 
         # Fill Attributes
         ##################################
@@ -585,3 +589,15 @@ def parse_format_rule(rule):
 
     return return_dict
 
+
+if __name__ == '__main__':
+    import xlwings as xw
+    wb = xw.Book('sampledf.xlsx')
+    ws = wb.sheets[0]
+
+    myrange = ws.range('E105:F105')
+    ro = RangeOperator(myrange)
+
+    ro.format(border='bottom, double, thin')
+
+    ws.range('E106:F106').api.Borders(9).LineStyle = 9

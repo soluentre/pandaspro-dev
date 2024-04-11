@@ -372,8 +372,7 @@ class PutxlSet:
 
 if __name__ == '__main__':
 
-    from wbhrdata import wbuse_pivot, hrconfig
-    from pandaspro import sysuse_auto, sysuse_countries
+    from pandaspro import sysuse_auto, sysuse_countries, wbuse_pivot
 
     df1 = sysuse_auto
     df2 = sysuse_countries
@@ -391,7 +390,6 @@ if __name__ == '__main__':
         cell='B2',
         index=True,
         index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
-        adjust_height=hrconfig,
         header_wrap=True,
         df_format={
             'border=inner_thin': ['all'],
@@ -403,9 +401,9 @@ if __name__ == '__main__':
             'msgreen80, align="center"': 'header_outer',
         },
         cd_format={
-            'column': 'cmu_dept',
-            'rules': {'EAW': 'fill=None'},
-            'applyto': 'cmu_dept, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
+            'column': 'cmu_dept_major',
+            'rules': {'Front Offices': 'fill=None'},
+            'applyto': 'cmu_dept_major, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
         },
         sheetreplace=True
     )
