@@ -73,16 +73,6 @@ _border_weight_map = {
     'thicker': 4
 }
 
-_border_custom = {
-    'none': None,
-    'all_thin': ['all', 'continue', 'thin', '#000000'],
-    'all_thick': ['all', 'continue', 'thick', '#000000'],
-    'inner_thin': ['inner', 'continue', 'thin', '#000000'],
-    'inner_thick': ['inner', 'continue', 'thick', '#000000'],
-    'outer_thin': ['outer', 'continue', 'thin', '#000000'],
-    'outer_thick': ['outer', 'continue', 'thick', '#000000']
-}
-
 _cpdpuxl_color_map = {
     "darkred": "#C00000",
     "red": "#FF0000",
@@ -97,7 +87,8 @@ _cpdpuxl_color_map = {
     "grey": "#808080",
     "grey25": "#BFBFBF",
     "white": "#FFFFFF",
-    "bluegray": "#44546A",
+    "black": "#000000",
+    "msbluegray": "#44546A",
     "msblue": "#4472C4",
     "msorange": "#ED7D31",
     "msgray": "#A5A5A5",
@@ -105,19 +96,33 @@ _cpdpuxl_color_map = {
     "mslightblue": "#5B9BD5",
     "msgreen": "#70AD47",
     "bluegray80": "#D6DCE4",
-    "msblue80": "#D9E1F2",
-    "msorange80": "#FCE4D6",
-    "msgray80": "#EDEDED",
-    "msyellow80": "#FFF2CC",
-    "mslightblue80": "#DDEBF7",
-    "msgreen80": "#E2EFDA",
+    "blue80": "#D9E1F2",
+    "orange80": "#FCE4D6",
+    "gray80": "#EDEDED",
+    "yellow80": "#FFF2CC",
+    "lightblue80": "#DDEBF7",
+    "green80": "#E2EFDA",
     "bluegray60": "#ACB9CA",
-    "msblue60": "#B4C6E7",
-    "msorange60": "#F8CBAD",
-    "msgray60": "#DBDBDB",
-    "msyellow60": "#FFE699",
-    "mslightblue60": "#BDD7EE",
-    "msgreen60": "#C6E0B4",
+    "blue60": "#B4C6E7",
+    "orange60": "#F8CBAD",
+    "gray60": "#DBDBDB",
+    "yellow60": "#FFE699",
+    "lightblue60": "#BDD7EE",
+    "green60": "#C6E0B4",
+    "bluegrayd25": "#333F4F",
+    "blued25": "#305496",
+    "oranged25": "#C65911",
+    "grayd25": "#7B7B7B",
+    "yellowd25": "#BF8F00",
+    "lightblued25": "#2F75B5",
+    "greend25": "#548235",
+    "bluegrayd50": "#222B35",
+    "blued50": "#203764",
+    "oranged60": "#833C0C",
+    "grayd50": "#525252",
+    "yellowd50": "#806000",
+    "lightblued50": "#1F4E78",
+    "greend50": "#375623",
 }
 
 
@@ -147,6 +152,7 @@ def extract_tuple(s):
     elif len(matches) == 1:
         match = matches[0]
         tuple_str = match.group(1)
+        # split tuple of RGB color by comma: ,
         color_tuple = tuple(map(int, tuple_str.split(',')))
         remaining_str = s[:match.start()] + s[match.end():]
         return color_tuple, remaining_str.strip()
@@ -185,7 +191,7 @@ def color_to_int(color: str | tuple):
 
 def list_str_w_color(mystr: str):
     color, remaining = extract_tuple(mystr)
-    result = [i for i in remaining.replace(' ', '').split(',') if i != '']
+    result = [i.strip() for i in remaining.split(',') if i != '']
     if color is not None:
         result = result + [color]
 
@@ -199,6 +205,8 @@ class RangeOperator:
 
     def format(
             self,
+            width=None,
+            height=None,
             font: str | tuple | list = None,
             font_name: str = None,
             font_size: str = None,
@@ -207,24 +215,34 @@ class RangeOperator:
             bold: bool = None,
             underline: bool = None,
             strikeout: bool = None,
+            number_format: str = None,
             align: str | list = None,
             merge: bool = None,
             wrap: bool = None,
-            width = None,
-            height = None,
             border: str | list = None,
             fill: str | tuple | list = None,
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
-            appendix: bool = False
+            appendix: bool = False,
+            debug: bool = False
     ) -> None:
 
         if appendix:
             print('Please choose one value from the corresponding parameter: \n'
                   f'align: {list(_alignment_map.keys())}; \n'
-                  f'fill_pattern: {list(_fpattern_map.keys())};\n'
-                  f'border_custom: {list(_border_custom.keys())};\n')
+                  f'fill_pattern: {list(_fpattern_map.keys())};\n')
+
+        # Width and Height Attributes
+        ##################################
+        '''
+        default width and height for a excel cell is 8.54 (around ...) and 14.6
+        '''
+        if width:
+            self.xwrange.api.EntireColumn.ColumnWidth = width
+
+        if height:
+            self.xwrange.api.RowHeight = height
 
         # Font Attributes
         ##################################
@@ -237,7 +255,7 @@ class RangeOperator:
                 color, remaining = extract_tuple(font)
                 if color:
                     self.xwrange.font.color = color
-                for item in remaining.split(','):
+                for item in remaining.split(';'):
                     item = item.strip()
                     # noinspection RegExpSimplifiable
                     if _is_number(item):
@@ -280,6 +298,8 @@ class RangeOperator:
             self.xwrange.font.size = font_size
 
         if font_color:
+            if font_color in _cpdpuxl_color_map.keys():
+                font_color = _cpdpuxl_color_map[font_color]
             self.xwrange.font.color = font_color
 
         if italic is not None:
@@ -293,6 +313,9 @@ class RangeOperator:
 
         if strikeout is not None:
             self.xwrange.api.Font.Strikethrough = strikeout
+
+        if number_format is not None:
+            self.xwrange.number_format = number_format
 
         # Align Attributes
         ##################################
@@ -310,7 +333,7 @@ class RangeOperator:
 
         if align:
             if isinstance(align, str):
-                for item in align.split(','):
+                for item in align.split(';'):
                     item = item.strip()
                     _alignfunc(item)
             elif isinstance(align, list):
@@ -333,17 +356,6 @@ class RangeOperator:
         if wrap is not None:
             self.xwrange.api.WrapText = wrap
 
-        # Width and Height Attributes
-        ##################################
-        '''
-        default width and height for a excel cell is 8.54 (around ...) and 14.6
-        '''
-        if width:
-            self.xwrange.api.EntireColumn.ColumnWidth = width
-
-        if height:
-            self.xwrange.api.RowHeight = height
-
         # Border Attributes
         ##################################
         if border:
@@ -351,9 +363,6 @@ class RangeOperator:
             if isinstance(border, str) and border.strip() == 'none':
                 for i in range(1, 12):
                     self.xwrange.api.Borders(i).LineStyle = 0
-
-            if isinstance(border, str) and border.strip() in list(_border_custom.keys()):
-                border_para = _border_custom[border.strip()]
 
             elif isinstance(border, str) and border.strip() != 'none':
                 border_para = list_str_w_color(border)
@@ -365,11 +374,20 @@ class RangeOperator:
                 raise ValueError(
                     'Invalid boarder specification, please use check_para=True to see the valid lists.')
 
+            def deal_with_combined_border(complex_border, type_dict, return_list):
+                separate_list = complex_border.split("_")
+                for term in separate_list:
+                    if term in type_dict.keys():
+                        return_list.append(term)
+
             def find_border_side(mylist):
                 result = []
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_side_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_side_map, result)
+
                 return result
 
             def find_border_style(mylist):
@@ -377,6 +395,9 @@ class RangeOperator:
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_style_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_style_map, result)
+
                 return result
 
             def find_border_weight(mylist):
@@ -384,6 +405,9 @@ class RangeOperator:
                 for local_item in mylist:
                     if isinstance(local_item, str) and local_item in list(_border_weight_map.keys()):
                         result.append(local_item)
+                    else:
+                        deal_with_combined_border(local_item, _border_weight_map, result)
+
                 return result
 
             def find_border_color(mylist):
@@ -393,17 +417,32 @@ class RangeOperator:
                         result.append(local_item)
                     elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
                         result.append(local_item)
+                    elif local_item in _cpdpuxl_color_map:
+                        result.append(_cpdpuxl_color_map[local_item])
+                    else:
+                        deal_with_combined_border(local_item, _cpdpuxl_color_map, result)
+
                 return result
 
             # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
             sidelist = find_border_side(border_para)
+            if len(sidelist) == 0:
+                sidelist = ['all']
             stylelist = find_border_style(border_para)
+            if len(stylelist) == 0:
+                stylelist = ['continue']
             weightlist = find_border_weight(border_para)
+            if len(weightlist) == 0:
+                weightlist = ['thin']
             colorlist = find_border_color(border_para)
-            leftover = [item for item in border_para if item not in sidelist + stylelist + weightlist + colorlist]
-            if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]) or len(leftover) > 0:
+            if len(colorlist) == 0:
+                colorlist = ['#000000']
+            if debug:
+                print('Created lists from border para', sidelist, stylelist, weightlist, colorlist)
+
+            if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]):
                 raise ValueError(
-                    'Invalid input. At most 1 side, 1 style, 1 weight and 1 color can be specified.')
+                    'Invalid input. At most 1 side, 1 style, 1 weight and 1 color can be specified')
 
             # Create patter and color parameter
             border_side = sidelist[0] if len(sidelist) == 1 else None
@@ -460,13 +499,20 @@ class RangeOperator:
                             result.append(local_item)
                         elif isinstance(local_item, (list, tuple)) and _is_valid_rgb(local_item):
                             result.append(local_item)
+                        elif local_item in _cpdpuxl_color_map.keys():
+                            result.append(_cpdpuxl_color_map[local_item])
                     return result
 
                 # Parse the list and get the Pattern and Color Lists (should be only 1 or none)
                 patternlist_fill = find_pattern(fill_list)
+                if len(patternlist_fill) == 0:
+                    patternlist_fill = ['solid']
                 colorlist_fill = find_colors(fill_list)
-                leftover_fill = [term for term in fill_list if term not in patternlist_fill + colorlist_fill]
-                if len(leftover_fill) > 0 or len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
+                if len(colorlist_fill) == 0:
+                    colorlist_fill = ['none']
+                if debug:
+                    print("Check Fill >>> ", patternlist_fill, colorlist_fill)
+                if len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
                     raise ValueError(
                         'Invalid input. Please check if pattern or color are specified correctly. At most 1 color and 1 pattern')
 
@@ -538,7 +584,7 @@ def parse_format_rule(rule):
     elif not isinstance(rule, str):
         raise ValueError('format prompt key word must be str')
 
-    promptlist = [prompt.strip() for prompt in rule.split(',')]
+    promptlist = [prompt.strip() for prompt in rule.split(';')]
     return_dict = {}
 
     def _parse_str_format_key(prompt):
@@ -558,19 +604,20 @@ def parse_format_rule(rule):
             'nowrap': {'wrap': False},
         }
         patterns = {
+            r'width=(.*)': ['width', lambda local_match: float(local_match.group(1))],
+            r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
             r'font_name=(.*)': ['font_name', lambda local_match: local_match.group(1)],
             r'font_size=(.*)': ['font_size', lambda local_match: float(local_match.group(1))],
             r'font_color=(.*)': ['font_color', lambda local_match: local_match.group(1)],
             r'align=(.*)': ['align', lambda local_match: local_match.group(1)],
-            r'width=(.*)': ['width', lambda local_match: float(local_match.group(1))],
-            r'height=(.*)': ['height', lambda local_match: float(local_match.group(1))],
+            r'number_format=(.*)': ['number_format', lambda local_match: local_match.group(1)],
             r'border=(.*)': ['border', lambda local_match: local_match.group(1)],
-            r'(#[A-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
+            r'(#[a-zA-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
             r'fill=(.*)': ['fill', lambda local_match: local_match.group(1)],
         }
 
         if prompt in keysmatch.keys():
-            result.update(keysmatch['prompt'])
+            result.update(keysmatch[prompt])
 
         if prompt in _cpdpuxl_color_map.keys():
             lc_hex = _cpdpuxl_color_map[prompt]
@@ -579,7 +626,11 @@ def parse_format_rule(rule):
         for pattern, value in patterns.items():
             match = re.fullmatch(pattern, prompt)
             if match:
-                append_dict = {value[0]: value[1](match).replace('"', '').replace('\'', '')}
+                if isinstance(value[1](match), str):
+                    value_to_pass = value[1](match).replace('"', '').replace('\'', '')
+                else:
+                    value_to_pass = value[1](match)
+                append_dict = {value[0]: value_to_pass}
                 result.update(append_dict)
 
         return result

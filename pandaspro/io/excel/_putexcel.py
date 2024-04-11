@@ -1,8 +1,10 @@
+import re
 from pathlib import Path
 import os
 import xlwings as xw
-from pandaspro.core.stringfunc import parse_method
+from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
+from pandaspro.io.excel._utils import cell_range_combine
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
 
 
@@ -44,41 +46,40 @@ class PutxlSet:
             return None, None
 
         # App and Workbook declaration
-        wb, app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
-        if wb:
+        open_wb, app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
+        if open_wb:
             if noisily:
                 print(f"{workbook} is already open, closing ...")
-            wb.save()
-            wb.close()
+            open_wb.save()
+            open_wb.close()
             if not app.books:  # Check if the app has no more workbooks open; if true, then quit the app
                 app.quit()
         elif noisily:
             print(f"Working on {workbook} now ...")
 
         if not os.path.exists(workbook):  # Check if the file already exists
-            wb = xw.Book()  # If not, create a new Excel file
-            wb.save(workbook)
+            open_wb = xw.Book()  # If not, create a new Excel file
+            open_wb.save(workbook)
         else:
-            wb = xw.Book(workbook)
+            open_wb = xw.Book(workbook)
 
         # Worksheet declaration
         if sheet_name is None:
-            sheet_name = wb.sheets[0].name
+            sheet_name = open_wb.sheets[0].name
 
-        current_sheets = [sheet.name for sheet in wb.sheets]
+        current_sheets = [sheet.name for sheet in open_wb.sheets]
         if sheet_name in current_sheets:
-            sheet = wb.sheets[sheet_name]
+            sheet = open_wb.sheets[sheet_name]
         else:
-            sheet = wb.sheets.add(after=wb.sheets.count)
+            sheet = open_wb.sheets.add(after=open_wb.sheets.count)
             sheet.name = sheet_name
 
-        if 'Sheet1' in current_sheets and is_sheet_empty(wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
-            wb.sheets['Sheet1'].delete()
+        if 'Sheet1' in current_sheets and is_sheet_empty(open_wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
+            open_wb.sheets['Sheet1'].delete()
 
         self.app = app
         self.workbook = workbook
-        self.worksheet = sheet_name
-        self.wb = wb
+        self.wb = open_wb
         self.ws = sheet
         self.globalreplace = alwaysreplace
         self.io = None
@@ -92,16 +93,18 @@ class PutxlSet:
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
+            replace_warning: bool = False,
 
             # Section. String Format
             font: str | tuple = None,
             font_name: str = None,
             font_size: int = None,
             font_color: str | tuple = None,
-            italic: bool = False,
-            bold: bool = False,
-            underline: bool = False,
-            strikeout: bool = False,
+            italic: bool = None,
+            bold: bool = None,
+            underline: bool = None,
+            strikeout: bool = None,
+            number_format: str = None,
             align: str | list = None,
             merge: bool = None,
             border: str | list = None,
@@ -114,9 +117,12 @@ class PutxlSet:
             # Section. df format
             index_merge: dict = None,
             header_wrap: bool = None,
-            adjust_height: dict = None,
+            adjust_width: dict = None,
             df_format: dict = None,
-            cd_format: dict = None,
+            cd_format: list | dict = None,
+            design: str = None,
+            style: str | list = None,
+            cd: str | list = None,
 
             debug: bool = False,
     ) -> None:
@@ -134,21 +140,19 @@ class PutxlSet:
         ################################
         replace_type = self.globalreplace if self.globalreplace else replace
 
-        if sheet_name and sheet_name != self.worksheet:
+        if sheet_name and sheet_name != self.ws.name:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
-                ws = self.wb.sheets[sheet_name]
+                self.ws = self.wb.sheets[sheet_name]
             else:
-                ws = self.wb.sheets.add(after=self.wb.sheets.count)
-                ws.name = sheet_name
-        else:
-            ws = self.ws
+                self.ws = self.wb.sheets.add(after=self.wb.sheets.count)
+                self.ws.name = sheet_name
 
         # If sheetreplace or replace is specified, then delete the old sheet and create a new one
         ################################
         if sheetreplace or replace_type == 'sheet':
             _sheetmap = {sheet.index: sheet.name for sheet in self.wb.sheets}
-            original_index = ws.index
-            original_name = ws.name
+            original_index = self.ws.index
+            original_name = self.ws.name
             total_count = self.wb.sheets.count
             if debug:
                 print(f">>> Row 121: original index is {original_index}")
@@ -160,22 +164,15 @@ class PutxlSet:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
                 if debug:
                     print(f">>> Row 132: New sheet added before the sheet !'{_sheetmap[original_index + 1]}'")
-            ws.delete()
+            self.ws.delete()
             new_sheet.name = original_name
-            ws = new_sheet
-            self.ws = ws
-            not_replace_warning = False
-        else:
-            if not isinstance(content, str):
-                not_replace_warning = True
-            else:
-                not_replace_warning = False
+            self.ws = new_sheet
 
         # Declare IO Object
         ################################
         if isinstance(content, str):
             io = StringxlWriter(content=content, cell=cell)
-            RangeOperator(ws.range(io.cell)).format(
+            RangeOperator(self.ws.range(io.cell)).format(
                 font=font,
                 font_name=font_name,
                 font_size=font_size,
@@ -184,6 +181,7 @@ class PutxlSet:
                 bold=bold,
                 underline=underline,
                 strikeout=strikeout,
+                number_format=number_format,
                 align=align,
                 merge=merge,
                 border=border,
@@ -194,20 +192,27 @@ class PutxlSet:
                 appendix=appendix
             )
             self.io = io
-            ws.range(io.cell).value = io.content
+            self.ws.range(io.cell).value = io.content
 
         else:
             io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-            ws.range(io.cell).value = io.content
+            self.ws.range(io.cell).value = io.content
             self.io = io
 
         # Format the sheet (Shelley, Li)
         ################################
+
+        if design:
+            from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
+            adjust_width = local_design[design]['adjust_width']
+            style = local_design[design]['style']
+            cd = local_design[design]['cd']
+
         '''
-         Extra Format (not in the group of format parameters): highlight area in existing-content excel
-         This is embedded and will be triggered automatically if not replacing sheet 
-         '''
-        if not_replace_warning:
+        Extra Format (not in the group of format parameters): highlight area in existing-content excel
+        This is embedded and will be triggered automatically if not replacing sheet 
+        '''
+        if replace_warning:
             match_dict = {
                 'top': self.io.range_top_empty_checker,
                 'bottom': self.io.range_bottom_empty_checker,
@@ -216,7 +221,7 @@ class PutxlSet:
             }
             for direction in list(match_dict.keys()):
                 if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'])
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'], debug=debug)
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
@@ -227,16 +232,18 @@ class PutxlSet:
         >>> ['grade', 'staff_id', 'age']
         >>> '* Total' 
         # this will match all columns in the dataframe ends with Total
+        
+        Example: {'level': 'cmu_dept', 'columns': '*Total'}
         '''
         if index_merge:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
-                RangeOperator(self.ws.range(local_range)).format(merge=True)
+                RangeOperator(self.ws.range(local_range)).format(merge=True, debug=debug)
 
         if header_wrap:
-            RangeOperator(self.ws.range(io.range_header)).format(wrap=True)
+            RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
 
         '''
-        For adjust_height para, the accepted dict must use column/index name as keys
+        For adjust_width para, the accepted dict must use column/index name as keys
         The direct value follow each column/index name must be a dictionary, 
         and there must be a key of "width" in it
         
@@ -247,13 +254,15 @@ class PutxlSet:
         >>>     'salary': {'width': 30, 'haligh': 'left'}
         >>> }
         '''
-        if adjust_height:
-            for name, setting in adjust_height.items():
+        if adjust_width:
+            for name, setting in adjust_width.items():
                 if name in io.columns:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'])
+                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'], debug=debug)
                 if name in io.rawdata.index.names:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'])
+                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'], debug=debug)
 
+        # Format with defined rules using a Dictionary
+        ################################
         '''
         df_format: the main function to add format to ranges
         This parameter will take a dictionary which uses:
@@ -263,9 +272,11 @@ class PutxlSet:
             
         >>> ... df_format={'msblue80': 'header'}
         >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
+        
+        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''
-        if df_format:
-            for rule, rangeinput in df_format.items():
+        def apply_df_format(mydict):
+            for rule, rangeinput in mydict.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 format_kwargs = parse_format_rule(rule)
@@ -273,7 +284,7 @@ class PutxlSet:
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
                     if isinstance(local_input, str):
-                        parsedlist = [item.strip() for item in local_input.split(',')]
+                        parsedlist = [item.strip() for item in local_input.split(';')]
                         cpdframexl_dict = None
                     elif isinstance(local_input, list):
                         parsedlist = local_input
@@ -289,8 +300,12 @@ class PutxlSet:
 
                 if ioranges:
                     for each_range in ioranges:
+                        if debug:
+                            print("IO Ranges - Each Range", each_range, type(each_range))
                         # Parse the input string as method name + kwargs
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
+                        if debug:
+                            print("Parsing the methods:", range_affix, method_kwargs)
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
                             range_cells = attr_method(**method_kwargs)
@@ -299,13 +314,20 @@ class PutxlSet:
 
                         if isinstance(range_cells, dict):
                             for range_key, range_content in range_cells.items():
-                                RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                                if debug:
+                                    print("d_format Dictionary Reading", range_content, "as", range_affix)
+                                RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str):
-                            RangeOperator(self.ws.range(range_cells)).format(**format_kwargs)
+                            if debug:
+                                print("d_format Dictionary Reading", range_cells, "as", range_affix)
+                            RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
 
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
-                        RangeOperator(self.ws.range(range_content)).format(**format_kwargs)
+                        RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
+
+        if df_format:
+            apply_df_format(df_format)
 
         # Conditional Format (1 column based)
         ################################
@@ -322,18 +344,124 @@ class PutxlSet:
         >>> ... cd_format={'column': 'age', 'rules': {...}}
         >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
         '''
-        if cd_format:
-            # Use the io.range_cdformat to convert the inputs into a dict with readable cellranges and formats
-            cleaned_rules = io.range_cdformat(**cd_format)
+        def apply_cd_format(mydict):
+            def cd_paint(lcinput):
+                cleaned_rules = io.range_cdformat(**lcinput)
 
-            # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
-            for rulename, lc_content in cleaned_rules.items():
-                cellrange = lc_content['cellrange']
-                cd_format_rule = lc_content['format']
-                # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
-                # parse_format_rule is taken from _xlwings module
-                cd_format_kwargs = parse_format_rule(cd_format_rule)
-                RangeOperator(self.ws.range(cellrange)).format(**cd_format_kwargs)
+                # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
+                for rulename, lc_content in cleaned_rules.items():
+                    cellrange = lc_content['cellrange']
+                    cd_format_rule = lc_content['format']
+                    if debug:
+                        print("Cd format name and content >>>")
+                        print(rulename, lc_content)
+
+                    if cellrange == 'no cells':
+                        return
+                    else:
+                        # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
+                        # parse_format_rule is taken from _xlwings module
+                        cd_format_kwargs = parse_format_rule(cd_format_rule)
+                        if debug:
+                            print("Cd format kwargs >>>")
+                            print(cd_format_kwargs)
+
+                        if cellrange == '':
+                            pass
+                        elif len(cellrange) <= 30:
+                            RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
+                        else:
+                            cellrange_dict = cell_range_combine(cellrange.split(','))
+                            if debug:
+                                print(cellrange_dict)
+                            for range_list in cellrange_dict.values():
+                                for combined_range in range_list:
+                                    RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
+
+            # Decide if cd_format is a dict or not
+            if isinstance(mydict, dict):
+                cd_paint(mydict)
+
+            if isinstance(mydict, list):
+                for rule in mydict:
+                    cd_paint(rule)
+
+        if cd_format:
+            apply_cd_format(cd_format)
+
+        # Pre-defined Styles
+        ################################
+        '''
+        style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
+        use style_sheets command to view pre-defined formats
+        '''
+        if style:
+            from pandaspro.user_config.style_sheets import style_sheets
+
+            # First parse string to lists
+            if isinstance(style, str):
+                loop_list = str2list(style)
+            elif isinstance(style, list):
+                loop_list = style
+            else:
+                raise ValueError('Invalid object for style parameter, only str or list accepted')
+
+            # Reorder the items in loop
+            checked_dict = {}
+            for element in loop_list:
+                if element in style_sheets:
+                    checked_dict[element] = element
+                elif re.match(r'index_merge\(([^,]+),?\s*(.*)\)', element):
+                    checked_dict['index_merge'] = element
+                else:
+                    raise ValueError(f'Specified style {element} not in style sheets')
+
+            checked_list = []
+            for key in style_sheets.keys():
+                if key in checked_dict.keys():
+                    checked_list.append(checked_dict[key])
+
+            # Loop and apply style by checking the style py module
+            for each_style in checked_list:
+                match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_style)
+                if match:
+                    index_name = match.group(1)
+                    columns = match.group(2) if match.group(2) != '' else 'None'
+                    content_border = style_sheets['index_merge']['border=outer_thick']
+                    content_border[1] = content_border[1].replace('__index__', index_name)
+                    style_sheets['index_merge']['merge'] = style_sheets['index_merge']['merge'].replace(
+                        '__index__', index_name).replace('__columns__', columns)
+                    apply_style = style_sheets['index_merge']
+                else:
+                    apply_style = style_sheets[each_style]
+
+                apply_df_format(apply_style)
+
+        # Pre-defined Conditional Formatting
+        ################################
+        '''
+        cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
+        use cd_sheets command to view pre-defined formats
+        '''
+        if cd:
+            from pandaspro.user_config.cd_sheets import cd_sheets
+
+            # First parse string to lists
+            if isinstance(cd, str):
+                loop_list = str2list(cd)
+            elif isinstance(cd, list):
+                loop_list = cd
+            else:
+                raise ValueError('Invalid object for cd parameter, only str or list accepted')
+
+            # Loop and apply cd by checking the cd py module
+            for each_cd in loop_list:
+                apply_cd = cd_sheets[each_cd]
+                if isinstance(apply_cd, list):
+                    for each_cd_sub in apply_cd:
+                        apply_cd_format(each_cd_sub)
+                elif isinstance(apply_cd, dict):
+                    apply_df_format(apply_cd)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
@@ -342,6 +470,14 @@ class PutxlSet:
             self.wb.sheets['Sheet1'].delete()
 
         self.wb.save()
+
+        # Print Export Success Message to Console ...
+        ################################
+        if not isinstance(content, str):
+            name = self.wb.name
+            if len(name) > 24:
+                name = name.replace('.xlsx', '')[0:20] + ' (...) .xlsx'
+            print(f"Frame with size {content.shape} successfully exported to <<{name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
 
         if debug:
             print(f"\n>>> Cell Range Analysis")
@@ -371,39 +507,11 @@ class PutxlSet:
 
 
 if __name__ == '__main__':
-
-    from pandaspro import sysuse_auto, sysuse_countries, wbuse_pivot
-
-    df1 = sysuse_auto
-    df2 = sysuse_countries
-
-    # ps = PutxlSet('sampledf.xlsx', 'Sheet3', noisily=True)
-    # ps.putxl(df, 'TT', 'A1', index=True, header=True, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'TF', 'A1', index=True, header=False, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'FT', 'A1', index=False, header=True, sheetreplace=True, debug=True)
-    # ps.putxl(df1, 'FF', 'A1', index=False, header=False, sheetreplace=True, debug=True)
-    # from _xlwings import cpdStyle
-    data = wbuse_pivot.reset_index().set_index('cmu_dept_major')
-    e = PutxlSet('sampledf.xlsx', sheet_name='region')
-    e.putxl(
-        data,
-        cell='B2',
-        index=True,
-        index_merge={'level': 'cmu_dept_major', 'columns': '* Total'},
-        header_wrap=True,
-        df_format={
-            'border=inner_thin': ['all'],
-            'msblue80, align=center, border=outer_thick': [
-                'index_hsections(level=cmu_dept_major)',
-                'columnspan(start_col=GC Total, stop_col=Ratio Total, header=True)',
-                'index_outer'
-            ],
-            'msgreen80, align="center"': 'header_outer',
-        },
-        cd_format={
-            'column': 'cmu_dept_major',
-            'rules': {'Front Offices': 'fill=None'},
-            'applyto': 'cmu_dept_major, GC, GD, # ACS Staff, # GE+ Staff, Ratio'
-        },
-        sheetreplace=True
-    )
+    from wbhrdata import wbuse_pivotplus, sob
+    import wbhrdata as wb
+    # sysuse_auto = sysuse_auto.sort_values('rep78')
+    # sysuse_auto = sysuse_auto.set_index('rep78')
+    ps = PutxlSet('sampledf.xlsx')
+    ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue')
+    # wb = xw.Book('sampledf.xlsx')
+    # wb.sheets['newtab'].range('A1').value = 1

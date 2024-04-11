@@ -45,13 +45,15 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
     pattern = r'\w+\s*-\s*\w+'
     match = re.findall(pattern, inputstring)
     if not match:
-        newlist = [s.strip() for s in inputstring.split(',')]
+        newlist = [s.strip() for s in inputstring.split(';')]
     else:
         for index, item in enumerate(match):
             inputstring = inputstring.replace(item, '__' + str(index) + '__')
-        aloneitem = inputstring.split(',')
+        aloneitem = inputstring.split(';')
         for index, item in enumerate(match):
             newlist = [item if s == '__' + str(index) + '__' else s.strip() for s in aloneitem]
+
+    # noinspection PyUnboundLocalVariable
     return newlist
 
 
@@ -102,24 +104,37 @@ def parse_method(input_string):
     Includes internal helper functions to parse values and intelligently split parameter strings.
     """
 
-    def parse_value(value):
+    import ast
+
+    def parse_value(value_local):
         """
         Attempts to convert a string value to its corresponding data type.
         """
         try:
-            return int(value)
-        except ValueError:
-            try:
-                return float(value)
-            except ValueError:
+            # Try to parse it as a complex data type (list, tuple, dict)
+            parsed_value = ast.literal_eval(value_local)
+            # If it's a list with elements, ensure each element is a string
+            if isinstance(parsed_value, list):
+                return [str(element).strip() for element in parsed_value]
+            return parsed_value
+        except (ValueError, SyntaxError):
+            # Handle non-literal lists, assuming they are lists of strings
+            if value_local.startswith('[') and value_local.endswith(']'):
+                # Remove the brackets and split by commas not enclosed in brackets
+                elements = smart_split_params(value_local[1:-1])
+                return [element.strip() for element in elements]
+            else:
+                # If ast.literal_eval fails, fall back to trying int, then float, then return as string
                 try:
-                    # Safely evaluate string to a complex type (list, tuple, dict)
-                    return ast.literal_eval(value)
-                except (ValueError, SyntaxError):
-                    # Return as string if it's neither a number nor a complex type
-                    return value
+                    return int(value_local)
+                except ValueError:
+                    try:
+                        return float(value_local)
+                    except ValueError:
+                        # Return as string if it's neither a number nor a complex type
+                        return value_local
 
-    def smart_split_params(params_string):
+    def smart_split_params(params_string_local):
         """
         Intelligently splits the parameters string, taking into account commas
         within lists, tuples, and dictionaries.
@@ -128,7 +143,7 @@ def parse_method(input_string):
         bracket_level = 0  # Tracks the level of nested brackets
         current_param = ''
 
-        for char in params_string:
+        for char in params_string_local:
             if char in '([{':
                 bracket_level += 1
             elif char in ')]}':

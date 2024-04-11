@@ -115,7 +115,7 @@ class FramexlWriter:
         # Special - Checker for sheetreplace
         self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
         self.range_bottom_empty_checker = CellPro(self.bottom_left_cell).offset(1, 0).resize(1, self.tc).cell if CellPro(self.bottom_left_cell).cell_index[0] != 1 else None
-        self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[0] != 1 else None
+        self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[1] != 1 else None
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
 
     def get_column_letter_by_indexname(self, levelname):
@@ -130,8 +130,8 @@ class FramexlWriter:
         col_count = list(self.columns).index(colname)
         col_cell = self.start_cellobj.offset(0, col_count)
 
-        if self.export_type in ['htif', 'hfif']:
-            col_cell = col_cell.offset(0, -self.index_column_count)
+        # if self.export_type in ['htif', 'hfif']:
+        #     col_cell = col_cell.offset(0, -self.index_column_count)
 
         return col_cell
 
@@ -208,34 +208,62 @@ class FramexlWriter:
     ''' this is returning the whole level by level ranges in selection '''
     @property
     def range_index_levels(self) -> dict:
-        if self.range_index is None or not isinstance(self.rawdata.index, pd.MultiIndex):
-            raise ValueError('index_levels method requires the input dataframe to be multi-index frame')
+        result_dict = {}
+        range_start_each = CellPro(self.cell)
+        for each_index in self.rawdata.index.names:
+            result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
+            range_start_each = range_start_each.offset(0, 1)
+        return result_dict
+
+    def range_columns(self, c, header = False):
+        if isinstance(c, str):
+            clean_list = parse_wild(c, self.columns)
+        elif isinstance(c, list):
+            clean_list = c
         else:
-            result_dict = {}
-            range_start_each = CellPro(self.cell)
-            for each_index in self.rawdata.index.names:
-                result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
-                range_start_each = range_start_each.offset(0, 1)
-            return result_dict
+            raise ValueError('range_columns only accept str/list as inputs')
 
-    def range_columnspan(self, start_col, stop_col, header=False):
-        # Get the col indices and row index
-        col_index1 = self.get_column_letter_by_name(start_col).cell_index[1]
-        col_index2 = self.get_column_letter_by_name(stop_col).cell_index[1]
-        row_index = self.get_column_letter_by_name(start_col).cell_index[0]
+        result_list = []
+        for colname in clean_list:
+            start_range = self.get_column_letter_by_name(colname)
+            each_range = start_range.resize_h(self.tr - self.header_row_count).cell
+            # noinspection PySimplifyBooleanCheck
+            if header == True:
+                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+            if header == 'only':
+                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
+            result_list.append(each_range)
 
-        # decide the top row cells with min/max - allow invert orders
-        top_left_index = min(col_index1, col_index2)
-        top_right_index = max(col_index1, col_index2)
-        top_left = index_to_cell(row_index, top_left_index)
-        top_right = index_to_cell(row_index, top_right_index)
+        return ', '.join(result_list)
 
-        # Combine Range
-        start_range = CellPro(top_left + ':' + top_right)
+    def range_cspan(self, s = None, e = None, c = None, header = False):
+        # Declaring starting and ending columns
+        if s and e:
+            col_index1 = self.get_column_letter_by_name(s).cell_index[1]
+            col_index2 = self.get_column_letter_by_name(e).cell_index[1]
+            row_index = self.get_column_letter_by_name(s).cell_index[0]
+
+            # Decide the top row cells with min/max - allow invert orders
+            top_left_index = min(col_index1, col_index2)
+            top_right_index = max(col_index1, col_index2)
+            top_left = index_to_cell(row_index, top_left_index)
+            top_right = index_to_cell(row_index, top_right_index)
+            start_range = CellPro(top_left + ':' + top_right)
+
+        # Declaring only 1 column
+        elif c:  # Para C: declare column only
+            selected_column = self.get_column_letter_by_name(c)
+            start_range = selected_column
+
+        else:
+            raise ValueError('At least 1 set of Paras: (1) s+e or (2) c must be declared ')
 
         final = start_range.resize_h(self.tr - self.header_row_count).cell
-        if header:
+        # noinspection PySimplifyBooleanCheck
+        if header == True:
             final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+        if header == 'only':
+            final = CellPro(final).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
 
         return final
 
@@ -251,26 +279,30 @@ class FramexlWriter:
             cd_rules=rules,
             applyto=applyto
         )
-        apply_columns = mycd.apply
-        cd_dfmap_1col = {}
-        for key, mask_rule in mycd.rules_mask.items():
-            cd_dfmap_1col[key] = {}
-            cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
-            cd_dfmap_1col[key]['format'] = mask_rule['format']
-        self.cd_dfmap_1col = cd_dfmap_1col
+        if mycd.col_not_exist:
+            cd_cellrange_1col = {'void_rule': {'cellrange': 'no cells', 'format': ''}}
+        else:
+            apply_columns = mycd.apply
+            cd_dfmap_1col = {}
+            for key, mask_rule in mycd.rules_mask.items():
+                cd_dfmap_1col[key] = {}
+                cd_dfmap_1col[key]['dfmap'] = self.dfmap[mask_rule['mask']][apply_columns]
+                cd_dfmap_1col[key]['format'] = mask_rule['format']
+            self.cd_dfmap_1col = cd_dfmap_1col
 
-        def _df_to_mystring(df):
-            lcarray = df.values.flatten()
-            long_string = ','.join([str(value) for value in lcarray])
-            return long_string
+            def _df_to_mystring(df):
+                lcarray = df.values.flatten()
+                long_string = ','.join([str(value) for value in lcarray])
+                return long_string
 
-        cd_cellrange_1col = {}
-        for key, mask_rule in mycd.rules_mask.items():
-            cd_cellrange_1col[key] = {}
-            temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
-            cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
-            cd_cellrange_1col[key]['format'] = mask_rule['format']
-        self.cd_cellrange_1col = cd_cellrange_1col
+            cd_cellrange_1col = {}
+            for key, mask_rule in mycd.rules_mask.items():
+                cd_cellrange_1col[key] = {}
+                temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
+                cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
+                cd_cellrange_1col[key]['format'] = mask_rule['format']
+            self.cd_cellrange_1col = cd_cellrange_1col
+
         return cd_cellrange_1col
 
 
@@ -278,16 +310,3 @@ class cpdFramexl:
     def __init__(self, name, **kwargs):
         self.name = name
         self.paras = kwargs
-
-if __name__ == '__main__':
-    from pandaspro import wbuse_pivot
-    import numpy as np
-
-    io = FramexlWriter(wbuse_pivot, 'B2', index=True)
-    out = io.range_cdformat(
-        column='GC',
-        rules={
-            'EAW': '#FF0000',
-        },
-        applyto='all'
-    )

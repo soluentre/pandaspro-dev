@@ -64,6 +64,7 @@ class FramePro(pd.DataFrame):
             debug=debug,
         )
         if debug:
+            print("This is debugger for inlist method: ", result)
             print(type(result))
         if engine == 'm':
             return result
@@ -112,9 +113,9 @@ class FramePro(pd.DataFrame):
             header: bool = True,
             replace: str = None,
             sheetreplace: bool = False,
-            format: str | list = None,
-            rowformat: dict = None,
-            colformat: dict = None,
+            design: str = None,
+            style: str | list = None,
+            cd: str | list = None,
             override: bool = None,
     ):
         declaredwb = WorkbookExportSimplifier.get_last_declared_workbook()
@@ -129,9 +130,13 @@ class FramePro(pd.DataFrame):
             index=index,
             header=header,
             replace=replace,
-            sheetreplace=sheetreplace
+            sheetreplace=sheetreplace,
+            design=design,
+            style=style,
+            cd=cd
         )
 
+        # ? Seems to return the declaredwb object to change
         if override:
             return declaredwb
 
@@ -143,7 +148,7 @@ class FramePro(pd.DataFrame):
             return parse_wild(promptstring, self.columns)
 
     def br(self, promptstring):
-        if self.cvar(promptstring) == []:
+        if not self.cvar(promptstring):
             print('Nothing to check/browse in an empty dataframe')
             return self
         else:
@@ -248,9 +253,7 @@ class FramePro(pd.DataFrame):
 
 pd.DataFrame.excel_e = FramePro.excel_e
 
-
 if __name__ == '__main__':
-    a = FramePro({'a': [1, 2, 3], 'b':[3, 4, 5]})
-    b = a.inlist('a',1, engine = 'm')
-    e = a.inlist('a', 1, engine='b')
-    f = a[a['a'].isin([1,2])]
+    from wbhrdata import sob
+    d = sob().head(0)
+    d.inlist('grade', 'GC', engine='c', rename='GC', inplace=True)

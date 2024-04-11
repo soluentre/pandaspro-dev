@@ -8,6 +8,12 @@ from pandaspro.core.dates.methods import (
     bdate
 )
 
+from pandaspro.core.stringfunc import (
+    parse_method,
+    parse_wild,
+    wildcardread,
+    str2list
+)
 
 
 __all__ = [
@@ -15,5 +21,9 @@ __all__ = [
     "dfilter",
     "FramePro",
     "tab",
-    "varnames"
+    "varnames",
+    "parse_wild",
+    "parse_method",
+    "wildcardread",
+    "str2list"
 ]

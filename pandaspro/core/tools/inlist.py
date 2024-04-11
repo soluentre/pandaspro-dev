@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def inlist(
@@ -57,35 +58,45 @@ def inlist(
     >>> df = inlist(df, 'A', 5, engine='c', invert=True)
     Adds a new column '_inlist' to `df`, marking with 1 the rows where column 'A' does not contain 5.
     """
-    boolist = args[0] if isinstance(args[0], list) else list(args)
+
+    if data.empty:
+        raise ValueError('Cannot use inlist on an empty dataframe')
+
+    bool_list = []
+    for arg in args:
+        if isinstance(arg, list):
+            bool_list.extend(arg)
+        else:
+            bool_list.append(arg)
+
     if debug:
-        print(boolist)
+        print(bool_list)
 
     # Update the input var when inplace == True or engine == r:
     if engine == 'r':
         if debug:
             print("type r code executed ..., trimming the original dataframe")
         if not invert:
-            data.drop(data[~data[colname].isin(boolist)].index, inplace=True)
+            data.drop(data[~data[colname].isin(bool_list)].index, inplace=True)
         else:
-            data.drop(data[data[colname].isin(boolist)].index, inplace=True)
+            data.drop(data[data[colname].isin(bool_list)].index, inplace=True)
 
     elif engine == 'b':
         if debug:
-            print("type b code executed ..., creating a tailored dataframe, original frame remain untouched")
+            print("type b code executed ..., creating a tailored new dataframe, original frame remain untouched")
 
         if inplace:
             if not invert:
-                data.drop(data[~data[colname].isin(boolist)].index, inplace=True)
+                data.drop(data[~data[colname].isin(bool_list)].index, inplace=True)
             else:
-                data.drop(data[data[colname].isin(boolist)].index, inplace=True)
+                data.drop(data[data[colname].isin(bool_list)].index, inplace=True)
         else:
-            return data[data[colname].isin(boolist)] if invert == False else data[~(data[colname].isin(boolist))]
+            return data[data[colname].isin(bool_list)] if invert == False else data[~(data[colname].isin(bool_list))]
 
     elif engine == 'm':
         if debug:
             print("type m code executed ..., creating a mask")
-        return data[colname].isin(boolist) if invert == False else ~(data[colname].isin(boolist))
+        return data[colname].isin(bool_list) if invert == False else ~(data[colname].isin(bool_list))
 
     elif engine == 'c':
         if debug:
@@ -94,19 +105,19 @@ def inlist(
         new_name = rename if rename else '_inlist'
         if inplace:
             if not invert:
-                data.loc[data[colname].isin(boolist), new_name] = 1
-                data.loc[~data[colname].isin(boolist), new_name] = 0
+                data.loc[data[colname].isin(bool_list), new_name] = 1
+                data.loc[~data[colname].isin(bool_list), new_name] = 0
             else:
-                data.loc[~(data[colname].isin(boolist)), new_name] = 1
-                data.loc[data[colname].isin(boolist), new_name] = 0
+                data.loc[~(data[colname].isin(bool_list)), new_name] = 1
+                data.loc[data[colname].isin(bool_list), new_name] = 0
         else:
             df = data.copy()
             if not invert:
-                df.loc[data[colname].isin(boolist), new_name] = 1
-                df.loc[~data[colname].isin(boolist), new_name] = 0
+                df.loc[data[colname].isin(bool_list), new_name] = 1
+                df.loc[~data[colname].isin(bool_list), new_name] = 0
             else:
-                df.loc[~(data[colname].isin(boolist)), new_name] = 1
-                df.loc[~data[colname].isin(boolist), new_name] = 0
+                df.loc[~(data[colname].isin(bool_list)), new_name] = 1
+                df.loc[~data[colname].isin(bool_list), new_name] = 0
             return df
     else:
         print('Unsupported type')

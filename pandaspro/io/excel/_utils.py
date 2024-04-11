@@ -5,6 +5,7 @@ import numpy as np
 import re
 from typing import Union
 
+
 def lowervarlist(
         data,
         engine: str = 'data',
@@ -123,7 +124,7 @@ class CellPro:
         if self.celltype == 'cell':
             return self.resize(1, col_resize)
         else:
-            bottom_left = offset(self.cell_stop, 0, -(self.width-1))
+            bottom_left = offset(self.cell_stop, 0, -(self.width - 1))
             bottom_right = offset(bottom_left, 0, col_resize - 1)
             return CellPro(self.cell_start + ':' + bottom_right)
 
@@ -134,7 +135,6 @@ class CellPro:
             top_right = offset(self.cell_stop, -(self.height - 1), 0)
             bottom_right = offset(top_right, row_resize - 1, 0)
             return CellPro(self.cell_start + ':' + bottom_right)
-
 
     def offset(self, down_offset, right_offset):
         if self.celltype == 'cell':
@@ -282,7 +282,8 @@ def offset(cell: str,
     new_col = col + right_offset
     new_column_letter = get_column_letter(new_col)
     if new_row <= 0 or new_col <= 0:
-        raise ValueError(f"Excel min row is 0 and min col is A, the result would be invalid {new_column_letter}{new_row}")
+        raise ValueError(
+            f"Excel min row is 0 and min col is A, the result would be invalid {new_column_letter}{new_row}")
     return f"{new_column_letter}{new_row}"
 
 
@@ -336,3 +337,29 @@ def get_cell_lists(rowlist: list,
 
     return result_dict
 
+
+def cell_range_combine(cells: str = None):
+    cells_by_row = {}
+    for cell in cells:
+        row = cell_index(cell)[0]
+        column = get_column_letter(cell_index(cell)[1])
+        if row not in cells_by_row:
+            cells_by_row[row] = []
+        cells_by_row[row].append(column)
+
+    merged_cells = {}
+    for row, columns in cells_by_row.items():
+        merged = []
+        current_range = [columns[0]]
+
+        for i in range(1, len(columns)):
+            if ord(columns[i]) == ord(current_range[-1]) + 1:
+                current_range.append(columns[i])
+            else:
+                merged.append(f"{current_range[0]}{row}:{current_range[-1]}{row}")
+                current_range = [columns[i]]
+
+        merged.append(f"{current_range[0]}{row}:{current_range[-1]}{row}")
+        merged_cells[row] = merged
+
+    return merged_cells

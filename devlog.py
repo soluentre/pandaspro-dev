@@ -55,7 +55,7 @@ putxl(
     cell='A1',
 
     paint={
-        'outsider border': ['index_outer', 'index_columns ', 'columnspan(age, range1)', 'index_sections', cdformat],
+        'outsider border': ['index_outer', 'index_columns ', 'cspan(age, range1)', 'index_sections', cdformat],
         '#FFF000': ['index'],
         'index_merge': {'cmu_dept_major': ['columns1, columns2, columns3']},
     },

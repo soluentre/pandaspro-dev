@@ -3,6 +3,10 @@ from pandaspro.core.api import (
     dfilter,
     FramePro,
     tab,
+    str2list,
+    wildcardread,
+    parse_method,
+    parse_wild
 )
 
 from pandaspro.io.api import (
@@ -21,3 +25,7 @@ from pandaspro.sampledf.api import (
 )
 
 excel_d = WorkbookExportSimplifier().declare_workbook
+
+__all__ = [
+    'FramePro'
+]
