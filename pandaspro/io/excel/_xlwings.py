@@ -635,3 +635,4 @@ def parse_format_rule(rule):
         return_dict.update(_parse_str_format_key(term))
 
     return return_dict
+

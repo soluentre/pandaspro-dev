@@ -104,6 +104,7 @@ class PutxlSet:
             bold: bool = None,
             underline: bool = None,
             strikeout: bool = None,
+            number_format: str = None,
             align: str | list = None,
             merge: bool = None,
             border: str | list = None,
@@ -180,6 +181,7 @@ class PutxlSet:
                 bold=bold,
                 underline=underline,
                 strikeout=strikeout,
+                number_format=number_format,
                 align=align,
                 merge=merge,
                 border=border,
@@ -270,6 +272,8 @@ class PutxlSet:
             
         >>> ... df_format={'msblue80': 'header'}
         >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
+        
+        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''
         def apply_df_format(mydict):
             for rule, rangeinput in mydict.items():

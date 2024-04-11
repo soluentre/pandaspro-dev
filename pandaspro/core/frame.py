@@ -252,3 +252,8 @@ class FramePro(pd.DataFrame):
 
 
 pd.DataFrame.excel_e = FramePro.excel_e
+
+if __name__ == '__main__':
+    from wbhrdata import sob
+    d = sob().head(0)
+    d.inlist('grade', 'GC', engine='c', rename='GC', inplace=True)
