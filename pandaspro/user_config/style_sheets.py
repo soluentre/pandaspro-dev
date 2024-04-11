@@ -9,6 +9,11 @@ style_sheets = {
         'border=outer_thick': 'all',
         'blue80; font_color=black; wrap': 'header_outer'
     },
+    'green': {
+        'border=inner_thin; align=center': 'all',
+        'border=outer_thick': 'all',
+        'green80; font_color=black; wrap': 'header_outer'
+    },
     'index_merge': {
         'merge': 'index_merge_inputs(level=__index__, columns=__columns__)',
         'border=outer_thick': [

@@ -204,8 +204,19 @@ class PutxlSet:
 
         if design:
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
+            if re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design):
+                match = re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design)
+                design = match.group(1)
+                index_key = match.group(2)
+                index_columns = match.group(3)
+                style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
+            else:
+                style = local_design[design]['style']
+
+            if debug:
+                print("Using advanced style: ", style)
+
             adjust_width = local_design[design]['adjust_width']
-            style = local_design[design]['style']
             cd = local_design[design]['cd']
 
         '''
