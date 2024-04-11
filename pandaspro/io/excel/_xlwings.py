@@ -67,6 +67,7 @@ _border_style_map = {
 }
 
 _border_weight_map = {
+    'thiner': 1,
     'thin': 2,
     'thick': 3,
     'thicker': 4
@@ -446,8 +447,8 @@ class RangeOperator:
             # Create patter and color parameter
             border_side = sidelist[0] if len(sidelist) == 1 else None
             border_style = stylelist[0] if len(stylelist) == 1 else 'continue'
-            border_weight = _border_weight_map[weightlist[0]] if len(weightlist) == 1 else 'thin'
-            border_color = color_to_int(colorlist[0]) if len(colorlist) == 1 else '#000000'
+            border_weight = weightlist[0] if len(weightlist) == 1 else 'thin'
+            border_color = colorlist[0] if len(colorlist) == 1 else '#000000'
 
             if border_side == 'none':
                 for i in range(1, 12):
@@ -455,27 +456,27 @@ class RangeOperator:
 
             elif border_side == 'all':
                 self.xwrange.api.Borders.LineStyle = _border_style_map[border_style]
-                self.xwrange.api.Borders.Weight = border_weight
-                self.xwrange.api.Borders.Color = border_color
+                self.xwrange.api.Borders.Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders.Color = color_to_int(border_color)
 
             elif border_side == 'inner':
                 self.xwrange.api.Borders(11).LineStyle = _border_style_map[border_style]
-                self.xwrange.api.Borders(11).Weight = border_weight
-                self.xwrange.api.Borders(11).Color = border_color
+                self.xwrange.api.Borders(11).Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders(11).Color = color_to_int(border_color)
                 self.xwrange.api.Borders(12).LineStyle = _border_style_map[border_style]
-                self.xwrange.api.Borders(12).Weight = border_weight
-                self.xwrange.api.Borders(12).Color = border_color
+                self.xwrange.api.Borders(12).Weight = _border_weight_map[border_weight]
+                self.xwrange.api.Borders(12).Color = color_to_int(border_color)
 
             elif border_side == 'outer':
                 for i in range(7, 11):
                     self.xwrange.api.Borders(i).LineStyle = _border_style_map[border_style]
-                    self.xwrange.api.Borders(i).Weight = border_weight
-                    self.xwrange.api.Borders(i).Color = border_color
+                    self.xwrange.api.Borders(i).Weight = _border_weight_map[border_weight]
+                    self.xwrange.api.Borders(i).Color = color_to_int(border_color)
 
             elif border_side in _border_side_map.keys():
+                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = _border_weight_map[border_weight]
                 self.xwrange.api.Borders(_border_side_map[border_side]).LineStyle = _border_style_map[border_style]
-                self.xwrange.api.Borders(_border_side_map[border_side]).Weight = border_weight
-                self.xwrange.api.Borders(_border_side_map[border_side]).Color = border_color
+                self.xwrange.api.Borders(_border_side_map[border_side]).Color = color_to_int(border_color)
 
         # Fill Attributes
         ##################################
@@ -635,4 +636,3 @@ def parse_format_rule(rule):
         return_dict.update(_parse_str_format_key(term))
 
     return return_dict
-

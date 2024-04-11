@@ -43,11 +43,13 @@ class CdFormat:
             result[rulename] = {}
 
             # Mask and Format Prompt
-            if not isinstance(rulename, str):
-                raise ValueError("Simple Conditional Formatting can only accept str inputs in rules dictionary's keys")
-
-            elif isinstance(rulename, str) and isinstance(value, str):
-                result[rulename]['mask'] = mytools.inlist(self.df, self.column, rulename, engine='m')
+            if isinstance(value, str):
+                if self.column in self.df.columns:
+                    result[rulename]['mask'] = mytools.inlist(self.df, self.column, rulename, engine='m')
+                elif self.column in self.df.index.names:
+                    result[rulename]['mask'] = self.df.index.get_level_values(self.column) == rulename
+                else:
+                    raise ValueError('Invalid column name specified.')
                 result[rulename]['format'] = value
 
             else:
@@ -88,3 +90,4 @@ class CdFormat:
                     raise ValueError('Edit your rules dictionary prompt')
 
         return result
+
