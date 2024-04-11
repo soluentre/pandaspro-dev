@@ -60,12 +60,10 @@ def inlist(
     """
     bool_list = []
     for arg in args:
-        if isinstance(arg, (int, float)) or np.isnan(arg):
-            bool_list.append(arg)
-        elif isinstance(arg, list):
+        if isinstance(arg, list):
             bool_list.extend(arg)
         else:
-            raise ValueError("position parameters must be either str or a list")
+            bool_list.append(arg)
 
     if debug:
         print(bool_list)
