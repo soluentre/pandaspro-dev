@@ -4,16 +4,16 @@ excel_export_mydesign = {
     'wbblue': {
         'style': 'blue',
         'cd': 'grade; ti',
-        'adjust_width': hrconfig
+        'config': hrconfig
     },
     'wbblue_nograde': {
         'style': 'blue',
         'cd': 'ti',
-        'adjust_width': hrconfig
+        'config': hrconfig
     },
     'wbgreen': {
         'style': 'green',
         'cd': 'grade; ti',
-        'adjust_width': hrconfig
+        'config': hrconfig
     },
 }

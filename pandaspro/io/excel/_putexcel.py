@@ -149,15 +149,15 @@ class PutxlSet:
             fill_bg: str | tuple = None,
             appendix: bool = False,
 
-            # Section. df format
+            # Section. special/personalize format
             index_merge: dict = None,
             header_wrap: bool = None,
-            adjust_width: dict = None,
             design: str = None,
             style: str | list = None,
-            cd: str | list = None,
             df_format: dict = None,
+            cd: str | list = None,
             cd_format: list | dict = None,
+            config: dict = None,
 
             debug: bool = False,
     ) -> None:
@@ -236,7 +236,6 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
-
         if design:
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
             if re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design):
@@ -251,7 +250,7 @@ class PutxlSet:
             if debug:
                 print("Using advanced style: ", style)
 
-            adjust_width = local_design[design]['adjust_width']
+            config = local_design[design]['config']
             cd = local_design[design]['cd']
 
         '''
@@ -288,27 +287,7 @@ class PutxlSet:
         if header_wrap:
             RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
 
-        '''
-        For adjust_width para, the accepted dict must use column/index name as keys
-        The direct value follow each column/index name must be a dictionary, 
-        and there must be a key of "width" in it
-        
-        For example:
-        >>> {
-        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
-        >>>     'age': {'width': 15}
-        >>>     'salary': {'width': 30, 'haligh': 'left'}
-        >>> }
-        '''
-        if adjust_width:
-            for name, setting in adjust_width.items():
-                if name in io.columns:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(width=setting['width'], debug=debug)
-                if name in io.rawdata.index.names:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(width=setting['width'], debug=debug)
-
         # Format with defined rules using a Dictionary
-        ################################
         def apply_df_format(mydict):
             for rule, rangeinput in mydict.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
@@ -422,7 +401,6 @@ class PutxlSet:
             apply_df_format(df_format)
 
         # Conditional Format (1 column based)
-        ################################
         def apply_cd_format(mydict):
             def cd_paint(lcinput):
                 cleaned_rules = io.range_cdformat(**lcinput)
@@ -504,6 +482,35 @@ class PutxlSet:
         '''
         if cd_format:
             apply_cd_format(cd_format)
+
+        '''
+        For config para, the accepted dict must use column/index name as keys
+        The direct value follow each column/index name must be a dictionary, 
+        and there must be readable keys in it.
+        
+        Currently support: 
+        1. width
+        2. number_format
+        
+        For example:
+        >>> {
+        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
+        >>>     'age': {'width': 15}
+        >>>     'salary': {'width': 30, 'haligh': 'left'}
+        >>> }
+        '''
+        if config:
+            for name, setting in config.items():
+                if name in io.columns:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
+                        **config,
+                        debug=debug
+                    )
+                if name in io.rawdata.index.names:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(
+                        **config,
+                        debug=debug
+                    )
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
