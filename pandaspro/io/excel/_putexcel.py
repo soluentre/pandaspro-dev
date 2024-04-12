@@ -438,6 +438,10 @@ class PutxlSet:
         def apply_cd_format(mydict):
             def cd_paint(lcinput):
                 cleaned_rules = io.range_cdformat(**lcinput)
+                '''
+                the cleaned_rules object will be a dictionary looks like:
+                
+                '''
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
                 for rulename, lc_content in cleaned_rules.items():
