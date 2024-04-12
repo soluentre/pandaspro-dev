@@ -5,8 +5,7 @@ import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
 from pandaspro.io.excel._utils import cell_range_combine
-from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule
-
+from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
 
 def is_range_filled(ws, range_str: str = None):
     if range_str is None:
@@ -129,6 +128,7 @@ class PutxlSet:
             replace: str = None,
             sheetreplace: bool = False,
             replace_warning: bool = False,
+            tab_color: str | tuple = None,
 
             # Section. String Format
             font: str | tuple = None,
@@ -236,6 +236,10 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
+        if tab_color:
+            paint_tab = color_to_int(tab_color)
+            self.ws.api.Tab.Color = paint_tab
+
         if design:
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
             if re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design):
@@ -503,7 +507,7 @@ class PutxlSet:
             import pandas as pd
             for name, setting in config.items():
                 if debug:
-                    print(setting)
+                    print("config file reading: ", name, "format setting: ", setting)
                 format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
                 if name in io.columns:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
@@ -565,6 +569,7 @@ if __name__ == '__main__':
     # sysuse_auto = sysuse_auto.sort_values('rep78')
     # sysuse_auto = sysuse_auto.set_index('rep78')
     ps = PutxlSet('sampledf.xlsx')
-    ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue')
+    # ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue')
+    ps.ws
     # wb = xw.Book('sampledf.xlsx')
     # wb.sheets['newtab'].range('A1').value = 1

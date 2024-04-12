@@ -177,6 +177,11 @@ def _is_valid_rgb(rgb):
 
 
 def color_to_int(color: str | tuple):
+    # check pre-defined color names
+    if isinstance(color, str) and color in _cpdpuxl_color_map.keys():
+        color = _cpdpuxl_color_map(color)
+
+    # transfer color int
     if isinstance(color, str) and _is_valid_hex_color(color):
         local_hex = color.lstrip('#')
         red = int(local_hex[:2], 16)
@@ -225,7 +230,8 @@ class RangeOperator:
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
             appendix: bool = False,
-            debug: bool = False
+            debug: bool = False,
+            **kwargs
     ) -> None:
 
         if appendix:
