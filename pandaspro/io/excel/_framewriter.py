@@ -78,6 +78,7 @@ class FramexlWriter:
                 dfmap.iloc[dfmap_index, j] = dfmapstart.offset(dfmap_index, j).cell
 
         self.iotype = 'df'
+        self.columns_with_indexnames = self.rawdata.reset_index().columns
         self.columns = self.rawdata.columns
         self.content = export_data
         self.cell = cell
@@ -129,9 +130,6 @@ class FramexlWriter:
     def get_column_letter_by_name(self, colname):
         col_count = list(self.columns).index(colname)
         col_cell = self.start_cellobj.offset(0, col_count)
-        # if self.export_type in ['htif', 'hfif']:
-        #     col_cell = col_cell.offset(0, -self.index_column_count)
-
         return col_cell
 
     def _index_break(self, level: str = None):
@@ -216,7 +214,7 @@ class FramexlWriter:
 
     def range_columns(self, c, header = False):
         if isinstance(c, str):
-            clean_list = parse_wild(c, self.columns)
+            clean_list = parse_wild(c, self.columns_with_indexnames)
         elif isinstance(c, list):
             clean_list = c
         else:
@@ -234,11 +232,10 @@ class FramexlWriter:
             below_range = start_range.resize_h(self.tr - self.header_row_count).cell
             # noinspection PySimplifyBooleanCheck
             if header == True:
-                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count + self.tr).cell
             if header == 'only':
                 below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
             result_list.append(below_range)
-
 
         return ', '.join(result_list)
 

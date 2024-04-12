@@ -264,13 +264,8 @@ class PutxlSet:
                 if debug:
                     print("config file reading: ", name, "format setting: ", setting)
                 format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                if name in io.columns:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
-                        **format_update,
-                        debug=debug
-                    )
-                if name in io.rawdata.index.names:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(
+                if name in io.columns_with_indexnames:
+                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(
                         **format_update,
                         debug=debug
                     )
@@ -563,14 +558,3 @@ class PutxlSet:
             sheet.name = sheet_name
         self.ws = sheet
         return
-
-
-if __name__ == '__main__':
-    from wbhrdata import wbuse_pivotplus, sob
-    import wbhrdata as wb
-    # sysuse_auto = sysuse_auto.sort_values('rep78')
-    # sysuse_auto = sysuse_auto.set_index('rep78')
-    ps = PutxlSet('sampledf.xlsx')
-    ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue', tab_color='blue', debug=True)
-    # wb = xw.Book('sampledf.xlsx')
-    # wb.sheets['newtab'].range('A1').value = 1
