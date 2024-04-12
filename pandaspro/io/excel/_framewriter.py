@@ -129,7 +129,6 @@ class FramexlWriter:
     def get_column_letter_by_name(self, colname):
         col_count = list(self.columns).index(colname)
         col_cell = self.start_cellobj.offset(0, col_count)
-
         # if self.export_type in ['htif', 'hfif']:
         #     col_cell = col_cell.offset(0, -self.index_column_count)
 
@@ -225,14 +224,21 @@ class FramexlWriter:
 
         result_list = []
         for colname in clean_list:
-            start_range = self.get_column_letter_by_name(colname)
-            each_range = start_range.resize_h(self.tr - self.header_row_count).cell
+            if colname in self.columns:
+                start_range = self.get_column_letter_by_name(colname)
+            elif colname in self.rawdata.index.names:
+                start_range = self.get_column_letter_by_indexname(colname)
+            else:
+                raise ValueError(f'Searching name <<{colname}>> is not in column nor index.names')
+
+            below_range = start_range.resize_h(self.tr - self.header_row_count).cell
             # noinspection PySimplifyBooleanCheck
             if header == True:
-                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
+                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
             if header == 'only':
-                each_range = CellPro(each_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
-            result_list.append(each_range)
+                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
+            result_list.append(below_range)
+
 
         return ', '.join(result_list)
 

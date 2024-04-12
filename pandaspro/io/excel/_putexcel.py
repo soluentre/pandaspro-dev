@@ -238,7 +238,42 @@ class PutxlSet:
         ################################
         if tab_color:
             paint_tab = color_to_int(tab_color)
+            if debug:
+                print('tab_color setting:', paint_tab)
             self.ws.api.Tab.Color = paint_tab
+
+        '''
+        For config para, the accepted dict must use column/index name as keys
+        The direct value follow each column/index name must be a dictionary, 
+        and there must be readable keys in it.
+
+        Currently support: 
+        1. width
+        2. number_format
+
+        For example:
+        >>> {
+        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
+        >>>     'age': {'width': 15}
+        >>>     'salary': {'width': 30, 'haligh': 'left'}
+        >>> }
+        '''
+        if config:
+            import pandas as pd
+            for name, setting in config.items():
+                if debug:
+                    print("config file reading: ", name, "format setting: ", setting)
+                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
+                if name in io.columns:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
+                        **format_update,
+                        debug=debug
+                    )
+                if name in io.rawdata.index.names:
+                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(
+                        **format_update,
+                        debug=debug
+                    )
 
         if design:
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
@@ -487,39 +522,6 @@ class PutxlSet:
         if cd_format:
             apply_cd_format(cd_format)
 
-        '''
-        For config para, the accepted dict must use column/index name as keys
-        The direct value follow each column/index name must be a dictionary, 
-        and there must be readable keys in it.
-        
-        Currently support: 
-        1. width
-        2. number_format
-        
-        For example:
-        >>> {
-        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
-        >>>     'age': {'width': 15}
-        >>>     'salary': {'width': 30, 'haligh': 'left'}
-        >>> }
-        '''
-        if config:
-            import pandas as pd
-            for name, setting in config.items():
-                if debug:
-                    print("config file reading: ", name, "format setting: ", setting)
-                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                if name in io.columns:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
-                        **format_update,
-                        debug=debug
-                    )
-                if name in io.rawdata.index.names:
-                    RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(
-                        **format_update,
-                        debug=debug
-                    )
-
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
         current_sheets = [sheet.name for sheet in self.wb.sheets]
@@ -569,7 +571,6 @@ if __name__ == '__main__':
     # sysuse_auto = sysuse_auto.sort_values('rep78')
     # sysuse_auto = sysuse_auto.set_index('rep78')
     ps = PutxlSet('sampledf.xlsx')
-    # ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue')
-    ps.ws
+    ps.putxl(sob()[wb.c.sobroster['performance_short']].head(100).sort_values('grade').er, 'newtab2', 'B2', index=True, design='wbblue', tab_color='blue', debug=True)
     # wb = xw.Book('sampledf.xlsx')
     # wb.sheets['newtab'].range('A1').value = 1
