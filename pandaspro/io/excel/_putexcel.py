@@ -500,15 +500,19 @@ class PutxlSet:
         >>> }
         '''
         if config:
+            import pandas as pd
             for name, setting in config.items():
+                if debug:
+                    print(setting)
+                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
                 if name in io.columns:
                     RangeOperator(self.ws.range(io.get_column_letter_by_name(name).cell)).format(
-                        **config,
+                        **format_update,
                         debug=debug
                     )
                 if name in io.rawdata.index.names:
                     RangeOperator(self.ws.range(io.get_column_letter_by_indexname(name).cell)).format(
-                        **config,
+                        **format_update,
                         debug=debug
                     )
 
