@@ -84,6 +84,41 @@ class PutxlSet:
         self.globalreplace = alwaysreplace
         self.io = None
 
+    def helpfile(self, para='all'):
+        cd_file = """
+        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
+        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
+
+        key 1: column = indicating the conditional formatting columns
+        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
+        (default = self)
+
+        >>> ... cd_format={'column': 'age', 'rules': {...}}
+        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
+        
+        For rules, it should be a dictionary:
+        (1) the key can be values in the selected, then the value should be parable format
+        (2) the key can also be a rule token, then the value should be a dictionary with r and f
+        
+        >>> ... {'GA': '#FF0000'}
+        >>> ... {   
+                    'rule1':  
+                        {
+                            'r': ['GA', 'GB', 'GC'],
+                            'f': 'blue'
+                        }，
+                    'rule1':
+                        {
+                            'r': mask,
+                            'f': 'green'
+                        }
+                }
+        """
+        if para == 'cd_format':
+            print(cd_file)
+
     def putxl(
             self,
             content = None,
@@ -118,11 +153,11 @@ class PutxlSet:
             index_merge: dict = None,
             header_wrap: bool = None,
             adjust_width: dict = None,
-            df_format: dict = None,
-            cd_format: list | dict = None,
             design: str = None,
             style: str | list = None,
             cd: str | list = None,
+            df_format: dict = None,
+            cd_format: list | dict = None,
 
             debug: bool = False,
     ) -> None:
