@@ -31,8 +31,8 @@ class CdFormat:
         self.cd_rules = cd_rules
         self.rules_mask = None
         self.locate = None
-        self.col_not_exist = None if column in df.columns else True
         self.df_with_index = df_with_index_for_mask(self.df)
+        self.col_not_exist = None if column in self.df_with_index.columns else True
 
         def _apply_decide(local_input):
             if local_input == 'self':

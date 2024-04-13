@@ -435,13 +435,13 @@ class PutxlSet:
             apply_df_format(df_format)
 
         # Conditional Format (1 column based)
-        def apply_cd_format(mydict):
+        def apply_cd_format(input_cd):
             def cd_paint(lcinput):
+                if debug:
+                    print("================================")
+                    print("Applying Cd Format: ")
+                    print(lcinput)
                 cleaned_rules = io.range_cdformat(**lcinput)
-                '''
-                the cleaned_rules object will be a dictionary looks like:
-                
-                '''
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
                 for rulename, lc_content in cleaned_rules.items():
@@ -474,11 +474,11 @@ class PutxlSet:
                                     RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
 
             # Decide if cd_format is a dict or not
-            if isinstance(mydict, dict):
-                cd_paint(mydict)
+            if isinstance(input_cd, dict):
+                cd_paint(input_cd)
 
-            if isinstance(mydict, list):
-                for rule in mydict:
+            if isinstance(input_cd, list):
+                for rule in input_cd:
                     cd_paint(rule)
 
         '''
