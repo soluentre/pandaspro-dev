@@ -2,7 +2,7 @@ from pandaspro.io.excel._putexcel import PutxlSet
 from pandaspro.sampledf.sampledf import wbuse_pivot
 
 
-path = './sampledf.xlsx'
+path = './pandaspro/test/sampledf.xlsx'
 
 ps = PutxlSet(path)
 ps.putxl(
