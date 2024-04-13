@@ -236,39 +236,27 @@ class PutxlSet:
 
         # Format the sheet (Shelley, Li)
         ################################
+        '''
+        Extra Format (not in the group of format parameters): highlight area in existing-content excel
+        This is embedded and will be triggered automatically if not replacing sheet 
+        '''
+        if replace_warning:
+            match_dict = {
+                'top': self.io.range_top_empty_checker,
+                'bottom': self.io.range_bottom_empty_checker,
+                'left': self.io.range_left_empty_checker,
+                'right': self.io.range_right_empty_checker
+            }
+            for direction in list(match_dict.keys()):
+                if is_range_filled(self.ws, match_dict[direction]):
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'],
+                                                                           debug=debug)
+
         if tab_color:
             paint_tab = color_to_int(tab_color)
             if debug:
                 print('tab_color setting:', paint_tab)
             self.ws.api.Tab.Color = paint_tab
-
-        '''
-        For config para, the accepted dict must use column/index name as keys
-        The direct value follow each column/index name must be a dictionary, 
-        and there must be readable keys in it.
-
-        Currently support: 
-        1. width
-        2. number_format
-
-        For example:
-        >>> {
-        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
-        >>>     'age': {'width': 15}
-        >>>     'salary': {'width': 30, 'haligh': 'left'}
-        >>> }
-        '''
-        if config:
-            import pandas as pd
-            for name, setting in config.items():
-                if debug:
-                    print("config file reading: ", name, "format setting: ", setting)
-                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                if name in io.columns_with_indexnames:
-                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(
-                        **format_update,
-                        debug=debug
-                    )
 
         if design:
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
@@ -288,19 +276,32 @@ class PutxlSet:
             cd = local_design[design]['cd']
 
         '''
-        Extra Format (not in the group of format parameters): highlight area in existing-content excel
-        This is embedded and will be triggered automatically if not replacing sheet 
+        For config para, the accepted dict must use column/index name as keys
+        The direct value follow each column/index name must be a dictionary, 
+        and there must be readable keys in it.
+    
+        Currently support: 
+        1. width
+        2. number_format
+    
+        For example:
+        >>> {
+        >>>     'staff id': {'width': 24, 'color': '#00FFFF'},
+        >>>     'age': {'width': 15}
+        >>>     'salary': {'width': 30, 'haligh': 'left'}
+        >>> }
         '''
-        if replace_warning:
-            match_dict = {
-                'top': self.io.range_top_empty_checker,
-                'bottom': self.io.range_bottom_empty_checker,
-                'left': self.io.range_left_empty_checker,
-                'right': self.io.range_right_empty_checker
-            }
-            for direction in list(match_dict.keys()):
-                if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'], debug=debug)
+        if config:
+            import pandas as pd
+            for name, setting in config.items():
+                if debug:
+                    print("config file reading: ", name, "format setting: ", setting)
+                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
+                if name in io.columns_with_indexnames:
+                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(
+                        **format_update,
+                        debug=debug
+                    )
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
@@ -322,8 +323,12 @@ class PutxlSet:
             RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
 
         # Format with defined rules using a Dictionary
-        def apply_df_format(mydict):
-            for rule, rangeinput in mydict.items():
+        def apply_df_format(localinput_format):
+            if debug:
+                print("================================================")
+                print("Applying Df Format: ")
+                print(localinput_format)
+            for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 format_kwargs = parse_format_rule(rule)
@@ -438,7 +443,7 @@ class PutxlSet:
         def apply_cd_format(input_cd):
             def cd_paint(lcinput):
                 if debug:
-                    print("================================")
+                    print("================================================")
                     print("Applying Cd Format: ")
                     print(lcinput)
                 cleaned_rules = io.range_cdformat(**lcinput)
@@ -466,6 +471,17 @@ class PutxlSet:
                         elif len(cellrange) <= 30:
                             RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                         else:
+                            # Here is the combine function
+                            '''
+                            cell_range_combine method from _utils
+                            takes a list and returns a dict (from 1 dimension to 2 dimensions)
+                            
+                            Previously like:
+                            'B2,C2,D2,E2,F2,G2,H2,I2,J2,K2,L2,M2,O2,B3' 
+                            
+                            After combine will be:
+                            {2: ['B2:M2', 'O2:O2'], 3: ['B3:B3']}
+                            '''
                             cellrange_dict = cell_range_combine(cellrange.split(','))
                             if debug:
                                 print(cellrange_dict)

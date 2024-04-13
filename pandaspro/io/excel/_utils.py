@@ -47,8 +47,8 @@ def lowervarlist(
 
     Examples
     --------
-    >>> df = pd.DataFrame(np.random.rand(3, 3), columns=['Column 1', 'Column-2', 'Column 3'])
-    >>> lowervarlist(df, 'update_map')
+    >>> mydf = pd.DataFrame(np.random.rand(3, 3), columns=['Column 1', 'Column-2', 'Column 3'])
+    >>> lowervarlist(mydf, 'update_map')
     This will return a dictionary mapping the original column names to their new, formatted names, such as {'Column 1': 'column_1', 'Column-2': 'column_2', 'Column 3': 'column_3'}.
     """
 
@@ -89,7 +89,6 @@ def lowervarlist(
 
     if inplace:
         data.rename(columns=mapping_update, inplace=True)
-        return
     else:
         return [df, cols, mapping_update, mapping_revert][_engines[engine]]
 
@@ -338,7 +337,7 @@ def get_cell_lists(rowlist: list,
     return result_dict
 
 
-def cell_range_combine(cells: str = None):
+def cell_range_combine(cells: list = None):
     cells_by_row = {}
     for cell in cells:
         row = cell_index(cell)[0]

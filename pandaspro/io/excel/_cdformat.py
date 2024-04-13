@@ -32,13 +32,15 @@ class CdFormat:
         self.rules_mask = None
         self.locate = None
         self.df_with_index = df_with_index_for_mask(self.df)
-        self.col_not_exist = None if column in self.df_with_index.columns else True
+        self.col_not_exist = None if self.column in self.df_with_index.columns else True
 
         def _apply_decide(local_input):
             if local_input == 'self':
-                return [column]
-            elif local_input == 'all':
+                return [self.column]
+            elif local_input == 'inner':
                 return self.df.columns
+            elif local_input == 'all':
+                return self.df_with_index.columns
             elif isinstance(local_input, str):
                 return parse_wild(applyto, self.df.columns)
             elif isinstance(local_input, list):
@@ -47,7 +49,7 @@ class CdFormat:
                 raise TypeError('Unexpected type of applyto parameter, only str/list being accepted')
 
         self.apply = _apply_decide(applyto)
-        if column in df.columns:
+        if self.column in self.df_with_index.columns:
             self.rules_mask = self._configure_rules_mask()
 
     def _configure_rules_mask(self):

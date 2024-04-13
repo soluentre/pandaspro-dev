@@ -1,5 +1,5 @@
 from pandaspro.core.stringfunc import parse_wild
-from pandaspro.io.excel._cdformat import CdFormat
+from pandaspro.io.excel._cdformat import CdFormat, df_with_index_for_mask
 from pandaspro.io.excel._utils import CellPro, index_to_cell
 import pandas as pd
 
@@ -69,8 +69,8 @@ class FramexlWriter:
             range_header = cellobj.resize(header_row_count, tc)
 
         # Calculate the Map
-        dfmapstart = cellobj.offset(xl_header_count, xl_index_count)
-        dfmap = self.rawdata.copy()
+        dfmapstart = cellobj.offset(xl_header_count, 0)
+        dfmap = df_with_index_for_mask(self.rawdata).copy()
         dfmap = dfmap.astype(str)
 
         for dfmap_index in range(len(dfmap)):
@@ -306,6 +306,19 @@ class FramexlWriter:
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
             self.cd_cellrange_1col = cd_cellrange_1col
 
+        '''
+        should be something like ...
+        {
+            "AFWDE": {
+                "cellrange": "B2,C2,D2,E2,F2,G2,H2,I2,J2,K2,L2,M2", 
+                "format": "blue"
+            },
+            "AFWVP": {
+                "cellrange": "B3,C3,D3,E3,F3,G3,H3,I3,J3,K3,L3,M3", 
+                "format": "orange"
+            },
+        }
+        '''
         return cd_cellrange_1col
 
 
