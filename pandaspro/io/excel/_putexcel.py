@@ -294,9 +294,10 @@ class PutxlSet:
         if config:
             import pandas as pd
             for name, setting in config.items():
-                if debug:
-                    print("config file reading: ", name, "format setting: ", setting)
                 format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
+                if debug:
+                    print("config file reading: ", name, "; format setting: ", format_update)
+                    print(self.ws.range(io.range_columns(name, header=True)))
                 if name in io.columns_with_indexnames:
                     RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(
                         **format_update,
