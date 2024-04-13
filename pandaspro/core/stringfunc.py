@@ -12,8 +12,8 @@ def wildcardread(stringlist, varkey):
     :param varkey: a variable key with wildcard in it to match one or more variables
     :return:
     """
-    if '-' in varkey:
-        crange = re.split(r'\s*-\s*', varkey)
+    if '->' in varkey:
+        crange = re.split(r'\s*->\s*', varkey)
         element1 = crange[0]
         element2 = crange[1]
         if element1 not in stringlist or element2 not in stringlist:
@@ -42,7 +42,7 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
 
     :return: a list of varnames
     """
-    pattern = r'\w+\s*-\s*\w+'
+    pattern = r'\w+\s*->\s*\w+'
     match = re.findall(pattern, inputstring)
     if not match:
         newlist = [s.strip() for s in inputstring.split(';')]
