@@ -87,6 +87,7 @@ _cpdpuxl_color_map = {
     "grey": "#808080",
     'grey15': '#D9D9D9',
     "grey25": "#BFBFBF",
+    "darkgrey": "#595959",
     "white": "#FFFFFF",
     "black": "#000000",
     "msbluegray": "#44546A",
