@@ -260,7 +260,11 @@ class PutxlSet:
 
         if design:
             '''
-            for index_merge, add the _index to the selected design like: wbblue_deisgn, wbgreen_design
+            For index_merge, add the _index to the selected design like: wbblue_index(indexname, columnnames)
+            This will add index_merge(level=..., columns=...) to the style keys
+            
+            For example
+            >>> wbblue_index(PGs) === index_merge(level=PGs)
             '''
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
             if re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design):
