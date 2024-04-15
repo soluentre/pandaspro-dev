@@ -282,7 +282,7 @@ class FramexlWriter:
             cd_rules=rules,
             applyto=applyto
         )
-        print(mycd.df.columns, mycd.df_with_index.columns, mycd.column)
+        # print(mycd.df.columns, mycd.df_with_index.columns, mycd.column)
         if mycd.col_not_exist:
             cd_cellrange_1col = {'void_rule': {'cellrange': 'no cells', 'format': ''}}
         else:
