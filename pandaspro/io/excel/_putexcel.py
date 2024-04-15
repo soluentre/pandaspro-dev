@@ -298,7 +298,7 @@ class PutxlSet:
             design_cd = local_design[design]['cd']
 
             if style:
-                style = ";".join([style, design_style])
+                style = ";".join([design_style, style])
             else:
                 style = design_style
 
@@ -308,7 +308,7 @@ class PutxlSet:
                 config = design_config
 
             if cd:
-                cd = ";".join([cd, design_cd])
+                cd = ";".join([design_cd, cd])
             else:
                 cd = design_cd
 

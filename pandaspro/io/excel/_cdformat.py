@@ -6,7 +6,7 @@ mytools = toolObject()
 
 
 def df_with_index_for_mask(df):
-    if df.index.name is not None:
+    if df.index.names[0] is not None:
         rename_index = {item: f'__myindex_{str(i)}' for i, item in enumerate(df.index.names)}
         rename_index_back = {f'__myindex_{str(i)}': item for i, item in enumerate(df.index.names)}
         index_preparing = df.reset_index()
