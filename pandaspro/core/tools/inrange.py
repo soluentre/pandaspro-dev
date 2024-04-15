@@ -10,10 +10,9 @@ def inrange(
     engine: str = 'b',
     inplace: bool = False,
     invert: bool = False,
+    rename: str = None,
     debug: bool = False,
 ):
-
-    data = pd.DataFrame(data)
     if debug:
         print('start: ', start, ';stop: ', stop, ';inclusive: ', inclusive)
 
@@ -38,11 +37,23 @@ def inrange(
     elif engine == 'c':
         if debug:
             print("type c code executed ...")
-        if not invert:
-            data.loc[data[colname].between(start, stop, inclusive=inclusive), '_inrange'] = 1
+        new_name = rename if rename else '_inlist'
+        if inplace:
+            if not invert:
+                data.loc[data[colname].between(start, stop, inclusive=inclusive), new_name] = 1
+                data.loc[~data[colname].between(start, stop, inclusive=inclusive), new_name] = 0
+            else:
+                data.loc[~(data[colname].between(start, stop, inclusive=inclusive)), new_name] = 1
+                data.loc[data[colname].between(start, stop, inclusive=inclusive), new_name] = 0
         else:
-            data.loc[~(data[colname].between(start, stop, inclusive=inclusive)), '_inrange'] = 0
-        return data
+            df = data.copy()
+            if not invert:
+                df.loc[data[colname].between(start, stop, inclusive=inclusive), new_name] = 1
+                df.loc[~data[colname].between(start, stop, inclusive=inclusive), new_name] = 0
+            else:
+                df.loc[~(data[colname].between(start, stop, inclusive=inclusive)), new_name] = 1
+                df.loc[~data[colname].between(start, stop, inclusive=inclusive), new_name] = 0
+            return df
     else:
         print('Unsupported type')
 

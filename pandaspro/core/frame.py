@@ -5,6 +5,7 @@ import pandaspro
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.inrange import inrange
+from pandaspro.core.tools.strpos import strpos
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
@@ -94,6 +95,34 @@ class FramePro(pd.DataFrame):
             debug=debug,
         )
         if debug:
+            print(type(result))
+        if engine == 'm':
+            return result
+        else:
+            return self._constructor(result)
+
+    def strpos(
+            self,
+            colname: str,
+            *args,
+            engine: str = 'b',
+            inplace: bool = False,
+            invert: bool = False,
+            rename: str = None,
+            debug: bool = False
+    ):
+        result = strpos(
+            self,
+            colname,
+            *args,
+            engine=engine,
+            inplace=inplace,
+            invert=invert,
+            rename=rename,
+            debug=debug,
+        )
+        if debug:
+            print("This is debugger for strpos method: ", result)
             print(type(result))
         if engine == 'm':
             return result
@@ -252,6 +281,7 @@ class FramePro(pd.DataFrame):
 
 
 pd.DataFrame.excel_e = FramePro.excel_e
+
 
 if __name__ == '__main__':
     from wbhrdata import sob
