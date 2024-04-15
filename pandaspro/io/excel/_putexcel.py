@@ -259,6 +259,9 @@ class PutxlSet:
             self.ws.api.Tab.Color = paint_tab
 
         if design:
+            '''
+            for index_merge, add the _index to the selected design like: wbblue_deisgn, wbgreen_design
+            '''
             from pandaspro.user_config.excel_table_mydesign import excel_export_mydesign as local_design
             if re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design):
                 match = re.fullmatch(r'(.*)_index\(([^,]+),?\s*(.*)\)', design)

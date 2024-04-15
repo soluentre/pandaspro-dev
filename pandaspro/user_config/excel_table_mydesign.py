@@ -15,5 +15,5 @@ excel_export_mydesign = {
         'style': 'green',
         'cd': 'grade; ti',
         'config': hrconfig
-    },
+    }
 }
