@@ -4,7 +4,7 @@ import os
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
-from pandaspro.io.excel._utils import cell_range_combine
+from pandaspro.io.excel._utils import cell_range_combine, CellPro
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
 
 def is_range_filled(ws, range_str: str = None):
@@ -122,7 +122,7 @@ class PutxlSet:
             self,
             content = None,
             sheet_name: str = None,
-            cell: str = 'A1',
+            cell: str = None,
             index: bool = False,
             header: bool = True,
             replace: str = None,
@@ -208,6 +208,13 @@ class PutxlSet:
         # Declare IO Object
         ################################
         if isinstance(content, str):
+
+            if CellPro(str).valid and cell is None:
+                self.not_change_excel_original_value = True
+                cell = content
+            else:
+                self.not_change_excel_original_value = False
+
             io = StringxlWriter(content=content, cell=cell)
             RangeOperator(self.ws.range(io.cell)).format(
                 width=width,

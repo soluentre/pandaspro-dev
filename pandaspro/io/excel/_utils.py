@@ -95,6 +95,10 @@ def lowervarlist(
 
 class CellPro:
     def __init__(self, cell: str):
+        if re.fullmatch(r'[A-Z]+\d+]') or re.fullmatch(r'[A-Z]+\d+]:[A-Z]+\d+]'):
+            self.valid = True
+        else:
+            self.valid = False
         if ':' in cell:
             self.celltype = 'range'
             self.cell_start = cell.split(':')[0].strip()
