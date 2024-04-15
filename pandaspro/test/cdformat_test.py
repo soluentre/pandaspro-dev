@@ -9,6 +9,8 @@ f = CdFormat(
     cd_rules= {
         'AFWDE': 'blue'
     },
-    applyto='all'
+    applyto='self'
 )
+p
 print(f._configure_rules_mask())
+print(f.apply)
