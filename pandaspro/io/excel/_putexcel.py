@@ -577,7 +577,7 @@ class PutxlSet:
                 name = name.replace('.xlsx', '')[0:20] + ' (...) .xlsx'
             print(f"Frame with size {content.shape} successfully exported to <<{name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
 
-        if io.type == 'df' and debug:
+        if io.iotype == 'df' and debug:
             print(f"\n>>> Cell Range Analysis")
             print(f" ----------------------")
             print(f">>> Total row: {io.tr}, Total column: {io.tc}")
