@@ -17,6 +17,19 @@ cd_sheets = {
             "applyto": 'all'
         },
     ],
+    "pg": [
+        {
+            "column": "PGs",
+            "rules": {
+                "COS": '#FCE4D6',
+                "EFI": '#FFF2CC',
+                "HD": '#DDEBF7',
+                "INF": '#E2EFDA',
+                "SD": '#D9D9D9',
+            },
+            "applyto": 'all'
+        },
+    ],
     "ti": [
         {
             "column": "FY19 Talent",
