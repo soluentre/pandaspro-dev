@@ -95,7 +95,7 @@ def lowervarlist(
 
 class CellPro:
     def __init__(self, cell: str):
-        if re.fullmatch(r'[A-Z]+\d+]') or re.fullmatch(r'[A-Z]+\d+]:[A-Z]+\d+]'):
+        if re.fullmatch(r'[A-Z]+\d+]', cell) or re.fullmatch(r'[A-Z]+\d+]:[A-Z]+\d+]', cell):
             self.valid = True
         else:
             self.valid = False
