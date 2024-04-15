@@ -208,15 +208,14 @@ class PutxlSet:
         # Declare IO Object
         ################################
         if isinstance(content, str):
-
             if CellPro(content).valid and cell is None:
-                cell = content
-                io = StringxlWriter(cell=cell)
+                io = StringxlWriter(cell=content)
             else:
                 io = StringxlWriter(content=content, cell=cell)
             if debug:
                 print('================================================')
                 print('StringxlWriter: ', io.content, io.cell)
+                print('The entry validation conditon booleans: ', CellPro(content).valid, cell)
             RangeOperator(self.ws.range(io.cell)).format(
                 width=width,
                 height=height,
@@ -578,7 +577,7 @@ class PutxlSet:
                 name = name.replace('.xlsx', '')[0:20] + ' (...) .xlsx'
             print(f"Frame with size {content.shape} successfully exported to <<{name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
 
-        if debug:
+        if io.type == 'df' and debug:
             print(f"\n>>> Cell Range Analysis")
             print(f" ----------------------")
             print(f">>> Total row: {io.tr}, Total column: {io.tc}")

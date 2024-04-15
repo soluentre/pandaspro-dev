@@ -95,7 +95,7 @@ def lowervarlist(
 
 class CellPro:
     def __init__(self, cell: str):
-        if re.fullmatch(r'[A-Z]+\d+]', cell) or re.fullmatch(r'[A-Z]+\d+]:[A-Z]+\d+]', cell):
+        if re.fullmatch(r'[A-Z]+\d+', cell) or re.fullmatch(r'[A-Z]+\d+]:[A-Z]+\d+', cell):
             self.valid = True
         else:
             self.valid = False
@@ -366,3 +366,6 @@ def cell_range_combine(cells: list = None):
         merged_cells[row] = merged
 
     return merged_cells
+
+if __name__ == '__main__':
+    print(CellPro('A3').valid)

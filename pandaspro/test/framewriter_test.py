@@ -4,9 +4,9 @@ from pandaspro.sampledf.sampledf import wbuse_pivot
 path = '.pandaspro/test/sampledf.xlsx'
 
 f = FramexlWriter(wbuse_pivot, 'B2', index=True, header=False)
-s = StringxlWriter('B3')
+s = StringxlWriter(cell='B3:B10')
 # print(f.range_columns('cmu_dept_major', header=True))
-print(f.dfmap)
+# print(f.dfmap)
 # print(f.range_cdformat(
 #     'cmu_dept',
 #     {
@@ -15,3 +15,4 @@ print(f.dfmap)
 #     },
 #     applyto='all'
 # ))
+print(s.cell)
