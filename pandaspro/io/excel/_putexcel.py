@@ -131,6 +131,8 @@ class PutxlSet:
             tab_color: str | tuple = None,
 
             # Section. String Format
+            width=None,
+            height=None,
             font: str | tuple = None,
             font_name: str = None,
             font_size: int = None,
@@ -208,6 +210,8 @@ class PutxlSet:
         if isinstance(content, str):
             io = StringxlWriter(content=content, cell=cell)
             RangeOperator(self.ws.range(io.cell)).format(
+                width=width,
+                height=height,
                 font=font,
                 font_name=font_name,
                 font_size=font_size,
