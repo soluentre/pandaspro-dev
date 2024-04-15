@@ -254,7 +254,7 @@ class FramePro(pd.DataFrame):
     # Overwriting original methods
     def merge(self, *args, **kwargs):
         update = kwargs.pop('update', None)  # Extract the 'update' parameter and remove it from kwargs
-        result = super().merge(*args, **kwargs, indicator=True)
+        result = super().merge(*args, **kwargs)
 
         if update == 'missing':
             for col in result.columns:
@@ -273,7 +273,8 @@ class FramePro(pd.DataFrame):
             result = result.drop(columns=[col for col in result.columns if '_y' in col])
 
         result.columns = [col.replace('_x', '') for col in result.columns]
-        print(result.tab('_merge'))
+        if '_merge' in result.columns:
+            print(result.tab('_merge'))
         return self._constructor(result)
 
     def rename(self, columns=None, *args, **kwargs):
