@@ -287,15 +287,30 @@ class PutxlSet:
                 design = match.group(1)
                 index_key = match.group(2)
                 index_columns = match.group(3)
-                style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
+                design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
             else:
-                style = local_design[design]['style']
+                design_style = local_design[design]['style']
 
             if debug:
-                print("Using advanced style: ", style)
+                print("Using advanced style: ", design_style)
 
-            config = local_design[design]['config']
-            cd = local_design[design]['cd']
+            design_config = local_design[design]['config']
+            design_cd = local_design[design]['cd']
+
+            if style:
+                style = ";".join([style, design_style])
+            else:
+                style = design_style
+
+            if config:
+                config = config.update(design_config)
+            else:
+                config = design_config
+
+            if cd:
+                cd = ";".join([cd, design_cd])
+            else:
+                cd = design_cd
 
         '''
         For config para, the accepted dict must use column/index name as keys

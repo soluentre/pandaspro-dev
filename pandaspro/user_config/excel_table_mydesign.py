@@ -6,14 +6,20 @@ excel_export_mydesign = {
         'cd': 'grade; ti',
         'config': hrconfig
     },
+    'wbgreen': {
+        'style': 'green',
+        'cd': 'grade; ti',
+        'config': hrconfig
+    },
+    'wbblack': {
+        'style': 'black',
+        'cd': 'grade; ti',
+        'config': hrconfig
+    },
     'wbblue_nograde': {
         'style': 'blue',
         'cd': 'ti',
         'config': hrconfig
     },
-    'wbgreen': {
-        'style': 'green',
-        'cd': 'grade; ti',
-        'config': hrconfig
-    }
+
 }
