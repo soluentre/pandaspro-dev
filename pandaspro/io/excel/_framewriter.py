@@ -7,8 +7,8 @@ import pandas as pd
 class StringxlWriter:
     def __init__(
             self,
-            content,
-            cell: str,
+            content: str = None,
+            cell: str = None,
     ) -> None:
         self.iotype = 'str'
         self.content = content

@@ -209,13 +209,14 @@ class PutxlSet:
         ################################
         if isinstance(content, str):
 
-            if CellPro(str).valid and cell is None:
-                self.not_change_excel_original_value = True
+            if CellPro(content).valid and cell is None:
                 cell = content
+                io = StringxlWriter(cell=cell)
             else:
-                self.not_change_excel_original_value = False
-
-            io = StringxlWriter(content=content, cell=cell)
+                io = StringxlWriter(content=content, cell=cell)
+            if debug:
+                print('================================================')
+                print('StringxlWriter: ', io.content, io.cell)
             RangeOperator(self.ws.range(io.cell)).format(
                 width=width,
                 height=height,
@@ -238,8 +239,12 @@ class PutxlSet:
                 appendix=appendix
             )
             self.io = io
-            self.ws.range(io.cell).value = io.content
-
+            if io.content is not None:
+                self.ws.range(io.cell).value = io.content
+            else:
+                pass
+                if debug:
+                    print(f'Only changing {io.cell} format, not value')
         else:
             io = FramexlWriter(content=content, cell=cell, index=index, header=header)
             self.ws.range(io.cell).value = io.content
