@@ -3,6 +3,10 @@ from pandaspro.core.frame import FramePro
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
+from pandaspro.core.tools.csort import csort
+from pandaspro.core.tools.utils import (
+    df_with_index_for_mask
+)
 
 from pandaspro.core.dates.methods import (
     bdate
@@ -25,5 +29,7 @@ __all__ = [
     "parse_wild",
     "parse_method",
     "wildcardread",
-    "str2list"
+    "str2list",
+    "csort",
+    "df_with_index_for_mask"
 ]

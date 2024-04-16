@@ -3,6 +3,7 @@ import pandas as pd
 import pandaspro
 
 from pandaspro.core.stringfunc import parse_wild
+from pandaspro.core.tools.csort import csort
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.inrange import inrange
 from pandaspro.core.tools.strpos import strpos
@@ -43,6 +44,25 @@ class FramePro(pd.DataFrame):
 
     def dfilter(self, inputdict: dict = None, debug: bool = False):
         return self._constructor(dfilter(self, inputdict, debug))
+
+    def csort(
+            self,
+            column,
+            orderlist=None,
+            value=None,
+            before=None,
+            after=None,
+            inplace=False
+    ):
+        return csort(
+            self,
+            column,
+            orderlist=orderlist,
+            value=value,
+            before=before,
+            after=after,
+            inplace=inplace
+        )
 
     def inlist(
             self,
@@ -289,8 +309,3 @@ class FramePro(pd.DataFrame):
 
 pd.DataFrame.excel_e = FramePro.excel_e
 
-
-if __name__ == '__main__':
-    from wbhrdata import sob
-    d = sob().head(0)
-    d.inlist('grade', 'GC', engine='c', rename='GC', inplace=True)

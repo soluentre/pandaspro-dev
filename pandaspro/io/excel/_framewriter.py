@@ -1,5 +1,6 @@
 from pandaspro.core.stringfunc import parse_wild
-from pandaspro.io.excel._cdformat import CdFormat, df_with_index_for_mask
+from pandaspro.io.excel._cdformat import CdFormat
+from pandaspro.core.tools.utils import df_with_index_for_mask
 from pandaspro.io.excel._utils import CellPro, index_to_cell
 import pandas as pd
 
