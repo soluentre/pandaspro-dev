@@ -145,6 +145,8 @@ class FramePro(pd.DataFrame):
             design: str = None,
             style: str | list = None,
             cd: str | list = None,
+            df_format: dict = None,
+            cd_format: list | dict = None,
             override: bool = None,
     ):
         declaredwb = WorkbookExportSimplifier.get_last_declared_workbook()
@@ -162,6 +164,8 @@ class FramePro(pd.DataFrame):
             sheetreplace=sheetreplace,
             design=design,
             style=style,
+            df_format=df_format,
+            cd_format=cd_format,
             cd=cd
         )
 
