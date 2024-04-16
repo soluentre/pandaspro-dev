@@ -308,4 +308,3 @@ class FramePro(pd.DataFrame):
 
 
 pd.DataFrame.excel_e = FramePro.excel_e
-
