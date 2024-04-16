@@ -282,6 +282,26 @@ class FramePro(pd.DataFrame):
         update = kwargs.pop('update', None)  # Extract the 'update' parameter and remove it from kwargs
         '''
         Think about updating this design in the future
+        
+        # Example usage
+        left = CustomDataFrame({
+            'key': ['K0', 'K1', 'K2', 'K3'],
+            'A': ['A0', None, 'A2', 'A3'],
+            'B': ['B0', 'B1', 'B2', None]
+        })
+        
+        right = CustomDataFrame({
+            'key': ['K0', 'K1', 'K2', 'K3'],
+            'A': ['C0', 'C1', 'C2', 'C3'],
+            'C': ['D0', 'D1', 'D2', 'D3']
+        })
+        
+        # Use the new merge method with 'update' parameter
+        result_missing = left.merge(right, on='key', update='missing')
+        result_all = left.merge(right, on='key', update='all')
+        
+        print("Result with update='missing':\n", result_missing, "\n")
+        print("Result with update='all':\n", result_all)
         '''
 
         result = super().merge(*args, **kwargs)
