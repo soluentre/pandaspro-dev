@@ -1,7 +1,8 @@
 from pandaspro.io.excel._utils import (
     cell_index,
     resize,
-    offset
+    offset,
+    lowervarlist
 )
 from pandaspro.io.excel._putexcel import PutxlSet
 from pandaspro.io.excel._base import pwread
@@ -13,5 +14,6 @@ __all__ = [
     'offset',
     'PutxlSet',
     'pwread',
-    'WorkbookExportSimplifier'
+    'WorkbookExportSimplifier',
+    'lowervarlist'
 ]

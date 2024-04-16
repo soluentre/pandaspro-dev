@@ -8,7 +8,7 @@ from pandaspro.core.api import (
     parse_method,
     parse_wild,
     df_with_index_for_mask,
-    csort
+    csort,
 )
 
 from pandaspro.io.api import (
@@ -17,7 +17,8 @@ from pandaspro.io.api import (
     offset,
     PutxlSet,
     pwread,
-    WorkbookExportSimplifier
+    WorkbookExportSimplifier,
+    lowervarlist
 )
 
 from pandaspro.sampledf.api import (

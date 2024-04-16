@@ -280,6 +280,10 @@ class FramePro(pd.DataFrame):
     # Overwriting original methods
     def merge(self, *args, **kwargs):
         update = kwargs.pop('update', None)  # Extract the 'update' parameter and remove it from kwargs
+        '''
+        Think about updating this design in the future
+        '''
+
         result = super().merge(*args, **kwargs)
 
         if update == 'missing':
