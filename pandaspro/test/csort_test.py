@@ -9,4 +9,4 @@ provided_values = set(orderlist)
 missing_values = list(unique_values - provided_values)
 orderlist.extend(missing_values)
 
-print(d.csort('cmu_dept', ['HAW', 'SAW']))
+print(d.csort('cmu_dept', value='HAW', before='AFWDE'))

@@ -64,4 +64,4 @@ def csort(
         result = data.sort_values(by='__cpd_sort')
         if set(result.index.names) <= set(result.columns):
             result.drop(list(data.index.names) + ['__cpd_sort'], axis=1, inplace=True)
-        return result, orderlist
+        return result
