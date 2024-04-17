@@ -429,8 +429,8 @@ class PutxlSet:
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
-
-            print("--------- End of Apply Format ---------")
+            if debug:
+                print("--------- End of Apply Format ---------")
         '''
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
