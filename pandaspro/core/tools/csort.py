@@ -36,9 +36,8 @@ def csort(
     if orderlist is None:
         orderlist = list(data[column].dropna().unique())
     else:
-        provided_values = set(orderlist)
-        provided_reorder = [x for x in data[column].dropna().unique() if x in provided_values]
-        missing_reorder = [x for x in data[column].dropna().unique() if x not in provided_values]
+        provided_reorder = [x for x in orderlist]
+        missing_reorder = [x for x in data[column].dropna().unique() if x not in orderlist]
         full_orderlist = provided_reorder + missing_reorder
         orderlist = full_orderlist
 
@@ -57,11 +56,11 @@ def csort(
     data['__cpd_sort'] = data[column].astype(cat_type)
 
     if inplace:
-        data.sort_values(by='__cpd_sort', inplace=True)
+        data.sort_values(by='__cpd_sort', inplace=True, kind='mergesort')
         if set(data.index.names) <= set(data.columns):
             data.drop(list(data.index.names) + ['__cpd_sort'], axis=1, inplace=True)
     else:
-        result = data.sort_values(by='__cpd_sort')
+        result = data.sort_values(by='__cpd_sort', kind='mergesort')
         if set(result.index.names) <= set(result.columns):
             result.drop(list(data.index.names) + ['__cpd_sort'], axis=1, inplace=True)
         return result
