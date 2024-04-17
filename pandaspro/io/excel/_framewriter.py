@@ -157,6 +157,8 @@ class FramexlWriter:
         # Selected Columns
         if columns:
             self.cols_index_merge = columns if isinstance(columns, list) else parse_wild(columns, self.columns)
+            # print("framewriter cols_index_merge:", self.cols_index_merge)
+            # print("columns:", columns, self.columns)
             for index, col in enumerate(self.cols_index_merge):
                 merge_start_each = self.get_column_letter_by_name(col)
                 for localid, rowspan in enumerate(self._index_break(level=level)):
@@ -230,7 +232,7 @@ class FramexlWriter:
             else:
                 raise ValueError(f'Searching name <<{colname}>> is not in column nor index.names')
 
-            below_range = start_range.resize_h(self.tr - self.header_row_count).cell
+            below_range = start_range.offset(self.header_row_count, 0).resize_h(self.tr - self.header_row_count).cell
             # noinspection PySimplifyBooleanCheck
             if header == True:
                 below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count + self.tr).cell

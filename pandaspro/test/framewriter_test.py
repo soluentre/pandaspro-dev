@@ -14,5 +14,7 @@ s = StringxlWriter(cell='B3:B10')
 #         'AFWVP': 'orange'
 #     },
 #     applyto='all'
-# ))
-print(s.cell)
+# )
+
+print(f.range_columns('GD',header=True))
+# print(f.get_column_letter_by_name('GD').cell)

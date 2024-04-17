@@ -355,7 +355,12 @@ class PutxlSet:
         Example: {'level': 'cmu_dept', 'columns': '*Total'}
         '''
         if index_merge:
+            if debug:
+                print("================================================")
+                print(index_merge)
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
+                if debug:
+                    print(key, local_range)
                 RangeOperator(self.ws.range(local_range)).format(merge=True, debug=debug)
 
         if header_wrap:
@@ -364,13 +369,15 @@ class PutxlSet:
         # Format with defined rules using a Dictionary
         def apply_df_format(localinput_format):
             if debug:
-                print("================================================")
                 print("Applying Df Format: ")
                 print(localinput_format)
             for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 format_kwargs = parse_format_rule(rule)
+                if debug:
+                    print("================================================")
+                    print(format_kwargs)
 
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
@@ -388,10 +395,16 @@ class PutxlSet:
                     return parsedlist, cpdframexl_dict
 
                 ioranges, dict_from_cpdframexl = _declare_ranges(rangeinput)
+                if debug:
+                    print("------------------------------")
+                    print("ioranges and dict")
+                    print(ioranges)
+                    print(dict_from_cpdframexl)
 
                 if ioranges:
                     for each_range in ioranges:
                         if debug:
+                            print(">>>>>>>>")
                             print("IO Ranges - Each Range", each_range, type(each_range))
                         # Parse the input string as method name + kwargs
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
@@ -406,7 +419,7 @@ class PutxlSet:
                         if isinstance(range_cells, dict):
                             for range_key, range_content in range_cells.items():
                                 if debug:
-                                    print("d_format Dictionary Reading", range_content, "as", range_affix)
+                                    print("d_format Dictionary Reading This Range", range_content, "as", f'"{range_affix}"')
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str):
                             if debug:
@@ -417,6 +430,7 @@ class PutxlSet:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
 
+            print("--------- End of Apply Format ---------")
         '''
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
