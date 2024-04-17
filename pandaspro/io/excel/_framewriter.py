@@ -232,10 +232,11 @@ class FramexlWriter:
             else:
                 raise ValueError(f'Searching name <<{colname}>> is not in column nor index.names')
 
-            below_range = start_range.offset(self.header_row_count, 0).resize_h(self.tr - self.header_row_count).cell
+            below_range = start_range.resize_h(self.tr - self.header_row_count).cell
+
             # noinspection PySimplifyBooleanCheck
             if header == True:
-                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count + self.tr).cell
+                below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.tr).cell
             if header == 'only':
                 below_range = CellPro(below_range).offset(-self.header_row_count, 0).resize_h(self.header_row_count).cell
             result_list.append(below_range)
