@@ -421,10 +421,14 @@ class PutxlSet:
                                 if debug:
                                     print("d_format Dictionary Reading This Range", range_content, "as", f'"{range_affix}"')
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
-                        elif isinstance(range_cells, str):
+                        elif isinstance(range_cells, str) and range_cells != '':
                             if debug:
-                                print("d_format Dictionary Reading", range_cells, "as", range_affix)
+                                print("d_format Dictionary Reading This Range", range_cells, "as", range_affix)
                             RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
+                        elif range_cells == '':
+                            print('Empty Range Cells: ', range_cells)
+                        else:
+                            print('Invalid Range Cells')
 
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
