@@ -61,6 +61,9 @@ def csort(
             data.drop(list(data.index.names) + ['__cpd_sort'], axis=1, inplace=True)
     else:
         result = data.sort_values(by='__cpd_sort', kind='mergesort')
-        if set(result.index.names) <= set(result.columns):
+        if result.index.names[0] is None:
             result.drop(list(data.index.names) + ['__cpd_sort'], axis=1, inplace=True)
+        elif set(result.index.names) <= set(result.columns):
+            result.drop('__cpd_sort', axis=1, inplace=True)
+
         return result

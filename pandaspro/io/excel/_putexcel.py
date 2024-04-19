@@ -288,6 +288,10 @@ class PutxlSet:
                 index_key = match.group(2)
                 index_columns = match.group(3)
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
+                if debug:
+                    print("================================================")
+                    print("design")
+                    print(design, index_key, index_columns)
             else:
                 design_style = local_design[design]['style']
 

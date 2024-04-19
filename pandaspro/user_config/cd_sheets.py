@@ -30,6 +30,22 @@ cd_sheets = {
             "applyto": 'all'
         },
     ],
+    "cmu_dept": [
+        {
+            "column": "CMU Dept",
+            "rules": {
+                'EAE': '#FFF2CC',
+                'HAE': '#DDEBF7',
+                'IAE': '#E2EFDA',
+                'SAE': '#D9D9D9',
+                'EAW': '#FFF2CC',
+                'HAW': '#DDEBF7',
+                'IAW': '#E2EFDA',
+                'SAW': '#D9D9D9',
+            },
+            "applyto": 'all'
+        },
+    ],
     "ti": [
         {
             "column": "FY19 Talent",
