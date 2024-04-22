@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+from pandaspro.core.tools.utils import df_with_index_for_mask
 
 
 def inlist(
@@ -62,6 +62,13 @@ def inlist(
     if data.empty:
         raise ValueError('Cannot use inlist on an empty dataframe')
 
+    if colname in data.columns:
+        pass
+    elif colname in data.index.names:
+        data = df_with_index_for_mask(data)
+    else:
+        raise ValueError(f'Column {colname} not found in either the dataframe nor the index namelist')
+
     bool_list = []
     for arg in args:
         if isinstance(arg, list):
@@ -80,6 +87,8 @@ def inlist(
             data.drop(data[~data[colname].isin(bool_list)].index, inplace=True)
         else:
             data.drop(data[data[colname].isin(bool_list)].index, inplace=True)
+        if set(data.index.names) <= set(data.columns):
+            data.drop(list(data.index.names), axis=1, inplace=True)
 
     elif engine == 'b':
         if debug:
@@ -90,8 +99,13 @@ def inlist(
                 data.drop(data[~data[colname].isin(bool_list)].index, inplace=True)
             else:
                 data.drop(data[data[colname].isin(bool_list)].index, inplace=True)
+            if set(data.index.names) <= set(data.columns):
+                data.drop(list(data.index.names), axis=1, inplace=True)
         else:
-            return data[data[colname].isin(bool_list)] if invert == False else data[~(data[colname].isin(bool_list))]
+            result = data[data[colname].isin(bool_list)] if invert == False else data[~(data[colname].isin(bool_list))]
+            if set(result.index.names) <= set(result.columns):
+                result.drop(list(result.index.names), axis=1, inplace=True)
+            return result
 
     elif engine == 'm':
         if debug:
@@ -110,6 +124,8 @@ def inlist(
             else:
                 data.loc[~(data[colname].isin(bool_list)), new_name] = 1
                 data.loc[data[colname].isin(bool_list), new_name] = 0
+            if set(data.index.names) <= set(data.columns):
+                data.drop(list(data.index.names), axis=1, inplace=True)
         else:
             df = data.copy()
             if not invert:
@@ -118,6 +134,8 @@ def inlist(
             else:
                 df.loc[~(data[colname].isin(bool_list)), new_name] = 1
                 df.loc[~data[colname].isin(bool_list), new_name] = 0
+            if set(df.index.names) <= set(df.columns):
+                data.drop(list(df.index.names), axis=1, inplace=True)
             return df
     else:
         print('Unsupported type')
