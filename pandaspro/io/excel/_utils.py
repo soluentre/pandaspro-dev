@@ -356,7 +356,7 @@ def cell_range_combine(cells: list = None):
         current_range = [columns[0]]
 
         for i in range(1, len(columns)):
-            if ord(columns[i]) == ord(current_range[-1]) + 1:
+            if cell_index(columns[i]+'1')[1] == cell_index(current_range[-1]+'1')[1] + 1:
                 current_range.append(columns[i])
             else:
                 merged.append(f"{current_range[0]}{row}:{current_range[-1]}{row}")
@@ -366,6 +366,7 @@ def cell_range_combine(cells: list = None):
         merged_cells[row] = merged
 
     return merged_cells
+
 
 if __name__ == '__main__':
     print(CellPro('A3').valid)
