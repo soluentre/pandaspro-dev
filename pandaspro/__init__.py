@@ -12,6 +12,8 @@ from pandaspro.core.api import (
 )
 
 from pandaspro.io.api import (
+    CellPro,
+    index_cell,
     cell_index,
     resize,
     offset,
