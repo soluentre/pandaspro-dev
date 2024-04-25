@@ -21,7 +21,8 @@ from pandaspro.io.api import (
     PutxlSet,
     pwread,
     WorkbookExportSimplifier,
-    lowervarlist
+    lowervarlist,
+    fw
 )
 
 from pandaspro.sampledf.api import (

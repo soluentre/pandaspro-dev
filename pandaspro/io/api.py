@@ -8,6 +8,7 @@ from pandaspro.io.excel._utils import (
     lowervarlist
 )
 from pandaspro.io.excel._putexcel import PutxlSet
+from pandaspro.io.excel._framewriter import FramexlWriter as fw
 from pandaspro.io.excel._base import pwread
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
@@ -21,5 +22,6 @@ __all__ = [
     'pwread',
     'WorkbookExportSimplifier',
     'lowervarlist',
-    'getrange'
+    'getrange',
+    'fw'
 ]
