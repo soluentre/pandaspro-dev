@@ -172,10 +172,10 @@ class PutxlSet:
             content = content.df
 
         if isinstance(content, FramexlWriter):
-            content = content.content
             cell = content.cell
-            index = content.index
-            header = content.header
+            index = content.index_bool
+            header = content.header_bool
+            content = content.content
 
         if not isinstance(content, str):
             for col in content.columns:
