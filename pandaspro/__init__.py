@@ -17,6 +17,7 @@ from pandaspro.io.api import (
     cell_index,
     resize,
     offset,
+    getrange,
     PutxlSet,
     pwread,
     WorkbookExportSimplifier,

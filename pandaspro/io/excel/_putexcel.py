@@ -7,6 +7,7 @@ from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFr
 from pandaspro.io.excel._utils import cell_range_combine, CellPro
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
 
+
 def is_range_filled(ws, range_str: str = None):
     if range_str is None:
         return False
@@ -83,6 +84,7 @@ class PutxlSet:
         self.globalreplace = alwaysreplace
         self.io = None
 
+    # noinspection PyMethodMayBeStatic
     def helpfile(self, para='all'):
         cd_file = """
         cd_format: the main function to add format to core export data ranges (exc. headers and indices)
@@ -169,6 +171,12 @@ class PutxlSet:
         if hasattr(content, 'df'):
             content = content.df
 
+        if isinstance(content, FramexlWriter):
+            content = content.content
+            cell = content.cell
+            index = content.index
+            header = content.header
+
         if not isinstance(content, str):
             for col in content.columns:
                 content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
@@ -215,7 +223,7 @@ class PutxlSet:
             if debug:
                 print('================================================')
                 print('StringxlWriter: ', io.content, io.cell)
-                print('The entry validation conditon booleans: ', CellPro(content).valid, cell)
+                print('The entry validation condition booleans: ', CellPro(content).valid, cell)
             RangeOperator(self.ws.range(io.cell)).format(
                 width=width,
                 height=height,

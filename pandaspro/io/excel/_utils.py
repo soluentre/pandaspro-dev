@@ -148,6 +148,8 @@ class CellPro:
             newrange = newstart + ':' + newstop
             return CellPro(newrange)
 
+    def range(self, down_offset, right_offset, row_resize, col_resize):
+        return self.offset(down_offset, right_offset).resize(row_resize, col_resize)
 
 def index_cell(row_index, column_index):
     return get_column_letter(column_index) + str(row_index)
@@ -189,9 +191,11 @@ def cell_index(cell: str) -> list:
     return [row_number, column_number]
 
 
-def resize(cell: str,
-           row_resize: int,
-           col_resize: int) -> str:
+def resize(
+        cell: str,
+        row_resize: int,
+        col_resize: int
+) -> str:
     """
     Adjusts the size of a cell range starting from a specified cell in Excel format, by adding a specified number
     of rows and columns to it. The function returns the new cell range in Excel notation. It uses the `index_cell`
@@ -239,9 +243,11 @@ def resize(cell: str,
     return result
 
 
-def offset(cell: str,
-           down_offset: int,
-           right_offset: int) -> str:
+def offset(
+        cell: str,
+        down_offset: int,
+        right_offset: int
+) -> str:
     """
     Calculates the Excel cell reference offset from a given starting cell by a specified number of rows and columns.
     This function allows for moving a cell reference vertically and horizontally based on the provided offsets.
@@ -288,6 +294,16 @@ def offset(cell: str,
         raise ValueError(
             f"Excel min row is 0 and min col is A, the result would be invalid {new_column_letter}{new_row}")
     return f"{new_column_letter}{new_row}"
+
+
+def getrange(
+        cell: str,
+        down_offset,
+        right_offset,
+        row_resize,
+        col_resize
+ ) -> str:
+    return resize(offset(cell, down_offset, right_offset), row_resize, col_resize)
 
 
 def get_cell_lists(rowlist: list,
