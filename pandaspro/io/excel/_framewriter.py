@@ -1,7 +1,7 @@
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.io.excel._cdformat import CdFormat
 from pandaspro.core.tools.utils import df_with_index_for_mask
-from pandaspro.io.excel._utils import CellPro, index_to_cell
+from pandaspro.io.excel._utils import CellPro, index_cell
 import pandas as pd
 
 
@@ -253,8 +253,8 @@ class FramexlWriter:
             # Decide the top row cells with min/max - allow invert orders
             top_left_index = min(col_index1, col_index2)
             top_right_index = max(col_index1, col_index2)
-            top_left = index_to_cell(row_index, top_left_index)
-            top_right = index_to_cell(row_index, top_right_index)
+            top_left = index_cell(row_index, top_left_index)
+            top_right = index_cell(row_index, top_right_index)
             start_range = CellPro(top_left + ':' + top_right)
 
         # Declaring only 1 column

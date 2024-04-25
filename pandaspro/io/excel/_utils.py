@@ -149,7 +149,7 @@ class CellPro:
             return CellPro(newrange)
 
 
-def index_to_cell(row_index, column_index):
+def index_cell(row_index, column_index):
     return get_column_letter(column_index) + str(row_index)
 
 
