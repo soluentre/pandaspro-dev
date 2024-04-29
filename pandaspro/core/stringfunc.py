@@ -12,16 +12,16 @@ def wildcardread(stringlist, varkey):
     :param varkey: a variable key with wildcard in it to match one or more variables
     :return:
     """
-    if '->' in varkey:
-        crange = re.split(r'\s*->\s*', varkey)
+    if '--' in varkey:
+        crange = re.split(r'\s*--\s*', varkey)
         element1 = crange[0]
         element2 = crange[1]
         if element1 not in stringlist or element2 not in stringlist:
             print('Invalid column name')
             return None
-        if stringlist.index(element1) > stringlist.index(element2):
+        if list(stringlist).index(element1) > list(stringlist).index(element2):
             element1, element2 = element2, element1
-        return stringlist[stringlist.index(element1): stringlist.index(element2) + 1]
+        return list(stringlist)[list(stringlist).index(element1): list(stringlist).index(element2) + 1]
 
     else:
         pattern = re.escape(varkey)
@@ -42,7 +42,7 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
 
     :return: a list of varnames
     """
-    pattern = r'\w+\s*->\s*\w+'
+    pattern = r'\w+\s*--\s*\w+'
     match = re.findall(pattern, inputstring)
     if not match:
         newlist = [s.strip() for s in inputstring.split(';')]
@@ -73,8 +73,13 @@ def parse_wild(promptstring: str, checklist: list, dictmap: dict = None):
         if dictmap and varkey in dictmap.keys():
             varkey = varkey.lower()
             for term in dictmap[varkey]:
+                # -- debug test
+                # print(wildcardread(checklist, term))
                 varlist += wildcardread(checklist, term)
+
         else:
+            # -- debug test
+            # print(wildcardread(checklist, varkey))
             varlist += wildcardread(checklist, varkey)
     for x in varlist:
         if x not in result_list:
