@@ -1,5 +1,4 @@
 import re
-import ast
 from typing import Any, List, Union
 
 
@@ -117,11 +116,11 @@ def parse_method(input_string):
         """
         try:
             # Try to parse it as a complex data type (list, tuple, dict)
-            parsed_value = ast.literal_eval(value_local)
+            my_parsed_value = ast.literal_eval(value_local)
             # If it's a list with elements, ensure each element is a string
-            if isinstance(parsed_value, list):
-                return [str(element).strip() for element in parsed_value]
-            return parsed_value
+            if isinstance(my_parsed_value, list):
+                return [str(element).strip() for element in my_parsed_value]
+            return my_parsed_value
         except (ValueError, SyntaxError):
             # Handle non-literal lists, assuming they are lists of strings
             if value_local.startswith('[') and value_local.endswith(']'):
