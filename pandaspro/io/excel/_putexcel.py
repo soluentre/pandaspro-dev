@@ -253,9 +253,12 @@ class PutxlSet:
                 if debug:
                     print(f'Only changing {io.cell} format, not value')
         else:
-            io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-            self.ws.range(io.cell).value = io.content
-            self.io = io
+            if cell is None:
+                raise ValueError('Must provide a valid cell to export the frame object')
+            else:
+                io = FramexlWriter(content=content, cell=cell, index=index, header=header)
+                self.ws.range(io.cell).value = io.content
+                self.io = io
 
         # Format the sheet (Shelley, Li)
         ################################

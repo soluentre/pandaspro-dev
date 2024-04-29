@@ -16,6 +16,7 @@ class StringxlWriter:
         self.cell = cell
 
 
+
 class FramexlWriter:
     def __init__(
             self,
@@ -119,6 +120,8 @@ class FramexlWriter:
         self.range_bottom_empty_checker = CellPro(self.bottom_left_cell).offset(1, 0).resize(1, self.tc).cell if CellPro(self.bottom_left_cell).cell_index[0] != 1 else None
         self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[1] != 1 else None
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
+
+        # Special - first/second from bottom
 
     def get_column_letter_by_indexname(self, levelname):
         if not self.index_bool:
