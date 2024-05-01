@@ -50,7 +50,7 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
             inputstring = inputstring.replace(item, '__' + str(index) + '__')
         aloneitem = inputstring.split(';')
         for index, item in enumerate(match):
-            newlist = [item if s == '__' + str(index) + '__' else s.strip() for s in aloneitem]
+            newlist = [item if s.strip() == '__' + str(index) + '__' else s.strip() for s in aloneitem]
 
     # noinspection PyUnboundLocalVariable
     return newlist
