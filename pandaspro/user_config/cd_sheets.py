@@ -10,9 +10,9 @@ cd_sheets = {
                 "GE": '#FFF2CC',
                 "GF": '#DDEBF7',
                 "GG": '#E2EFDA',
-                "GH": '#D9D9D9',
+                "GH": '#F2F2F2',
                 "GI": '#FFC9C9',
-                "UC": '#BFBFBF'
+                "UC": '#E5D1EB'
             },
             "applyto": 'all'
         },
