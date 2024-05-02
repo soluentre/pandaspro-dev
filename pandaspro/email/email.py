@@ -1,8 +1,4 @@
-from pandaspro.user_config.email_path import email_root
-from pandaspro.user_config.email_path import email_config
-from jinja2 import Template
-import os
-
+from pandaspro.user_config.email_path import config
 
 class email_template:
     """
@@ -15,12 +11,7 @@ class email_template:
     def __init__(
             self,
             template: str = None,
-            keys: dict = None,
+            *args,
+            **kwargs
     ):
-        template_path = os.path.join(email_root + f'/templates/{template}.html')
-        with open(template_path, 'r') as file:
-            html_raw = file.read()
-
-
-        self.html_raw = html_raw
-        # self.html = html
+        self.template = config
