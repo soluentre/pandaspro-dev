@@ -605,6 +605,7 @@ class PutxlSet:
 
         >>> ... cd_format={'column': 'age', 'rules': {...}}
         >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
+        >>> ... cd_format={'column': 'grade', 'rules': {'rule1':{'r':...(pd.Series), 'f':...}}, 'applyto': 'self'}
         '''
         if cd_format:
             apply_cd_format(cd_format)

@@ -41,6 +41,20 @@ class CdFormat:
         if self.column in self.df_with_index.columns:
             self.rules_mask = self._configure_rules_mask()
 
+    '''
+    Example of the rules parameter
+
+    rules = {
+        'rule1': {
+            'r': ['inlist', ....],
+            'f': ....
+        },
+        'rule2': {
+            'r': pd.Series,
+            'f': ...
+        },
+    }
+    '''
     def _configure_rules_mask(self):
         result = {}
 
