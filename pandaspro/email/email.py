@@ -20,6 +20,9 @@ class email_template:
     ):
         myemail = config.general[template]['engine'](*args, **kwargs)
         self.email = myemail
+        self.to = myemail.to
+        self.cc = myemail.cc
+        self.subject = myemail.subject
         self.template_raw = myemail.template_raw
         self.render_dict = myemail.render_dict
         self.input = myemail.input
@@ -34,26 +37,27 @@ class email_template:
 class email:
     def __init__(
             self,
-            subject: str = '',
             template: email_template = None,
+            subject: str = '',
             to: str = 'swang12@worldbankgroup.org',
             cc: str = '',
             bcc: str = '',
     ):
+        self.template = template
+        self.to = self.template.to if self.template.to is not None else to
+        self.cc = self.template.cc if self.template.cc is not None else cc
+        self.bcc = bcc
+        self.subject = self.template.subject if self.template.subject is not None else subject
+
         olApp = win32.Dispatch('Outlook.Application')
         olNS = olApp.GetNameSpace('MAPI')
         mailItem = olApp.CreateItem(0)
-        mailItem.To = to
-        mailItem.CC = cc
-        mailItem.BCC = bcc
-        mailItem.Subject = subject
+        mailItem.To = self.to
+        mailItem.CC = self.cc
+        mailItem.BCC = self.bcc
+        mailItem.Subject = self.subject
         mailItem.HTMLBody = template.html
 
-        self.to = to
-        self.cc = cc
-        self.bcc = bcc
-        self.template = template
-        self.subject = self.template.subject if self.template.subject is not None else subject
         self.olNS = olNS
         self.mail = mailItem
 
@@ -71,5 +75,11 @@ if __name__ == '__main__':
     att = [
         r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Emails and Manuals\STA and DAIS\T200011_Short_Term_Assignment_Developmental_Assignment_Memorandum.pdf',
     ]
-    e = email('Instructions').draft(email_template('sta_dais_init', step=4, position=39480).html).attach(att).display
-
+    mytemplate = email_template(
+        'sta_dais_init',
+        rec_mgr_upi=288695,
+        staff_upi=562499,
+        position=56160
+    )
+    e = email(mytemplate)
+    e.attach(att).display
