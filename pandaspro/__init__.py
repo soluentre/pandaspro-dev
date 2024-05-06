@@ -1,4 +1,5 @@
 from pandaspro.email.api import (
+    email,
     email_template
 )
 
