@@ -48,12 +48,13 @@ def create_mail_class(template_path, data_fetcher_class):
         def attach(self, attachments: list):
             for item in attachments:
                 self.mail.Attachments.Add(item)
-            return self
+            return self.mail
 
-        @property
         def display(self):
             self.mail.Display()
+            return self.mail
 
+    return Mail
 
 
 
