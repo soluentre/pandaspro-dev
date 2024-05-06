@@ -77,9 +77,10 @@ if __name__ == '__main__':
     ]
     mytemplate = email_template(
         'sta_dais_init',
-        rec_mgr_upi=288695,
-        staff_upi=562499,
-        position=56160
+        assign_type='dais',
+        rec_mgr_upi=300600,
+        staff_upi=607313,
+        position=71058
     )
     e = email(mytemplate)
     e.attach(att).display

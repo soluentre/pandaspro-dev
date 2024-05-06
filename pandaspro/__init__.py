@@ -1,3 +1,7 @@
+from pandaspro.email.api import (
+    email_template
+)
+
 from pandaspro.core.api import (
     bdate,
     dfilter,
