@@ -39,10 +39,10 @@ def create_mail_class(template_path, data_fetcher_class):
             self.olApp = win32.Dispatch('Outlook.Application')
             self.olNS = self.olApp.GetNameSpace('MAPI')
             self.mail = self.olApp.CreateItem(0)
-            self.mail.To = self.data['to'] if 'to' in self.data.keys() else ''
-            self.mail.CC = self.data['cc'] if 'cc' in self.data.keys() else ''
-            self.mail.BCC = self.data['bcc'] if 'bcc' in self.data.keys() else ''
-            self.mail.Subject = self.data['subject'] if 'subject' in self.data.keys() else ''
+            self.mail.To = self.data['__to__'] if '__to__' in self.data.keys() else ''
+            self.mail.CC = self.data['__cc__'] if '__cc__' in self.data.keys() else ''
+            self.mail.BCC = self.data['__bcc__'] if '__bcc__' in self.data.keys() else ''
+            self.mail.Subject = self.data['__subject__'] if '__subject__' in self.data.keys() else ''
             self.mail.HTMLBody = self.html_final
 
         def attach(self, attachments: list):
