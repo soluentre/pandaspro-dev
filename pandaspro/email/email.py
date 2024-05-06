@@ -1,86 +1,73 @@
-from pandaspro.user_config.email_path import config
-from jinja2 import Template
 from pandaspro.email.utlis import replace_with_dict
+from jinja2 import Template
 import win32com.client as win32
 
 
-class email_template:
+class DataFetcher:
     """
-    In the user_config.email_path, the email_root variable should be connecting to the user's email profile
-
-    The root folder should have:
-        1. a 'templates' folder, with html files in it
-        2. a 'config' file noting the engines to parse each template
+    This is the base class for specific data checking classes
+    For example, fetch staff on board info for STA/DAIS Assignment email
     """
-    def __init__(
+    def fetch_data(
             self,
-            template: str = None,
-            *args,
             **kwargs
     ):
-        myemail = config.general[template]['engine'](*args, **kwargs)
-        self.email = myemail
-        self.to = myemail.to
-        self.cc = myemail.cc
-        self.subject = myemail.subject
-        self.template_raw = myemail.template_raw
-        self.render_dict = myemail.render_dict
-        self.input = myemail.input
+        raise NotImplementedError('Subclasses must implement this method')
 
-        with open(self.template_raw, 'r') as file:
-            self.html_raw = file.read()
-
-        self.html = Template(self.html_raw).render(myemail.render_dict)
-        self.html = replace_with_dict(self.html, myemail.input)
-
-
-class email:
-    def __init__(
+    def fetch_showitems(
             self,
-            template: email_template = None,
-            subject: str = '',
-            to: str = 'swang12@worldbankgroup.org',
-            cc: str = '',
-            bcc: str = '',
+            **kwargs
     ):
-        self.template = template
-        self.to = self.template.to if self.template.to is not None else to
-        self.cc = self.template.cc if self.template.cc is not None else cc
-        self.bcc = bcc
-        self.subject = self.template.subject if self.template.subject is not None else subject
+        raise NotImplementedError('Subclasses must implement this method')
 
-        olApp = win32.Dispatch('Outlook.Application')
-        olNS = olApp.GetNameSpace('MAPI')
-        mailItem = olApp.CreateItem(0)
-        mailItem.To = self.to
-        mailItem.CC = self.cc
-        mailItem.BCC = self.bcc
-        mailItem.Subject = self.subject
-        mailItem.HTMLBody = template.html
 
-        self.olNS = olNS
-        self.mail = mailItem
+def create_mail_class(template_path, data_fetcher_class):
+    class Mail:
+        def __init__(self, **kwargs):
+            self.template = template_path
+            self.fetcher = data_fetcher_class()
+            self.data = self.fetcher.fetch_data(**kwargs)
+            self.showitems = self.fetcher.fetch_showitems(**kwargs)  # this is corresponding to the design in email template (show which part)
 
-    def attach(self, attachments: list):
-        for item in attachments:
-            self.mail.Attachments.Add(item)
-        return self
+            # Render the email with data automatically in init
+            with open(self.template, 'r') as file:
+                self.html_raw = file.read()
+            html_final = Template(self.html_raw).render(self.showitems)
+            self.html_final = replace_with_dict(html_final, self.data)
 
-    @property
-    def display(self):
-        self.mail.Display()
+            # Create this email object
+            self.olApp = win32.Dispatch('Outlook.Application')
+            self.olNS = self.olApp.GetNameSpace('MAPI')
+            self.mail = self.olApp.CreateItem(0)
+            self.mail.To = self.data['to'] if 'to' in self.data.keys() else ''
+            self.mail.CC = self.data['cc'] if 'cc' in self.data.keys() else ''
+            self.mail.BCC = self.data['bcc'] if 'bcc' in self.data.keys() else ''
+            self.mail.Subject = self.data['subject'] if 'subject' in self.data.keys() else ''
+            self.mail.HTMLBody = self.html_final
+
+        def attach(self, attachments: list):
+            for item in attachments:
+                self.mail.Attachments.Add(item)
+            return self
+
+        @property
+        def display(self):
+            self.mail.Display()
+
+
 
 
 if __name__ == '__main__':
-    att = [
-        r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Emails and Manuals\STA and DAIS\T200011_Short_Term_Assignment_Developmental_Assignment_Memorandum.pdf',
-    ]
-    mytemplate = email_template(
-        'sta_dais_init',
-        assign_type='dais',
-        rec_mgr_upi=300600,
-        staff_upi=607313,
-        position=71058
-    )
-    e = email(mytemplate)
-    e.attach(att).display
+    # att = [
+    #     r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Emails and Manuals\STA and DAIS\T200011_Short_Term_Assignment_Developmental_Assignment_Memorandum.pdf',
+    # ]
+    # mytemplate = email_template(
+    #     'sta_dais_init',
+    #     assign_type='dais',
+    #     rec_mgr_upi=300600,
+    #     staff_upi=607313,
+    #     position=71058
+    # )
+    # e = email(mytemplate)
+    # e.attach(att).display
+    pass

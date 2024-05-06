@@ -1,6 +1,7 @@
-from pandaspro.email.email import email_template, email
+from pandaspro.email.email import DataFetcher as emailfetcher
+from pandaspro.email.email import create_mail_class
 
 __all__ = [
-    'email',
-    'email_template'
+    'emailfetcher',
+    'create_mail_class',
 ]

@@ -1,6 +1,6 @@
 from pandaspro.email.api import (
-    email,
-    email_template
+    emailfetcher,
+    create_mail_class
 )
 
 from pandaspro.core.api import (
