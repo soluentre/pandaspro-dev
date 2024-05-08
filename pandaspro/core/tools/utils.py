@@ -20,6 +20,6 @@ def create_column_color_dict(df, column, colorlist):
     data = df.reset_index()
     dct = {}
     for i, value in enumerate(data[column].unique()):
-        dct[value] = colorlist[i]
+        dct[value] = colorlist[i % len(colorlist)]
 
     return dct
