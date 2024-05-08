@@ -156,7 +156,7 @@ class PutxlSet:
             # Section. special/personalize format
             index_merge: dict = None,
             header_wrap: bool = None,
-            design: str = 'wbblue',
+            design: str = None,
             style: str | list = None,
             df_format: dict = None,
             cd: str | list = None,

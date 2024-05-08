@@ -7,7 +7,7 @@ style_sheets = {
     },
     'heading2': {
         'font_size=12': 'cell',
-        'bold=True': 'cell',
+        'bold': 'cell',
         'font_color=#0070C0': 'cell'
     },
 
