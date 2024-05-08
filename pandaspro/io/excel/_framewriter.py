@@ -14,7 +14,7 @@ class StringxlWriter:
         self.iotype = 'str'
         self.content = content
         self.cell = cell
-
+        self.range_cell = cell
 
 
 class FramexlWriter:

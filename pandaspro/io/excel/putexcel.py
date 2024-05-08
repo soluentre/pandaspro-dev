@@ -125,10 +125,10 @@ class PutxlSet:
             content = None,
             sheet_name: str = None,
             cell: str = None,
-            index: bool = False,
+            index: bool = True,
             header: bool = True,
             replace: str = None,
-            sheetreplace: bool = False,
+            sheetreplace: bool = None,
             replace_warning: bool = False,
             tab_color: str | tuple = None,
 
@@ -156,16 +156,14 @@ class PutxlSet:
             # Section. special/personalize format
             index_merge: dict = None,
             header_wrap: bool = None,
-            design: str = None,
+            design: str = 'wbblue',
             style: str | list = None,
             df_format: dict = None,
             cd: str | list = None,
             cd_format: list | dict = None,
             config: dict = None,
-
             debug: bool = False,
     ) -> None:
-
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
         if hasattr(content, 'df'):
@@ -287,6 +285,8 @@ class PutxlSet:
             '''
             For index_merge, add the _index to the selected design like: wbblue_index(indexname, columnnames)
             This will add index_merge(level=..., columns=...) to the style keys
+            
+            design = style + cd
             
             For example
             >>> wbblue_index(PGs) === index_merge(level=PGs)

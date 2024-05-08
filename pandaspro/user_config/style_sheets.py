@@ -1,4 +1,17 @@
 style_sheets = {
+    # Text Styles
+    'heading1': {
+        'font_size=14': 'cell',
+        'bold': 'cell',
+        'font_color=#0070C0': 'cell'
+    },
+    'heading2': {
+        'font_size=12': 'cell',
+        'bold=True': 'cell',
+        'font_color=#0070C0': 'cell'
+    },
+
+    # DataFrame Styles
     'black': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': 'all',
