@@ -13,6 +13,7 @@ from pandaspro.core.api import (
     parse_method,
     parse_wild,
     df_with_index_for_mask,
+    create_column_color_dict,
     csort,
 )
 

@@ -97,18 +97,18 @@ class CellPro:
     def __init__(self, cell: str):
         if re.fullmatch(r'[A-Z]+\d+', cell) or re.fullmatch(r'[A-Z]+\d+:[A-Z]+\d+', cell):
             self.valid = True
+            if ':' in cell:
+                self.celltype = 'range'
+                self.cell_start = cell.split(':')[0].strip()
+                self.cell_stop = cell.split(':')[1].strip()
+                self.width = cell_index(self.cell_stop)[1] - cell_index(self.cell_start)[1] + 1
+                self.height = cell_index(self.cell_stop)[0] - cell_index(self.cell_start)[0] + 1
+            else:
+                self.celltype = 'cell'
+                self.cell_cal = cell
+            self.cell = cell
         else:
             self.valid = False
-        if ':' in cell:
-            self.celltype = 'range'
-            self.cell_start = cell.split(':')[0].strip()
-            self.cell_stop = cell.split(':')[1].strip()
-            self.width = cell_index(self.cell_stop)[1] - cell_index(self.cell_start)[1] + 1
-            self.height = cell_index(self.cell_stop)[0] - cell_index(self.cell_start)[0] + 1
-        else:
-            self.celltype = 'cell'
-            self.cell_cal = cell
-        self.cell = cell
 
     @property
     def cell_index(self):

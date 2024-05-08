@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def df_with_index_for_mask(df):
     if df.index.names[0] is not None:
         rename_index = {item: f'__myindex_{str(i)}' for i, item in enumerate(df.index.names)}
@@ -17,3 +14,12 @@ def df_with_index_for_mask(df):
         return index_wiring
     else:
         return df
+
+
+def create_column_color_dict(df, column, colorlist):
+    data = df.reset_index()
+    dct = {}
+    for i, value in enumerate(data[column].unique()):
+        dct[value] = colorlist[i]
+
+    return dct

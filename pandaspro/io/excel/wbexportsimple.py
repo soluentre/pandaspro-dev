@@ -1,4 +1,4 @@
-from pandaspro.io.excel._putexcel import PutxlSet
+from pandaspro.io.excel.putexcel import PutxlSet
 from datetime import datetime
 
 

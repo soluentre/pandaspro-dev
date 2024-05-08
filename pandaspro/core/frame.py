@@ -195,6 +195,19 @@ class FramePro(pd.DataFrame):
         if override:
             return declaredwb
 
+    def expand_column(self, column_list):
+        data = self.copy()
+        data['expand_key'] = column_list[0]
+        data['expand_value'] = data[column_list[0]]
+
+        for i in range(1, len(column_list)):
+            append = self.copy()
+            append['expand_key'] = column_list[i]
+            append['expand_value'] = append[column_list[i]]
+
+            data = pd.concat([data, append], ignore_index=True)
+        return data
+
     def cvar(self, promptstring):
         if self.empty:
             print('Nothing to check/browse in an empty dataframe')
@@ -210,7 +223,7 @@ class FramePro(pd.DataFrame):
                     print('Nothing to check/browse in an empty dataframe')
                     return self
                 else:
-                    final_selection.append(self.cvar(item))
+                    final_selection.extend(self.cvar(item))
             return self[final_selection]
 
         elif isinstance(prompt, str):

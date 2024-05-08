@@ -249,7 +249,6 @@ class PutxlSet:
             if io.content is not None:
                 self.ws.range(io.cell).value = io.content
             else:
-                pass
                 if debug:
                     print(f'Only changing {io.cell} format, not value')
         else:
@@ -633,7 +632,7 @@ class PutxlSet:
             print(
                 f">>> Range index: {io.range_index}, Range header: {io.range_header}, Range index names: {io.range_indexnames}\n")
 
-    def switchtab(self, sheet_name: str) -> None:
+    def tab(self, sheet_name: str, sheetreplace: bool = False, debug: bool = False) -> None:
         """
         Switches to a specified sheet in the workbook.
         If the sheet does not exist, it creates a new one with the given name.
@@ -642,6 +641,10 @@ class PutxlSet:
         ----------
         sheet_name : str
             The name of the sheet to switch to or create.
+        sheetreplace: bool
+            If true, replace the content in the sheet
+        debug: 
+            For developers
         """
         current_sheets = [sheet.name for sheet in self.wb.sheets]
         if sheet_name in current_sheets:
@@ -650,4 +653,22 @@ class PutxlSet:
             sheet = self.wb.sheets.add(after=self.wb.sheets.count)
             sheet.name = sheet_name
         self.ws = sheet
+
+        # If sheetreplace is specified, then delete the old sheet and create a new one
+        ################################
+        if sheetreplace:
+            _sheetmap = {sheet.index: sheet.name for sheet in self.wb.sheets}
+            original_index = self.ws.index
+            original_name = self.ws.name
+            total_count = self.wb.sheets.count
+
+            if original_index == total_count:
+                new_sheet = self.wb.sheets.add(after=self.wb.sheets[_sheetmap[original_index]])
+            else:
+                new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
+
+            self.ws.delete()
+            new_sheet.name = original_name
+            self.ws = new_sheet
+
         return
