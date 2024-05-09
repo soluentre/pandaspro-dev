@@ -22,6 +22,11 @@ style_sheets = {
         'border=outer_thick': 'all',
         'blue80; font_color=black; wrap': 'header_outer'
     },
+    'darkblue': {
+        'border=inner_thin; align=center': 'all',
+        'border=outer_thick': ['all', 'header_outer'],
+        'blue80; font_color=white; wrap': 'header_outer'
+    },
     'green': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': 'all',

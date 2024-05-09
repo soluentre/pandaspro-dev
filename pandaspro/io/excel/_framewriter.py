@@ -121,7 +121,9 @@ class FramexlWriter:
         self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[1] != 1 else None
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
 
-        # Special - first/second from bottom
+        # Special - first/second from bottom/right
+        self.range_bottom1 = CellPro(self.bottom_left_cell).resize(1, self.tc).cell
+        self.range_right1 = CellPro(self.top_right_cell).resize(self.tr, 1).cell
 
     def get_column_letter_by_indexname(self, levelname):
         if not self.index_bool:
