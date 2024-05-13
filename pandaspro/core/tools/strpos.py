@@ -1,4 +1,4 @@
-import pandas as pd
+import numpy as np
 
 
 def strpos(
@@ -13,6 +13,8 @@ def strpos(
 ):
     if debug:
         print('substring: ', substring, '; column: ', colname)
+
+    data[colname] = data[colname].replace(np.nan, '')
 
     if engine == 'r':
         if debug:
@@ -58,14 +60,3 @@ def strpos(
 
     else:
         print('Unsupported engine type')
-
-
-if __name__ == '__main__':
-    import numpy as np
-
-    # Example DataFrame
-    df = pd.DataFrame({
-        'text': ['hello world', 'world hello', 'no match here']
-    })
-    result = strpos(df, 'text', 'world')
-    print(result)

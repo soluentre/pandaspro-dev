@@ -135,5 +135,97 @@ cd_sheets = {
                 "Solid Talent": "#bfbfbf",
             },
         },
-    ]
+    ],
+    "pr": [
+            {
+                "column": "FY19 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY20 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY21 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY22 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY23 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY24 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY25 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY26 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY27 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+            {
+                "column": "FY28 PR",
+                "rules": {
+                    3: "#bfbfbf",
+                    3.5: "#dfd5a2",
+                    4: "#ffeb84",
+                    5: "#63be7b",
+                },
+            },
+        ]
 }

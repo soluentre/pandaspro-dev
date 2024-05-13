@@ -3,7 +3,7 @@ from wbhrdata import hrconfig
 excel_export_mydesign = {
     'wbblue': {
         'style': 'blue',
-        'cd': 'ti',
+        'cd': 'ti; pr',
         'config': hrconfig
     },
     'wbgreen': {
