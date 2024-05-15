@@ -7,7 +7,8 @@ def tab(
     d: str = 'brief',
     m: bool = False,
     sort: str = 'index',
-    ascending: bool | list = True
+    ascending: bool | list = True,
+    label: str = None,
 ):
     """
     The `tab` function provides various tabulations of a specified column in a DataFrame,
@@ -75,7 +76,6 @@ def tab(
             df = df.sort_index(ascending=ascending)
         else:
             df = df.sort_values(sort_dict[sort], ascending=ascending)
-        return df
 
     elif d == 'detail':
         # Calculate Percent and Cumulative Percent
@@ -96,7 +96,6 @@ def tab(
 
         # Concatenate the Total row to the DataFrame
         df = pd.concat([df, pd.DataFrame([total_row])], ignore_index=True)
-        return df
 
     elif d == 'export':
         df = df.reset_index()
@@ -113,4 +112,8 @@ def tab(
         # Concatenate the Total row to the DataFrame
         df = pd.concat([df, pd.DataFrame([total_row])], ignore_index=True)
         df.columns = [name, 'Count', 'Percent']
-        return df
+
+    if label:
+        df = df.rename(columns={'count': label})
+
+    return df

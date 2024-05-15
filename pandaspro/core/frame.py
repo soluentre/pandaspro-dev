@@ -39,8 +39,8 @@ class FramePro(pd.DataFrame):
     def varnames(self):
         return varnames(self)
 
-    def tab(self, name: str, d: str = 'brief', m: bool = False, sort: str = 'index', ascending: bool = True):
-        return self._constructor(tab(self, name, d, m, sort, ascending))
+    def tab(self, name: str, d: str = 'brief', m: bool = False, sort: str = 'index', ascending: bool = True, label: str = None):
+        return self._constructor(tab(self, name, d, m, sort, ascending, label))
 
     def dfilter(self, inputdict: dict = None, debug: bool = False):
         return self._constructor(dfilter(self, inputdict, debug))

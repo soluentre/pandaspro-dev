@@ -77,7 +77,7 @@ class PutxlSet:
         if 'Sheet1' in current_sheets and is_sheet_empty(open_wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
             open_wb.sheets['Sheet1'].delete()
 
-        self.app = app
+        self.open_wb, self.app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
         self.workbook = workbook
         self.wb = open_wb
         self.ws = sheet
@@ -672,3 +672,7 @@ class PutxlSet:
             self.ws = new_sheet
 
         return
+
+    def close(self):
+        self.open_wb.close()
+        self.app.quit()
