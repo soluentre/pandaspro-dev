@@ -375,7 +375,7 @@ class PutxlSet:
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
                 if debug:
                     print(key, local_range)
-                RangeOperator(self.ws.range(local_range)).format(merge=True, debug=debug)
+                RangeOperator(self.ws.range(local_range)).format(merge=True, wrap=True, debug=debug)
 
         if header_wrap:
             RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
