@@ -157,7 +157,7 @@ class FramePro(pd.DataFrame):
     def excel_e(
             self,
             sheet_name: str = 'Sheet1',
-            start_cell: str = 'A1',
+            cell: str = 'A1',
             index: bool = False,
             header: bool = True,
             replace: str = None,
@@ -178,7 +178,7 @@ class FramePro(pd.DataFrame):
         declaredwb.putxl(
             content=data,
             sheet_name=sheet_name,
-            cell=start_cell,
+            cell=cell,
             index=index,
             header=header,
             replace=replace,
