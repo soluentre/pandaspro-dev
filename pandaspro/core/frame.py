@@ -4,6 +4,7 @@ import pandaspro
 
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.csort import csort
+from pandaspro.core.tools.corder import corder
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.inrange import inrange
 from pandaspro.core.tools.strpos import strpos
@@ -62,6 +63,19 @@ class FramePro(pd.DataFrame):
             before=before,
             after=after,
             inplace=inplace
+        )
+
+    def corder(
+            self,
+            column,
+            before=None,
+            after=None
+    ):
+        return corder(
+            self,
+            column,
+            before=before,
+            after=after
         )
 
     def inlist(
