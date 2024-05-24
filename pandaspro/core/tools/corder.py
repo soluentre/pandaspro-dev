@@ -16,17 +16,18 @@ def corder(
 
     :return: Reordered DataFrame or None if reordered in place
     """
-    if column in data.columns:
-        pass
-    else:
-        raise ValueError(f'Column {column} not in the dataframe')
-
     if isinstance(column, str):
         cols = [i.strip() for i in column.split(';')]
     elif isinstance(column, list):
         cols = column
 
-    old_order = list(data.columns)
+    for i in cols:
+        if i in data.columns:
+            pass
+        else:
+            raise ValueError(f'Column {i} not in the dataframe')
+
+    old_order = [i for i in list(data.columns) if i not in cols]
     if before:
         index = old_order.index(before)
         new_order = old_order[:index] + cols + old_order[index:]
@@ -37,3 +38,8 @@ def corder(
         new_order = cols + old_order
 
     return data[new_order]
+
+if __name__ == '__main__':
+    import sprnldata as spr
+    a = spr.monades()
+    b = a.corder('cancel; amount', after='country')
