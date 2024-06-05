@@ -299,6 +299,20 @@ class FramePro(pd.DataFrame):
     ):
         return search2df(
             data_small=self,
+            data_large=data_large,
+            dictionary=dictionary,
+            key=key,
+            threshold=threshold,
+            show=show,
+            debug=debug
+        )
+
+    @property
+    def search2df_map(
+            self,
+    ):
+        return search2df(
+            mapsample=True
         )
 
     # __pandaspro_wangshiyao
