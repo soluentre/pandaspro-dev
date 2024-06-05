@@ -7,6 +7,7 @@ from pandaspro.core.tools.csort import csort
 from pandaspro.core.tools.corder import corder
 from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.inrange import inrange
+from pandaspro.core.tools.search2df import search2df
 from pandaspro.core.tools.strpos import strpos
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
@@ -287,6 +288,21 @@ class FramePro(pd.DataFrame):
 
         return result
 
+    def search2df(
+            self,
+            data_large=None,
+            dictionary=None,
+            key=None,
+            threshold=0.9,
+            show=True,
+            debug=False
+    ):
+        return search2df(
+            data_small=self,
+        )
+
+    # __pandaspro_wangshiyao
+    # add instruction and example of use
     def add_total(
             self,
             total_label_column,
