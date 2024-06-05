@@ -312,6 +312,7 @@ class FramePro(pd.DataFrame):
             self,
     ):
         return search2df(
+            data_small=self,
             mapsample=True
         )
 

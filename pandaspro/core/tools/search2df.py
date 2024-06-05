@@ -1,5 +1,4 @@
-from fuzzywuzzy import fuzz
-
+from termcolor import colored
 
 def calculate_similarity(row1, row2, match_and_weights, debug=False):
     """
@@ -20,6 +19,11 @@ def calculate_similarity(row1, row2, match_and_weights, debug=False):
 
     :return: similarity score, the higher the better the match is
     """
+    try:
+        from fuzzywuzzy import fuzz
+    except ImportError:
+        raise ImportError("Please install 'fuzzywuzzy' package to enable this method, or you may use 'pip install your_package_name[fuzzy]' to install all the dependencies required the first time you install pandaspro")
+
     total_similarity = 0.0
 
     for small_col, data in match_and_weights.items():
@@ -79,7 +83,8 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
         if show:
             if not found_match:
                 print(
-                    "\n###########################################\n [!] Searched but no results for this item\n###########################################\n")
+                    colored("\n###########################################\n [!] Searched but no results for this item\n###########################################\n", 'red')
+                )
             print("----------------------------------------------------------------------------------")
             print("")
         count += 1
