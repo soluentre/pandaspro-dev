@@ -61,6 +61,7 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
     count = 1
     for idx_small, row_small in data_small.iterrows():
         if show:
+
             print(f">>>> Count {count}/{len(data_small)}: \n")
             print("Data on Left:")
             print("=======================")
