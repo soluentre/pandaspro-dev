@@ -396,7 +396,9 @@ class PutxlSet:
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
                     if isinstance(local_input, str):
-                        parsedlist = [item.strip() for item in local_input.split(';')]
+                        parsedlist = [local_input]
+                        if debug:
+                            print(parsedlist)
                         cpdframexl_dict = None
                     elif isinstance(local_input, list):
                         parsedlist = local_input
