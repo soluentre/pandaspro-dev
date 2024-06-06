@@ -504,6 +504,7 @@ class PutxlSet:
 
         >>> ... df_format={'msblue80': 'header'}
         >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
+        >>> ... df_format={'blued25; font_color=white': 'columns(['a','b'], header=only)'}
 
         NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''

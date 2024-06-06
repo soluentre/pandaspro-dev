@@ -1,5 +1,50 @@
 from termcolor import colored
 
+
+# import pandas as pd
+# from tabulate import tabulate
+#
+# # 模拟的数据
+# data_left = {
+#     "full_name": "Aissatou Diallo",
+#     "division": "AWMGA",
+#     "grade": "GG"
+# }
+#
+# data_right = {
+#     "name_full": "Diallo, Aissatou",
+#     "unit": "AWMGA",
+#     "grade": "GG"
+# }
+#
+# row_small = pd.Series(data_left)
+# row_large = pd.Series(data_right)
+#
+# # 匹配的字典，说明如何匹配左右两边的列
+# dictionary = {
+#     "full_name": {"col": "name_full", "label": "Full Name"},
+#     "division": {"col": "unit", "label": "Division/Unit"},
+#     "grade": {"col": "grade", "label": "Grade"}
+# }
+#
+# # 对比函数
+# def print_comparison_table(left_data, right_data, dictionary, show=True):
+#     if show:
+#         # 使用pandas构建对比表
+#         comparison_data = {
+#             "Left Data": [left_data[col] for col in dictionary.keys()],
+#             "": [""] * len(dictionary),  # 添加空列作为分隔
+#             "Right Data": [right_data[d['col']] for d in dictionary.values()]
+#         }
+#         comparison_df = pd.DataFrame(comparison_data, index=[d['label'] for d in dictionary.values()])
+#
+#         # 使用tabulate打印表格，设置表格风格并对齐列
+#         print(tabulate(comparison_df, headers='keys', tablefmt='simple', showindex=True, stralign='center'))
+#
+# # 使用示例
+# print_comparison_table(row_small, row_large, dictionary)
+
+
 def calculate_similarity(row1, row2, match_and_weights, debug=False):
     """
     This function is used to return the similarity index when comparing two dataframes with selected columns
