@@ -72,7 +72,7 @@ class FramexlWriter:
 
         # Calculate the Map
         dfmapstart = cellobj.offset(xl_header_count, 0)
-        dfmap = df_with_index_for_mask(self.rawdata).copy()
+        dfmap = df_with_index_for_mask(self.rawdata, force=index).copy()
         dfmap = dfmap.astype(str)
 
         for dfmap_index in range(len(dfmap)):
@@ -283,7 +283,7 @@ class FramexlWriter:
             self,
             column,
             rules = None,
-            applyto = 'self'
+            applyto = 'self',
     ):
         mycd = CdFormat(
             df=self.rawdata,
@@ -336,3 +336,12 @@ class cpdFramexl:
     def __init__(self, name, **kwargs):
         self.name = name
         self.paras = kwargs
+
+
+# if __name__ == '__main__':
+#     import wbhrdata as wb
+#     import pandaspro as cpd
+#     data = wb.sob().head(5).p.er
+#
+#     ps = cpd.PutxlSet('file.xlsx')
+#     ps.putxl(data, cell='A1', design='wbblue')

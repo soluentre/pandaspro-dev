@@ -1,9 +1,15 @@
-def df_with_index_for_mask(df):
-    if df.index.names[0] is not None:
+def df_with_index_for_mask(df, force: bool = False):
+    if df.index.names[0] is not None or force:
+        # Assign a name if not multiple index
+        if len(df.index.names) == 1 and df.index.names[0] is None:
+            df.index.names = ['_temp_index_sw_assigned']
+
+        # Process
         rename_index = {item: f'__myindex_{str(i)}' for i, item in enumerate(df.index.names)}
         rename_index_back = {f'__myindex_{str(i)}': item for i, item in enumerate(df.index.names)}
         index_preparing = df.reset_index()
         index_wiring = index_preparing.rename(columns=rename_index)
+
         for column in df.index.names:
             index_wiring[column] = index_preparing[column]
         index_wiring = index_wiring.set_index(list(rename_index.values()))
