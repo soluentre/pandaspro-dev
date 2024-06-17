@@ -10,7 +10,7 @@ style_sheets = {
         'bold': 'cell',
         'font_color=#0070C0': 'cell'
     },
-    'note': {
+    'note1': {
         'font_size=10': 'cell',
         'font_color=#A6A6A6': 'cell',
         'italic': 'cell'
