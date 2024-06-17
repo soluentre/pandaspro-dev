@@ -10,6 +10,11 @@ style_sheets = {
         'bold': 'cell',
         'font_color=#0070C0': 'cell'
     },
+    'note': {
+        'font_size=10': 'cell',
+        'font_color=#A6A6A6': 'cell',
+        'italic': 'cell'
+    },
 
     # DataFrame Styles
     'black': {
