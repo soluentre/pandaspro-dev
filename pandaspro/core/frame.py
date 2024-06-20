@@ -251,6 +251,42 @@ class FramePro(pd.DataFrame):
             raise TypeError('Invalid input type for prompt')
 
     def insert_blank(self, locator_dict: dict = None, how: str = 'after', nrow: int = 1):
+        """
+        Insert blank rows into the DataFrame.
+
+        Parameters:
+        - locator_dict (dict): A dictionary to specify the condition for inserting rows. If None, inserts rows at the beginning or end.
+        - how (str): Specify 'before' or 'after' to insert rows relative to the location specified by locator_dict, or 'first'/'last' for start/end.
+        - nrow (int): Number of blank rows to insert.
+
+        Usage Examples:
+
+        1. Insert blank rows at the beginning of the DataFrame:
+
+        ```python
+        df = pd.DataFrame({
+            'Product': ['A', 'B', 'C', 'D'],
+            'Sales': [100, 200, 300, 400]
+        })
+        df_new = df.insert_blank(how='first', nrow=2)
+        # Result: Two blank rows inserted at the top of the DataFrame.
+        ```
+
+        2. Insert blank rows after rows where 'Score' equals 85:
+
+        ```python
+        df = pd.DataFrame({
+            'Student': ['Alice', 'Bob', 'Charlie', 'David'],
+            'Score': [90, 85, 78, 85]
+        })
+        locator_dict = {'Score': 85}
+        df_new = df.insert_blank(locator_dict=locator_dict, how='after', nrow=1)
+        # Result: A blank row inserted after each row where 'Score' is 85.
+        ```
+
+        Returns:
+        - A new DataFrame with the blank rows inserted.
+        """
         if locator_dict is None:
             data = self.copy()
             blankfill = np.full((nrow, len(data.columns)), np.nan)
