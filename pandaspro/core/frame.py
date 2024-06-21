@@ -199,11 +199,11 @@ class FramePro(pd.DataFrame):
             replace=replace,
             sheetreplace=sheetreplace,
             design=design,
-            style=style,
+            df_style=style,
             df_format=df_format,
             cd_format=cd_format,
             config=config,
-            cd=cd
+            cd_style=cd
         )
 
         # ? Seems to return the declaredwb object to change

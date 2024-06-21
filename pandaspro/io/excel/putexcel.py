@@ -157,9 +157,9 @@ class PutxlSet:
             index_merge: dict = None,
             header_wrap: bool = None,
             design: str = None,
-            style: str | list = None,
+            df_style: str | list = None,
             df_format: dict = None,
-            cd: str | list = None,
+            cd_style: str | list = None,
             cd_format: list | dict = None,
             config: dict = None,
             debug: bool = False,
@@ -311,20 +311,20 @@ class PutxlSet:
             design_config = local_design[design]['config']
             design_cd = local_design[design]['cd']
 
-            if style:
-                style = ";".join([design_style, style])
+            if df_style:
+                df_style = ";".join([design_style, df_style])
             else:
-                style = design_style
+                df_style = design_style
 
             if config:
                 config = config.update(design_config)
             else:
                 config = design_config
 
-            if cd:
-                cd = ";".join([design_cd, cd])
+            if cd_style:
+                cd_style = ";".join([design_cd, cd_style])
             else:
-                cd = design_cd
+                cd_style = design_cd
 
         '''
         For config para, the accepted dict must use column/index name as keys
@@ -457,14 +457,14 @@ class PutxlSet:
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
         '''
-        if style:
+        if df_style:
             from pandaspro.user_config.style_sheets import style_sheets
 
             # First parse string to lists
-            if isinstance(style, str):
-                loop_list = str2list(style)
-            elif isinstance(style, list):
-                loop_list = style
+            if isinstance(df_style, str):
+                loop_list = str2list(df_style)
+            elif isinstance(df_style, list):
+                loop_list = df_style
             else:
                 raise ValueError('Invalid object for style parameter, only str or list accepted')
 
@@ -578,6 +578,30 @@ class PutxlSet:
                     cd_paint(rule)
 
         '''
+        cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
+        use cd_sheets command to view pre-defined formats
+        '''
+        if cd_style:
+            from pandaspro.user_config.cd_sheets import cd_sheets
+
+            # First parse string to lists
+            if isinstance(cd_style, str):
+                loop_list = str2list(cd_style)
+            elif isinstance(cd_style, list):
+                loop_list = cd_style
+            else:
+                raise ValueError('Invalid object for cd parameter, only str or list accepted')
+
+            # Loop and apply cd by checking the cd py module
+            for each_cd in loop_list:
+                apply_cd = cd_sheets[each_cd]
+                if isinstance(apply_cd, list):
+                    for each_cd_sub in apply_cd:
+                        apply_cd_format(each_cd_sub)
+                elif isinstance(apply_cd, dict):
+                    apply_df_format(apply_cd)
+
+        '''
         cd_format: the main function to add format to core export data ranges (exc. headers and indices)
         This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
         (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
@@ -594,29 +618,6 @@ class PutxlSet:
         if cd_format:
             apply_cd_format(cd_format)
 
-        '''
-        cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
-        use cd_sheets command to view pre-defined formats
-        '''
-        if cd:
-            from pandaspro.user_config.cd_sheets import cd_sheets
-
-            # First parse string to lists
-            if isinstance(cd, str):
-                loop_list = str2list(cd)
-            elif isinstance(cd, list):
-                loop_list = cd
-            else:
-                raise ValueError('Invalid object for cd parameter, only str or list accepted')
-
-            # Loop and apply cd by checking the cd py module
-            for each_cd in loop_list:
-                apply_cd = cd_sheets[each_cd]
-                if isinstance(apply_cd, list):
-                    for each_cd_sub in apply_cd:
-                        apply_cd_format(each_cd_sub)
-                elif isinstance(apply_cd, dict):
-                    apply_df_format(apply_cd)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################
