@@ -250,79 +250,132 @@ class FramePro(pd.DataFrame):
         else:
             raise TypeError('Invalid input type for prompt')
 
-    def insert_blank(self, locator_dict: dict = None, how: str = 'after', nrow: int = 1):
-        """
-        Insert blank rows into the DataFrame.
+    def insert_blank(self, locator_dict: dict = None, how: str = 'after', nrows: int = 1):
+        # Reset Index to Proceed
+        org_cols = self.columns.to_list()
+        new_cols = self.reset_index().columns.to_list()
+        data_op = self.reset_index().copy()
+        toResetIndex = [item for item in new_cols if item not in org_cols]
+        if len(toResetIndex) != len(self.index.names):
+            raise ValueError(
+                "The insert_blank method only supports DataFrames where index labels and column names are unique and do not overlap.")
 
-        Parameters:
-        - locator_dict (dict): A dictionary to specify the condition for inserting rows. If None, inserts rows at the beginning or end.
-        - how (str): Specify 'before' or 'after' to insert rows relative to the location specified by locator_dict, or 'first'/'last' for start/end.
-        - nrow (int): Number of blank rows to insert.
+        # Location Dictionary Decipher into Slicing Points
+        ##############################
+        condition = pd.Series([True] * len(self), index=self.index)
+        slice_indices = []
 
-        Usage Examples:
-
-        1. Insert blank rows at the beginning of the DataFrame:
-
-        ```python
-        df = pd.DataFrame({
-            'Product': ['A', 'B', 'C', 'D'],
-            'Sales': [100, 200, 300, 400]
-        })
-        df_new = df.insert_blank(how='first', nrow=2)
-        # Result: Two blank rows inserted at the top of the DataFrame.
-        ```
-
-        2. Insert blank rows after rows where 'Score' equals 85:
-
-        ```python
-        df = pd.DataFrame({
-            'Student': ['Alice', 'Bob', 'Charlie', 'David'],
-            'Score': [90, 85, 78, 85]
-        })
-        locator_dict = {'Score': 85}
-        df_new = df.insert_blank(locator_dict=locator_dict, how='after', nrow=1)
-        # Result: A blank row inserted after each row where 'Score' is 85.
-        ```
-
-        Returns:
-        - A new DataFrame with the blank rows inserted.
-        """
-        if locator_dict is None:
-            data = self.copy()
-            blankfill = np.full((nrow, len(data.columns)), np.nan)
-
-            if isinstance(data.index, pd.MultiIndex):
-                blank_rows = pd.DataFrame(blankfill, index=[(np.nan,) * len(data.index.names)] * nrow, columns=data.columns)
-            else:
-                blank_rows = pd.DataFrame(blankfill, index=[np.nan] * nrow, columns=data.columns)
-
-            if how == 'first':
-                data = pd.concat([blank_rows, data], ignore_index=False)
-            elif how == 'last':
-                data = pd.concat([data, blank_rows], ignore_index=False)
-            result = self._constructor(data)
-
-        else:
-            condition = pd.Series([True] * len(self))
+        if locator_dict is not None:
             for col, value in locator_dict.items():
-                if col in self.columns:
-                    condition &= (self[col] == value)
+                if not isinstance(value, list):
+                    value = [value]
                 else:
-                    print(f"Column '{col}' does not exist in the Frame.")
-                    return self
+                    pass
 
-            indices = self.index[condition].tolist()
-            insert_positions = []
-            for i in indices:
-                if how == 'before':
-                    insert_positions.extend([i - j - 1 for j in range(nrow)])
-                else:  # 'after'
-                    insert_positions.extend([i + j + 1 for j in range(nrow)])
+                for v in value:
+                    if col in self.columns:
+                        locator = condition & (self[col] == v)
+                        slice_indices.append(data_op.index[locator][0])
+                    else:
+                        print(f"Column '{col}' does not exist in the Frame.")
+        #             return self
+        else:
+            pass
 
-            blank_rows = pd.DataFrame(np.nan, index=insert_positions, columns=self.columns)
-            result = self._constructor(pd.concat([self, blank_rows]).reset_index(drop=True))
+        # Define Cutting Machine
+        ##############################
+        def split_dataframe(df, indices, mode='before'):
+            """
+            Splits a DataFrame into segments based on a list of indices and a specified mode.
 
-        return result
+            Parameters:
+            df (pd.DataFrame): The DataFrame to be split.
+            indices (list): A list of indices where the splits should occur.
+            mode (str): 'before' or 'after', indicating the split mode.
+
+            Returns:
+            list: A list of DataFrames resulting from the split.
+
+            Example:
+            --------
+            Suppose you have a DataFrame `df`:
+
+                A  B
+            0   0 21
+            1   1 22
+            2   2 23
+            3   3 24
+            4   4 25
+            5   5 26
+            6   6 27
+            7   7 28
+            8   8 29
+            9   9 30
+            10 10 31
+
+            And you want to split it using indices [2, 6] and mode 'before'.
+            The function call would be: split_dataframe(df, [2, 6], 'before')
+
+            This would produce three segments:
+            Segment 1 (0 to 1):
+                A  B
+            0  0 21
+            1  1 22
+
+            Segment 2 (2 to 5):
+                A  B
+            2  2 23
+            3  3 24
+            4  4 25
+            5  5 26
+
+            Segment 3 (6 to end):
+                A  B
+            6  6 27
+            7  7 28
+            8  8 29
+            9  9 30
+            10 10 31
+            """
+            split_dfs = []
+
+            if len(indices) == 0:
+                split_dfs.append(df)
+
+            else:
+                indices = sorted(set(indices))
+                if mode == 'before':
+                    split_points = [0] + indices + [len(df)]
+                elif mode == 'after':
+                    split_points = [0] + [i + 1 for i in indices] + [len(df)]
+                else:
+                    raise ValueError("The mode parameter must be 'before' or 'after'")
+
+                for i in range(len(split_points) - 1):
+                    start, end = split_points[i], split_points[i + 1]
+                    split_dfs.append(df.iloc[start:end])
+
+            return split_dfs
+
+        # Cut the DataFrames
+        ##############################
+
+        blank_fill = np.full((nrows, len(data_op.columns)), np.nan)
+        blank_rows = pd.DataFrame(blank_fill, columns=data_op.columns)
+        df_packages = split_dataframe(data_op, slice_indices, mode=how)
+
+        output = pd.DataFrame()
+        for index, dfl in enumerate(df_packages):
+            output = pd.concat([output, dfl])
+            if index + 1 != len(df_packages) or (len(df_packages) == 1 and how == 'after'):
+                output = pd.concat([output, blank_rows])
+
+        if len(df_packages) == 1 and how == 'before':
+            output = pd.concat([blank_rows, output])
+
+        output = self._constructor(output.set_index(toResetIndex))
+
+        return output
 
     def search2df(
             self,
