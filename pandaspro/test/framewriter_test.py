@@ -18,6 +18,6 @@ s = StringxlWriter(cell='B3:B10')
 
 print(f.range_columns('GD', header=True))
 print(f.get_column_letter_by_name('GD').cell)
-print(f.start_cellobj.cell)
+print(f.inner_start_cellobj.cell)
 
 print(f.range_index_selected_hsection(level='cmu_dept_major', token='Total'))

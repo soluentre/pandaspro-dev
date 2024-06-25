@@ -13,7 +13,7 @@ class StringxlWriter:
     ) -> None:
         self.iotype = 'str'
         self.content = content
-        self.cell = cell
+        self.start_cell = cell
         self.range_cell = cell
 
 
@@ -83,7 +83,7 @@ class FramexlWriter:
         self.columns_with_indexnames = self.rawdata.reset_index().columns
         self.columns = self.rawdata.columns
         self.content = export_data
-        self.cell = cell
+        self.start_cell = cell
         self.index_bool = index
         self.header_bool = header
         self.tr = tr
@@ -92,19 +92,19 @@ class FramexlWriter:
         self.index_column_count = index_column_count
 
         # data corners - cellpros
-        self.start_cellobj = cellobj.offset(xl_header_count, xl_index_count)
-        self.start_cell = self.start_cellobj.cell
+        self.inner_start_cellobj = cellobj.offset(xl_header_count, xl_index_count)
+        self.inner_start_cell = self.inner_start_cellobj.cell
         self.top_right_cell = cellobj.offset(0, self.tc - 1).cell
         self.bottom_left_cell = cellobj.offset(self.tr - 1, 0).cell
         self.end_cell = cellobj.offset(self.tr - 1, self.tc - 1).cell
 
         # ranges
         self.range_all = cell + ':' + self.end_cell
-        self.range_data = self.start_cellobj.resize(tr - header_row_count, tc - index_column_count).cell
+        self.range_data = self.inner_start_cellobj.resize(tr - header_row_count, tc - index_column_count).cell
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
-        self.range_index_outer = CellPro(self.cell).resize(self.tr, self.index_column_count).cell
+        self.range_index_outer = CellPro(self.start_cell).resize(self.tr, self.index_column_count).cell
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
-        self.range_header_outer = CellPro(self.cell).resize(self.header_row_count, self.tc).cell
+        self.range_header_outer = CellPro(self.start_cell).resize(self.header_row_count, self.tc).cell
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
 
         # format relevant
@@ -116,9 +116,9 @@ class FramexlWriter:
         self.cd_cellrange_1col = None
 
         # Special - Checker for sheetreplace
-        self.range_top_empty_checker = CellPro(self.cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.cell).cell_index[0] != 1 else None
+        self.range_top_empty_checker = CellPro(self.start_cell).offset(-1, 0).resize(1, self.tc).cell if CellPro(self.start_cell).cell_index[0] != 1 else None
         self.range_bottom_empty_checker = CellPro(self.bottom_left_cell).offset(1, 0).resize(1, self.tc).cell if CellPro(self.bottom_left_cell).cell_index[0] != 1 else None
-        self.range_left_empty_checker = CellPro(self.cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.cell).cell_index[1] != 1 else None
+        self.range_left_empty_checker = CellPro(self.start_cell).offset(0, -1).resize(self.tr, 1).cell if CellPro(self.start_cell).cell_index[1] != 1 else None
         self.range_right_empty_checker = CellPro(self.top_right_cell).offset(0, 1).resize(self.tr, 1).cell if CellPro(self.top_right_cell).cell_index[0] != 1 else None
 
         # Special - first/second from bottom/right
@@ -130,12 +130,12 @@ class FramexlWriter:
             raise ValueError('Cannot return a range with get_column_letter_by_indexname method when index = False is specified')
 
         col_count = list(self.rawdata.index.names).index(levelname)
-        col_cell = CellPro(self.cell).offset(self.header_row_count, col_count)
+        col_cell = CellPro(self.start_cell).offset(self.header_row_count, col_count)
         return col_cell
 
     def get_column_letter_by_name(self, colname):
         col_count = list(self.columns).index(colname)
-        col_cell = self.start_cellobj.offset(0, col_count)
+        col_cell = self.inner_start_cellobj.offset(0, col_count)
         return col_cell
 
     def _index_break(self, level: str = None):
@@ -176,8 +176,8 @@ class FramexlWriter:
         if self.range_index is None:
             raise ValueError('index_sections method requires the input dataframe to have an index')
         else:
-            result_dict = {'headers': CellPro(self.cell).resize(self.header_row_count, self.tc).cell}
-            range_start_each = CellPro(self.cell).offset(self.header_row_count, 0)
+            result_dict = {'headers': CellPro(self.start_cell).resize(self.header_row_count, self.tc).cell}
+            range_start_each = CellPro(self.start_cell).offset(self.header_row_count, 0)
             for localid, rowspan in enumerate(self._index_break(level=level)):
                 result_dict[f'section_{localid}_{rowspan}'] = range_start_each.resize(rowspan, self.tc).cell
                 range_start_each = range_start_each.offset(rowspan, 0)
@@ -214,7 +214,7 @@ class FramexlWriter:
     @property
     def range_index_levels(self) -> dict:
         result_dict = {}
-        range_start_each = CellPro(self.cell)
+        range_start_each = CellPro(self.start_cell)
         for each_index in self.rawdata.index.names:
             result_dict[f'index_{each_index}'] = range_start_each.resize(self.tr, 1).cell
             range_start_each = range_start_each.offset(0, 1)

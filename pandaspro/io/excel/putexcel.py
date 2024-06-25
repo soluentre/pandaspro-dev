@@ -170,7 +170,7 @@ class PutxlSet:
             content = content.df
 
         if isinstance(content, FramexlWriter):
-            cell = content.cell
+            cell = content.start_cell
             index = content.index_bool
             header = content.header_bool
             content = content.content
@@ -220,9 +220,9 @@ class PutxlSet:
                 io = StringxlWriter(content=content, cell=cell)
             if debug:
                 print('================================================')
-                print('StringxlWriter: ', io.content, io.cell)
+                print('StringxlWriter: ', io.content, io.start_cell)
                 print('The entry validation condition booleans: ', CellPro(content).valid, cell)
-            RangeOperator(self.ws.range(io.cell)).format(
+            RangeOperator(self.ws.range(io.start_cell)).format(
                 width=width,
                 height=height,
                 font=font,
@@ -245,16 +245,16 @@ class PutxlSet:
             )
             self.io = io
             if io.content is not None:
-                self.ws.range(io.cell).value = io.content
+                self.ws.range(io.start_cell).value = io.content
             else:
                 if debug:
-                    print(f'Only changing {io.cell} format, not value')
+                    print(f'Only changing {io.start_cell} format, not value')
         else:
             if cell is None:
                 raise ValueError('Must provide a valid cell to export the frame object')
             else:
                 io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-                self.ws.range(io.cell).value = io.content
+                self.ws.range(io.start_cell).value = io.content
                 self.io = io
 
         # Format the sheet (Shelley, Li)
