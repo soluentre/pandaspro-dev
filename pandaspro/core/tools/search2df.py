@@ -68,8 +68,8 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
     count = 1
     for idx_small, row_small in data_small.iterrows():
         if show:
-            print(colored(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", 'green'))
-            print(colored(f">>>> Count {count}/{len(data_small)}: \n", 'green'))
+            # print(colored(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", 'green'))
+            print(colored(f">>>> Count {count}/{len(data_small)}: \n", 'black'))
             # print("Data on Left:")
             # print("=======================")
             # print(row_small[list(dictionary.keys())])
@@ -106,9 +106,9 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
                     "\n###########################################\n [!] Searched but no results for this item\n###########################################\n",
                     'red')
             )
-            print("----------------------------------------------------------------------------------")
 
-        print("\n\n")
+        print("----------------------------------------------------------------------------------")
+        print("\n")
         count += 1
 
     return finaldf
