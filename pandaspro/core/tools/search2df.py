@@ -1,48 +1,6 @@
 from termcolor import colored
-
-
-# import pandas as pd
-# from tabulate import tabulate
-#
-# # 模拟的数据
-# data_left = {
-#     "full_name": "Aissatou Diallo",
-#     "division": "AWMGA",
-#     "grade": "GG"
-# }
-#
-# data_right = {
-#     "name_full": "Diallo, Aissatou",
-#     "unit": "AWMGA",
-#     "grade": "GG"
-# }
-#
-# row_small = pd.Series(data_left)
-# row_large = pd.Series(data_right)
-#
-# # 匹配的字典，说明如何匹配左右两边的列
-# dictionary = {
-#     "full_name": {"col": "name_full", "label": "Full Name"},
-#     "division": {"col": "unit", "label": "Division/Unit"},
-#     "grade": {"col": "grade", "label": "Grade"}
-# }
-#
-# # 对比函数
-# def print_comparison_table(left_data, right_data, dictionary, show=True):
-#     if show:
-#         # 使用pandas构建对比表
-#         comparison_data = {
-#             "Left Data": [left_data[col] for col in dictionary.keys()],
-#             "": [""] * len(dictionary),  # 添加空列作为分隔
-#             "Right Data": [right_data[d['col']] for d in dictionary.values()]
-#         }
-#         comparison_df = pd.DataFrame(comparison_data, index=[d['label'] for d in dictionary.values()])
-#
-#         # 使用tabulate打印表格，设置表格风格并对齐列
-#         print(tabulate(comparison_df, headers='keys', tablefmt='simple', showindex=True, stralign='center'))
-#
-# # 使用示例
-# print_comparison_table(row_small, row_large, dictionary)
+import pandas as pd
+from tabulate import tabulate
 
 
 def calculate_similarity(row1, row2, match_and_weights, debug=False):
@@ -62,12 +20,13 @@ def calculate_similarity(row1, row2, match_and_weights, debug=False):
         'nationality': {'col':'nationality', 'weight': 0.1}
     }
 
-    :return: similarity score, the higher the better the match is
+    :return: similarity score, the higher, the better the match is
     """
     try:
         from fuzzywuzzy import fuzz
     except ImportError:
-        raise ImportError("Please install 'fuzzywuzzy' package to enable this method, or you may use 'pip install your_package_name[fuzzy]' to install all the dependencies required the first time you install pandaspro")
+        raise ImportError(
+            "Please install 'fuzzywuzzy' package to enable this method, or you may use 'pip install your_package_name[fuzzy]' to install all the dependencies required the first time you install pandaspro")
 
     total_similarity = 0.0
 
@@ -83,6 +42,8 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
     This function used the calculate_similarity as listed above to create checking dev-reports and generate the key column
     in the smaller (to be checked) dataframe according to the larger (source) dataframe.
 
+    :param debug: debug toggle
+    :param mapsample: show the mapsample
     :param data_small: smaller, or to be checked dataframe
     :param data_large: larger, or source dataframe
     :param dictionary: mapping - this is to build relationship between two dataframes
@@ -93,6 +54,7 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
 
     :return: the updated smaller dataframe with key
     """
+
     finaldf = data_small.copy()
     if mapsample:
         sample = {
@@ -106,32 +68,47 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
     count = 1
     for idx_small, row_small in data_small.iterrows():
         if show:
-
-            print(f">>>> Count {count}/{len(data_small)}: \n")
-            print("Data on Left:")
-            print("=======================")
-            print(row_small[list(dictionary.keys())])
-
+            print(colored(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", 'green'))
+            print(colored(f">>>> Count {count}/{len(data_small)}: \n", 'green'))
+            # print("Data on Left:")
+            # print("=======================")
+            # print(row_small[list(dictionary.keys())])
+        display_left_series = row_small[list(dictionary.keys())]
+        display_right_series = display_left_series.apply(lambda x: "")
         found_match = False
+
         for idx_large, row_large in data_large.iterrows():
             similarity = calculate_similarity(row_large, row_small, dictionary, debug=debug)
-
             if similarity > threshold:
-                if show:
-                    print("\nData on Right:")
-                    print("=======================")
-                    print(row_large[[col['col'] for col in dictionary.values()]])
-                    print("")
+                # if show:
+                # print("\nData on Right:")
+                # print("=======================")
+                # print(row_large[[col['col'] for col in dictionary.values()]])
+                # print("")
+                display_right_series = row_large[[col['col'] for col in dictionary.values()]]
                 finaldf.at[idx_small, key] = row_large[key]
                 found_match = True
                 break
 
+        # Print Results
         if show:
-            if not found_match:
-                print(
-                    colored("\n###########################################\n [!] Searched but no results for this item\n###########################################\n", 'red')
-                )
+            comparison_data = {
+                "Left Data": display_left_series,
+                "": [""] * len(display_left_series),
+                "Right Data": display_right_series
+            }
+            comparison_df = pd.DataFrame(comparison_data, index=list(dictionary.keys()))
+            print(colored(tabulate(comparison_df, headers='keys', tablefmt='simple', showindex=True, stralign='center'), 'blue'))
+
+        if show and not found_match:
+            print(
+                colored(
+                    "\n###########################################\n [!] Searched but no results for this item\n###########################################\n",
+                    'red')
+            )
             print("----------------------------------------------------------------------------------")
-            print("")
+
+        print("\n\n")
         count += 1
+
     return finaldf

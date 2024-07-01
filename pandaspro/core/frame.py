@@ -461,6 +461,7 @@ class FramePro(pd.DataFrame):
         result_all = left.merge(right, on='key', update='all')
         
         print("Result with update='missing':\n", result_missing, "\n")
+        print("Result with update='missing':\n", result_missing, "\n")
         print("Result with update='all':\n", result_all)
         '''
 
