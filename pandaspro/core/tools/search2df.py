@@ -108,8 +108,10 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
                     'red')
             )
 
-        print("\n----------------------------------------------------------------------------------")
-        print("")
+        if show:
+            print("\n----------------------------------------------------------------------------------")
+            print("")
+
         count += 1
 
     return finaldf
