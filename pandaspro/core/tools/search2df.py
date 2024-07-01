@@ -86,6 +86,7 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
                 # print(row_large[[col['col'] for col in dictionary.values()]])
                 # print("")
                 display_right_series = row_large[[col['col'] for col in dictionary.values()]]
+                display_right_series.index = display_left_series.index
                 finaldf.at[idx_small, key] = row_large[key]
                 found_match = True
                 break
@@ -103,12 +104,28 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
         if show and not found_match:
             print(
                 colored(
-                    "\n###########################################\n [!] Searched but no results for this item\n###########################################\n",
+                    "\n###########################################\n [!] Searched but no results for this item\n###########################################",
                     'red')
             )
 
-        print("----------------------------------------------------------------------------------")
-        print("\n")
+        print("\n----------------------------------------------------------------------------------")
+        print("")
         count += 1
 
     return finaldf
+
+
+if __name__ == '__main__':
+    import pandaspro as cpd
+    import numpy as np
+    import wbhrdata as wb
+    path = r'C:\Users\wb539289\WBG\HRDC1 Files - New T-Drive\D- Reports\Analysis\Impact'
+    data = cpd.pwread(f'{path}/FY23 AFW Manager Impact Result.xlsx', cellrange='A4')[0]
+    data = data.inlist('division', np.nan, invert=True)
+
+    alldata = wb.sob()
+    mydict = {
+        'full_name': {'col': 'name_full', 'weight': 0.9},
+        'division': {'col': 'unit', 'weight': 0.1},
+    }
+    new = data.search2df(alldata, mydict, key='upi', show=True)
