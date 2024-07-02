@@ -87,7 +87,16 @@ def search2df(data_small=None, data_large=None, dictionary=None, key=None, mapsa
                 # print("")
                 display_right_series = row_large[[col['col'] for col in dictionary.values()]]
                 display_right_series.index = display_left_series.index
-                finaldf.at[idx_small, key] = row_large[key]
+
+                # Add new column
+                if isinstance(key, str):
+                    finaldf.at[idx_small, key] = row_large[key]
+                elif isinstance(key, list):
+                    for k in key:
+                        finaldf.at[idx_small, k] = row_large[k]
+                else:
+                    raise ValueError('Invalid Support Type for key')
+
                 found_match = True
                 break
 
