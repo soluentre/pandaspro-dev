@@ -83,6 +83,7 @@ class PutxlSet:
         self.ws = sheet
         self.globalreplace = alwaysreplace
         self.io = None
+        self.curr_cell = None
 
     # noinspection PyMethodMayBeStatic
     def helpfile(self, para='all'):
@@ -256,6 +257,7 @@ class PutxlSet:
                 io = FramexlWriter(content=content, cell=cell, index=index, header=header)
                 self.ws.range(io.start_cell).value = io.content
                 self.io = io
+                self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
 
         # Format the sheet (Shelley, Li)
         ################################
