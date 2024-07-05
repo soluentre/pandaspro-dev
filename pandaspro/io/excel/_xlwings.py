@@ -523,18 +523,37 @@ class RangeOperator:
                     raise ValueError(
                         'Invalid input. Please check if pattern or color are specified correctly. At most 1 color and 1 pattern')
 
-                # Create patter and color parameter
-                parse_fill_pattern = patternlist_fill[0] if len(patternlist_fill) == 1 else None
-                parse_fill_color = colorlist_fill[0] if len(colorlist_fill) == 1 else None
+                # Create patter and color parameter, then paint
+                parse_fill_pattern = _fpattern_map[patternlist_fill[0].lower()]
+                parse_fill_color = colorlist_fill[0]
+                self.xwrange.api.Interior.Pattern = parse_fill_pattern
+                if parse_fill_color == 'none':
+                    self.xwrange.color = None
+                else:
+                    self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
 
-                if parse_fill_pattern:
-                    self.xwrange.api.Interior.Pattern = _fpattern_map[parse_fill_pattern.lower()]
-
-                if parse_fill_color:
-                    if parse_fill_pattern == 'solid' or parse_fill_pattern is None:
-                        self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
-                    else:
-                        self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
+                # [Deprecated]Paint accordingly: 4 Scenarios
+                ###########################################################
+                # Reason for deprecation: parse_fill_pattern and parse_fill_color length can only be 1:
+                #   (a) if = 0, assigned solid and none
+                #   (b) if > 1, raised error
+                ###########################################################
+                # if parse_fill_pattern is not None and parse_fill_color is not None:
+                #     # if a pattern is declared, and color is declared = paint color with pattern
+                #     self.xwrange.api.Interior.Pattern = parse_fill_pattern
+                #     self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
+                #
+                # elif parse_fill_pattern is None and parse_fill_color is not None:
+                #     # no pattern declared = use default pattern solid
+                #     self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
+                #
+                # elif parse_fill_pattern is not None  and parse_fill_color is None:
+                #     # only pattern declared = only adjust pattern, don't touch color
+                #     self.xwrange.api.Interior.Pattern = parse_fill_pattern
+                #
+                # else:
+                #     # both not detected
+                #     raise ValueError('fill argument passed is not valid')
 
             if isinstance(fill, list):
                 # Directly call
