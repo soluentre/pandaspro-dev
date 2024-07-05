@@ -152,6 +152,7 @@ class PutxlSet:
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
+            color_scale: str = None,
             appendix: bool = False,
 
             # Section. special/personalize format
@@ -242,6 +243,7 @@ class PutxlSet:
                 fill_pattern=fill_pattern,
                 fill_fg=fill_fg,
                 fill_bg=fill_bg,
+                color_scale=color_scale,
                 appendix=appendix
             )
             self.io = io

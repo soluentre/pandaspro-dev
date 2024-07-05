@@ -18,25 +18,25 @@ _alignment_map = {
 }
 
 _fpattern_map = {
-    'none': 0,  # xlNone
+    'p_none': 0,  # xlNone
     'solid': 1,  # xlSolid
-    'gray50': 2,  # xlGray50
-    'gray75': 3,  # xlGray75
-    'gray25': 4,  # xlGray25
-    'horstripe': 5,  # xlHorizontalStripe
-    'verstripe': 6,  # xlVerticalStripe
-    'diagstripe': 8,  # xlDiagonalDown
-    'revdiagstripe': 7,  # xlDiagonalUp
-    'diagcrosshatch': 9,  # xlDiagonalCrosshatch
-    'thinhorstripe': 11,  # xlThinHorizontalStripe
-    'thinverstripe': 12,  # xlThinVerticalStripe
-    'thindiagstripe': 14,  # xlThinDiagonalDown
-    'thinrevdiagstripe': 13,  # xlThinDiagonalUp
-    'thinhorcrosshatch': 15,  # xlThinHorizontalCrosshatch
-    'thindiagcrosshatch': 16,  # xlThinDiagonalCrosshatch
-    'thickdiagcrosshatch': 10,  # xlThickDiagonalCrosshatch
-    'gray12p5': 17,  # xlGray12.5
-    'gray6p25': 18  # xlGray6.25
+    'p_gray50': 2,  # xlGray50
+    'p_gray75': 3,  # xlGray75
+    'p_gray25': 4,  # xlGray25
+    'p_horstripe': 5,  # xlHorizontalStripe
+    'p_verstripe': 6,  # xlVerticalStripe
+    'p_diagstripe': 8,  # xlDiagonalDown
+    'p_revdiagstripe': 7,  # xlDiagonalUp
+    'p_diagcrosshatch': 9,  # xlDiagonalCrosshatch
+    'p_thinhorstripe': 11,  # xlThinHorizontalStripe
+    'p_thinverstripe': 12,  # xlThinVerticalStripe
+    'p_thindiagstripe': 14,  # xlThinDiagonalDown
+    'p_thinrevdiagstripe': 13,  # xlThinDiagonalUp
+    'p_thinhorcrosshatch': 15,  # xlThinHorizontalCrosshatch
+    'p_thindiagcrosshatch': 16,  # xlThinDiagonalCrosshatch
+    'p_thickdiagcrosshatch': 10,  # xlThickDiagonalCrosshatch
+    'p_gray12p5': 17,  # xlGray12.5
+    'p_gray6p25': 18  # xlGray6.25
 }
 
 _border_side_map = {
@@ -231,6 +231,7 @@ class RangeOperator:
             fill_pattern: str = None,
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
+            color_scale: str = None,
             appendix: bool = False,
             debug: bool = False,
             **kwargs
@@ -536,15 +537,24 @@ class RangeOperator:
                         self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
 
             if isinstance(fill, list):
+                # Directly call
                 fill_with_mylist(fill)
 
             elif isinstance(fill, tuple):
-                foreground_color_int = xw.utils.rgb_to_int(fill)
-                self.xwrange.api.Interior.Color = foreground_color_int
+                # Only supports tuple to indicate RGB
+                if len(fill) == 3 and all(isinstance(value, int) and 0 <= value <= 255 for value in fill):
+                    foreground_color_int = xw.utils.rgb_to_int(fill)
+                    self.xwrange.api.Interior.Color = foreground_color_int
+                else:
+                    raise ValueError('Invalid RGB passed: when using a tuple type for RGB, each element in the tuple must be an int between 0-255 and the length of the tuple should be exactly at 3')
 
             elif isinstance(fill, str):
+                # Parse to string then call
                 cleanlist = list_str_w_color(fill)
                 fill_with_mylist(cleanlist)
+
+            else:
+                raise ValueError('Invalid argument for fill, only accept: list/valid tuple/string')
 
         if fill_pattern:
             self.xwrange.api.Interior.Pattern = _fpattern_map[fill_pattern.lower()]
@@ -562,6 +572,10 @@ class RangeOperator:
                 self.xwrange.api.Interior.Color = background_color_int
             elif isinstance(fill_bg, str):
                 self.xwrange.api.Interior.Color = color_to_int(fill_bg)
+
+        if color_scale:
+            if color_scale == 'green-yellow-red':
+                mycolor = self.xwrange.api.FormatConditions.AddColorScale(ColorScaleType=3)
 
         return
 
