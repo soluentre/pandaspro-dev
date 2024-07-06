@@ -244,7 +244,8 @@ class PutxlSet:
                 fill_fg=fill_fg,
                 fill_bg=fill_bg,
                 color_scale=color_scale,
-                appendix=appendix
+                appendix=appendix,
+                debug=debug
             )
             self.io = io
             if io.content is not None:
