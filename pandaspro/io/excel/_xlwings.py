@@ -232,6 +232,7 @@ class RangeOperator:
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
             color_scale: str = None,
+            gridlines: bool = None,
             appendix: bool = False,
             debug: bool = False,
             **kwargs
@@ -595,6 +596,9 @@ class RangeOperator:
         if color_scale:
             if color_scale == 'green-yellow-red':
                 mycolor = self.xwrange.api.FormatConditions.AddColorScale(ColorScaleType=3)
+
+        if gridlines:
+            self.xwrange.sheet.api.ActiveWindow.DisplayGridlines = gridlines
 
         return
 

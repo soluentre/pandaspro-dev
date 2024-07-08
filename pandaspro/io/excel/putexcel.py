@@ -153,6 +153,7 @@ class PutxlSet:
             fill_fg: str | tuple = None,
             fill_bg: str | tuple = None,
             color_scale: str = None,
+            gridlines: bool = None,
             appendix: bool = False,
 
             # Section. special/personalize format
@@ -244,6 +245,7 @@ class PutxlSet:
                 fill_fg=fill_fg,
                 fill_bg=fill_bg,
                 color_scale=color_scale,
+                gridlines=gridlines,
                 appendix=appendix,
                 debug=debug
             )
