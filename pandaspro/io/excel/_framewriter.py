@@ -100,7 +100,7 @@ class FramexlWriter:
 
         # ranges
         self.range_all = cell + ':' + self.end_cell
-        self.range_data = self.inner_start_cellobj.resize(tr - header_row_count, tc - index_column_count).cell
+        self.range_data = self.inner_start_cell + ':' + self.end_cell
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
         self.range_index_outer = CellPro(self.start_cell).resize(self.tr, self.index_column_count).cell
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
