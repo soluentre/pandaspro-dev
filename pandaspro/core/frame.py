@@ -12,6 +12,7 @@ from pandaspro.core.tools.strpos import strpos
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
+from pandaspro.core.tools.indate import indate
 from pandaspro.io.excel._utils import lowervarlist
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
@@ -131,6 +132,33 @@ class FramePro(pd.DataFrame):
         )
         if debug:
             print(type(result))
+        if engine == 'm':
+            return result
+        else:
+            return self._constructor(result)
+
+    def indate(
+            self,
+            colname: str,
+            compare,
+            date,
+            end_date: str = None,
+            inclusive: str = 'both',
+            engine: str = 'b',
+            inplace: bool = False,
+            invert: bool = False,
+    ):
+        result = indate(
+            self,
+            colname,
+            compare,
+            date,
+            end_date=end_date,
+            inclusive=inclusive,
+            engine=engine,
+            inplace=inplace,
+            invert=invert,
+        )
         if engine == 'm':
             return result
         else:
