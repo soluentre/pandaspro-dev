@@ -668,6 +668,7 @@ def parse_format_rule(rule):
             r'border=(.*)': ['border', lambda local_match: local_match.group(1)],
             r'(#[a-zA-Z0-9]{6})': ['fill', lambda local_match: local_match.group(1)],
             r'fill=(.*)': ['fill', lambda local_match: local_match.group(1)],
+            r'color_scale=(.*)': ['color_scale', lambda local_match: local_match.group(1)]
         }
 
         if prompt in keysmatch.keys():
