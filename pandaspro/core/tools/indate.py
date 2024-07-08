@@ -5,6 +5,15 @@ from pandas.tseries.offsets import MonthEnd, YearEnd
 
 def indate(df, colname, compare, date, end_date=None, inclusive='both', engine='b', inplace=False, invert=False,
            debug=False):
+    mapper = {
+        'lt': '<',
+        'gt': '>',
+        'le': '<=',
+        'ge': '>=',
+        'eq': '='
+    }
+    compare = mapper[compare]
+
     if compare not in ['<', '>', '<=', '>=', '=', 'between']:
         raise ValueError("Invalid comparison operator")
 

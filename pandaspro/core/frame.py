@@ -139,7 +139,7 @@ class FramePro(pd.DataFrame):
 
     def indate(
             self,
-            colname: str,
+            colname,
             compare,
             date,
             end_date: str = None,
