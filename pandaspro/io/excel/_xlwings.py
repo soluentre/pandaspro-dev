@@ -605,8 +605,11 @@ class RangeOperator:
             if color_scale == 'green-yellow-red':
                 mycolor = self.xwrange.api.FormatConditions.AddColorScale(ColorScaleType=3)
 
-        if gridlines:
-            self.xwrange.sheet.api.ActiveWindow.DisplayGridlines = gridlines
+        if gridlines is not None:
+            active_app = self.xwrange.sheet.book.app
+            if debug:
+                print('active_app >>> ', active_app, active_app.api, active_app.api.ActiveWindow)
+            active_app.api.ActiveWindow.DisplayGridlines = gridlines
 
         return
 
