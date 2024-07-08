@@ -531,7 +531,14 @@ class RangeOperator:
                 if parse_fill_color == 'none':
                     self.xwrange.color = None
                 else:
-                    self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
+                    if debug:
+                        print("parse_fill_color >>> ", parse_fill_color)
+                        print("color_to_int >>> ", color_to_int(parse_fill_color))
+
+                    if parse_fill_pattern == 'solid':
+                        self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
+                    else:
+                        self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
 
                 # [Deprecated]Paint accordingly: 4 Scenarios
                 ###########################################################
