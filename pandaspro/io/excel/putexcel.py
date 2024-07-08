@@ -147,6 +147,7 @@ class PutxlSet:
             number_format: str = None,
             align: str | list = None,
             merge: bool = None,
+            wrap: bool = None,
             border: str | list = None,
             fill: str | tuple | list = None,
             fill_pattern: str = None,
@@ -239,6 +240,7 @@ class PutxlSet:
                 number_format=number_format,
                 align=align,
                 merge=merge,
+                wrap=wrap,
                 border=border,
                 fill=fill,
                 fill_pattern=fill_pattern,
@@ -624,7 +626,6 @@ class PutxlSet:
         '''
         if cd_format:
             apply_cd_format(cd_format)
-
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
         ################################

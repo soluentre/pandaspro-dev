@@ -532,10 +532,11 @@ class RangeOperator:
                     self.xwrange.color = None
                 else:
                     if debug:
+                        print("parse_fill_pattern >>> ", parse_fill_pattern)
                         print("parse_fill_color >>> ", parse_fill_color)
                         print("color_to_int >>> ", color_to_int(parse_fill_color))
 
-                    if parse_fill_pattern == 'solid':
+                    if parse_fill_pattern == 1:
                         self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
                     else:
                         self.xwrange.api.Interior.PatternColor = color_to_int(parse_fill_color)
