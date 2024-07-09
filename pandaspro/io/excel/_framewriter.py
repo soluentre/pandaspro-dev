@@ -46,6 +46,7 @@ class FramexlWriter:
             xl_header_count, xl_index_count = 0, index_column_count
             export_data = content.reset_index().to_numpy().tolist()
             range_index = cellobj.resize(tr, index_column_count)
+            header_row_count = 0
             range_indexnames = 'N/A'
             range_header = 'N/A'
         elif header == False and index == False:
@@ -53,6 +54,7 @@ class FramexlWriter:
             tr, tc = content.shape[0], content.shape[1]
             xl_header_count, xl_index_count = 0, 0
             export_data = content.to_numpy().tolist()
+            header_row_count = 0
             range_index = 'N/A'
             range_indexnames = 'N/A'
             range_header = 'N/A'
@@ -102,9 +104,9 @@ class FramexlWriter:
         self.range_all = cell + ':' + self.end_cell
         self.range_data = self.inner_start_cell + ':' + self.end_cell
         self.range_index = range_index.cell if range_index != 'N/A' else 'N/A'
-        self.range_index_outer = CellPro(self.start_cell).resize(self.tr, self.index_column_count).cell
+        self.range_index_outer = CellPro(self.start_cell).resize(self.tr, self.index_column_count).cell if range_index != 'N/A' else 'N/A'
         self.range_header = range_header.cell if range_header != 'N/A' else 'N/A'
-        self.range_header_outer = CellPro(self.start_cell).resize(self.header_row_count, self.tc).cell
+        self.range_header_outer = CellPro(self.start_cell).resize(self.header_row_count, self.tc).cell if range_header != 'N/A' else 'N/A'
         self.range_indexnames = range_indexnames.cell if range_indexnames != 'N/A' else 'N/A'
 
         # format relevant
