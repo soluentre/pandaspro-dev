@@ -254,6 +254,7 @@ class PutxlSet:
             self.io = io
             if io.content is not None:
                 self.ws.range(io.start_cell).value = io.content
+                self.curr_cell = CellPro(io.start_cell).offset(1, 0).cell
             else:
                 if debug:
                     print(f'Only changing {io.start_cell} format, not value')
