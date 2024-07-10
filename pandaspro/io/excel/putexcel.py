@@ -1,6 +1,5 @@
-import logging
 import re
-from datetime import datetime
+from collections.abc import Iterable
 from pathlib import Path
 import os
 import xlwings as xw
@@ -85,7 +84,7 @@ class PutxlSet:
         self.workbook = workbook
         self.wb = open_wb
         self.ws = sheet
-        self.globalreplace = alwaysreplace
+        self.alwaysreplace = alwaysreplace
         self.io = None
         self.curr_cell = None
 
@@ -178,24 +177,29 @@ class PutxlSet:
 
         self.logger.debug(">>>> LOG ACTIVATED - DEBUG <<<<")
         self.logger.info(">>>> LOG ACTIVATED - INFO <<<<")
+
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
+
+        # For Framepro objects
         if hasattr(content, 'df'):
             content = content.df
 
+        # For FramexlWriter Objects
         if isinstance(content, FramexlWriter):
             cell = content.start_cell
             index = content.index_bool
             header = content.header_bool
             content = content.content
 
-        if not isinstance(content, str):
+        # If content's columns is iterable
+        if isinstance(content.columns, Iterable):
             for col in content.columns:
                 content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
 
         # Sheetreplace? If a sheet_name is specified, then override the current sheet
         ################################
-        replace_type = self.globalreplace if self.globalreplace else replace
+        replace_type = self.alwaysreplace if self.alwaysreplace else replace
 
         if sheet_name and sheet_name != self.ws.name:
             if sheet_name in [sheet.name for sheet in self.wb.sheets]:
@@ -211,15 +215,16 @@ class PutxlSet:
             original_index = self.ws.index
             original_name = self.ws.name
             total_count = self.wb.sheets.count
-            self.debug_section_lv1("SECTION: sheetreplace or replace_type")
-            self.logger.debug(f"In the workbook, total sheets number is **{total_count}**, while original index is **{original_index}**")
+            self.info_section_lv1("SECTION: sheetreplace or replace_type")
+            self.logger.info(f"Replacing sheet **!'{self.ws.name}'**: [sheetreplace] is declared as **True**, [alwaysreplace] for PutxlSet is declared as **{self.alwaysreplace}**")
+            self.logger.info(f"In the workbook, total sheets number is **{total_count}**, while original index is **{original_index}**")
 
             if original_index == total_count:
                 new_sheet = self.wb.sheets.add(after=self.wb.sheets[_sheetmap[original_index]])
-                self.logger.debug(f"Sheet [is] the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
+                self.logger.info(f"Sheet [is] the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
             else:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
-                self.logger.debug(f"Sheet [is not] the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
+                self.logger.info(f"Sheet [is not] the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
 
             self.ws.delete()
             new_sheet.name = original_name
@@ -227,14 +232,17 @@ class PutxlSet:
 
         # Declare IO Object
         ################################
+        self.info_section_lv1("SECTION: IO object declaration")
         if isinstance(content, str):
+            self.logger.info(f"Validation 1: **{content}** is a valid str type object")
+            self.logger.info(f"Validation 2: **{content}** results in CellPro(content).valid being **{CellPro(content).valid}**")
             if CellPro(content).valid and cell is None:
                 io = StringxlWriter(cell=content)
+                self.logger.info(f"Passed [Cell]: updating **{content}** format")
             else:
                 io = StringxlWriter(content=content, cell=cell)
-            if debug:
-                print('================================================')
-                print('StringxlWriter: ', io.content, io.start_cell)
+                # Note: start_cell is named intentional to be consistent with DF mode and may refer to a cell range
+                self.logger.info(f"Passed [Text]: filling **{io.content}** into **{io.start_cell}** format")
                 print('The entry validation condition booleans: ', CellPro(content).valid, cell)
             RangeOperator(self.ws.range(io.start_cell)).format(
                 width=width,
@@ -705,3 +713,22 @@ class PutxlSet:
     def close(self):
         self.open_wb.close()
         self.app.quit()
+
+
+if __name__ == '__main__':
+    import wbhrdata as wb
+    import pandaspro as cpd
+    debuglevel = 'info'
+    r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
+    ps = cpd.PutxlSet('delete_impact_table.xlsx')
+    ps.putxl(cell='A4', font_size=12, bold=True, sheetreplace=True, debug=debuglevel)
+    ps.putxl(
+        r.table_region('AFW'),
+        cell='A5', index=False,
+        design='wbblue',
+        df_format={
+            'font_size=12': 'all',
+            'number_format=0.0': 'cspan(s="Overall Rating Average", e="Results")'
+        },
+        debug=debuglevel
+    )
