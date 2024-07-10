@@ -9,8 +9,11 @@ def cpd_logger(cls):
         # ANSI escape sequences for text formatting
         RESET = "\033[0m"
         BOLD = "\033[1m"
+        ITALIC = "\033[3m"
+        UNDERLINE = "\033[4m"
         RED = "\033[31m"
         BLUE = "\033[34m"
+        YELLOW = "\033[93m"
 
         def format(self, record):
             msg = record.msg
@@ -18,7 +21,7 @@ def cpd_logger(cls):
                 return "\n"
 
             # Apply bold and red formatting to text enclosed in **
-            msg = re.sub(r"\*\*(.*?)\*\*", f"{self.BOLD}{self.BLUE}\\1{self.RESET}", msg)
+            msg = re.sub(r"\*\*(.*?)\*\*", f"{self.BOLD}{self.ITALIC}{self.UNDERLINE}{self.YELLOW}\\1{self.RESET}", msg)
             record.msg = msg
 
             return super().format(record)
@@ -72,9 +75,9 @@ def cpd_logger(cls):
 
     def _debug_section_lv1(self, section_name):
         self.logger.debug("")
-        self.logger.debug("=" * 30)
+        self.logger.debug("=" * 45)
         self.logger.debug(f"{section_name} START")
-        self.logger.debug("=" * 30)
+        self.logger.debug("=" * 45)
 
     def _debug_section_lv2(self, section_name):
         self.logger.debug("")
@@ -83,9 +86,9 @@ def cpd_logger(cls):
 
     def _info_section_lv1(self, section_name):
         self.logger.info("")
-        self.logger.info("=" * 30)
+        self.logger.info("=" * 45)
         self.logger.info(f"{section_name} START")
-        self.logger.info("=" * 30)
+        self.logger.info("=" * 45)
 
     def _info_section_lv2(self, section_name):
         self.logger.info("")
