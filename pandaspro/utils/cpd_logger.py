@@ -1,13 +1,26 @@
 import logging
 from datetime import datetime
 from functools import wraps
+import re
 
 
 def cpd_logger(cls):
     class CustomFormatter(logging.Formatter):
+        # ANSI escape sequences for text formatting
+        RESET = "\033[0m"
+        BOLD = "\033[1m"
+        RED = "\033[31m"
+        BLUE = "\033[34m"
+
         def format(self, record):
-            if record.msg == "\n":
-                return "\n"  # 纯空行直接返回换行符
+            msg = record.msg
+            if msg == "\n":
+                return "\n"
+
+            # Apply bold and red formatting to text enclosed in **
+            msg = re.sub(r"\*\*(.*?)\*\*", f"{self.BOLD}{self.BLUE}\\1{self.RESET}", msg)
+            record.msg = msg
+
             return super().format(record)
 
     original_init = cls.__init__
@@ -24,8 +37,10 @@ def cpd_logger(cls):
         self.configure_logger()
 
         # Adding log_section and end_log_section methods to the instance
-        self.log_section = self._log_section
-        self.end_log_section = self._end_log_section
+        self.debug_section_lv1 = self._debug_section_lv1
+        self.debug_section_lv2 = self._debug_section_lv2
+        self.info_section_lv1 = self._info_section_lv1
+        self.info_section_lv2 = self._info_section_lv2
         self.reconfigure_logger = self._reconfigure_logger
 
     def configure_logger(self):
@@ -55,17 +70,27 @@ def cpd_logger(cls):
             file_handler.setFormatter(file_formatter)
             self.logger.addHandler(file_handler)
 
-    def _log_section(self, section_name):
-        self.logger.debug("\n")
+    def _debug_section_lv1(self, section_name):
+        self.logger.debug("")
         self.logger.debug("=" * 30)
         self.logger.debug(f"{section_name} START")
         self.logger.debug("=" * 30)
 
-    def _end_log_section(self, section_name):
-        self.logger.debug("=" * 30)
+    def _debug_section_lv2(self, section_name):
+        self.logger.debug("")
+        self.logger.debug(">" * 3 + f"{section_name} SUB-SECTION START")
         self.logger.debug(f"{section_name} END")
-        self.logger.debug("=" * 30)
-        self.logger.debug("\n")
+
+    def _info_section_lv1(self, section_name):
+        self.logger.info("")
+        self.logger.info("=" * 30)
+        self.logger.info(f"{section_name} START")
+        self.logger.info("=" * 30)
+
+    def _info_section_lv2(self, section_name):
+        self.logger.info("")
+        self.logger.info(">" * 3 + f"{section_name} SUB-SECTION START")
+        self.logger.info(f"{section_name} END")
 
     def _reconfigure_logger(self, debug='critical', debug_file=None):
         self.debug = debug.lower()
@@ -74,8 +99,10 @@ def cpd_logger(cls):
 
     cls.__init__ = new_init
     cls.configure_logger = configure_logger
-    cls._log_section = _log_section
-    cls._end_log_section = _end_log_section
+    cls._debug_section_lv1 = _debug_section_lv1
+    cls._debug_section_lv2 = _debug_section_lv2
+    cls._info_section_lv1 = _info_section_lv1
+    cls._info_section_lv2 = _info_section_lv2
     cls._reconfigure_logger = _reconfigure_logger
 
     return cls

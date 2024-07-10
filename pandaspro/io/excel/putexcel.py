@@ -176,7 +176,8 @@ class PutxlSet:
         if debug or debug_file:
             self.reconfigure_logger(debug=debug or self.debug, debug_file=debug_file or self.debug_file)
 
-        self.logger.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        self.logger.debug(">>>> LOG ACTIVATED - DEBUG <<<<")
+        self.logger.info(">>>> LOG ACTIVATED - INFO <<<<")
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
         if hasattr(content, 'df'):
@@ -210,16 +211,16 @@ class PutxlSet:
             original_index = self.ws.index
             original_name = self.ws.name
             total_count = self.wb.sheets.count
-            if debug:
-                print(f">>> Row 121: original index is {original_index}")
+            self.debug_section_lv1("SECTION: sheetreplace or replace_type")
+            self.logger.debug(f"In the workbook, total sheets number is **{total_count}**, while original index is **{original_index}**")
+
             if original_index == total_count:
                 new_sheet = self.wb.sheets.add(after=self.wb.sheets[_sheetmap[original_index]])
-                if debug:
-                    print(f">>> Row 128: New sheet added after the sheet !'{_sheetmap[original_index]}'")
+                self.logger.debug(f"Sheet [is] the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
             else:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
-                if debug:
-                    print(f">>> Row 132: New sheet added before the sheet !'{_sheetmap[original_index + 1]}'")
+                self.logger.debug(f"Sheet [is not] the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
+
             self.ws.delete()
             new_sheet.name = original_name
             self.ws = new_sheet
