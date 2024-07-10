@@ -192,8 +192,8 @@ class PutxlSet:
             header = content.header_bool
             content = content.content
 
-        # If content's columns is iterable
-        if isinstance(content.columns, Iterable):
+        # If content's columns is reachable
+        if hasattr(content, 'columns'):
             for col in content.columns:
                 content[col] = content[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
 
@@ -270,12 +270,9 @@ class PutxlSet:
                 debug=debug
             )
             self.io = io
-            if io.content is not None:
-                self.ws.range(io.start_cell).value = io.content
-                self.curr_cell = CellPro(io.start_cell).offset(1, 0).cell
-            else:
-                if debug:
-                    print(f'Only changing {io.start_cell} format, not value')
+            self.ws.range(io.start_cell).value = io.content
+            self.curr_cell = CellPro(io.start_cell).offset(1, 0).cell
+
         else:
             if cell is None:
                 raise ValueError('Must provide a valid cell to export the frame object')
@@ -680,7 +677,7 @@ class PutxlSet:
             The name of the sheet to switch to or create.
         sheetreplace: bool
             If true, replace the content in the sheet
-        debug: 
+        debug:
             For developers
         """
         current_sheets = [sheet.name for sheet in self.wb.sheets]
