@@ -5,69 +5,77 @@ from pandaspro.io.excel._utils import CellPro, index_cell
 import pandas as pd
 
 
+class CellxlWriter:
+    def __init__(
+            self,
+            cell: str = None,
+    ) -> None:
+        self.iotype = 'cell'
+        self.range_cell = cell
+
+
 class StringxlWriter:
     def __init__(
             self,
-            content: str = None,
+            text: str = None,
             cell: str = None,
     ) -> None:
-        self.iotype = 'str'
-        self.content = content
-        self.start_cell = cell
+        self.iotype = 'text'
+        self.content = text
         self.range_cell = cell
 
 
 class FramexlWriter:
     def __init__(
             self,
-            content,
+            frame,
             cell: str,
             index: bool = False,
             header: bool = True,
     ) -> None:
         cellobj = CellPro(cell)
-        header_row_count = len(content.columns.levels) if isinstance(content.columns, pd.MultiIndex) else 1
-        index_column_count = len(content.index.levels) if isinstance(content.index, pd.MultiIndex) else 1
+        header_row_count = len(frame.columns.levels) if isinstance(frame.columns, pd.MultiIndex) else 1
+        index_column_count = len(frame.index.levels) if isinstance(frame.index, pd.MultiIndex) else 1
 
         # Calculate the Ranges
-        self.rawdata = content
-        content = pd.DataFrame(content)
+        self.rawdata = frame
+        frame = pd.DataFrame(frame)
         if header == True and index == True:
             self.export_type = 'htit'
-            tr, tc = content.shape[0] + header_row_count, content.shape[1] + index_column_count
+            tr, tc = frame.shape[0] + header_row_count, frame.shape[1] + index_column_count
             xl_header_count, xl_index_count = header_row_count, index_column_count
-            export_data = content
+            export_data = frame
             range_index = cellobj.offset(header_row_count, 0).resize(tr - header_row_count, index_column_count)
             range_indexnames = cellobj.resize(header_row_count, header_row_count)
             range_header = cellobj.offset(0, index_column_count).resize(header_row_count, tc - index_column_count)
         elif header == False and index == True:
             self.export_type = 'hfit'
-            tr, tc = content.shape[0], content.shape[1] + index_column_count
+            tr, tc = frame.shape[0], frame.shape[1] + index_column_count
             xl_header_count, xl_index_count = 0, index_column_count
-            export_data = content.reset_index().to_numpy().tolist()
+            export_data = frame.reset_index().to_numpy().tolist()
             range_index = cellobj.resize(tr, index_column_count)
             header_row_count = 0
             range_indexnames = 'N/A'
             range_header = 'N/A'
         elif header == False and index == False:
             self.export_type = 'hfif'
-            tr, tc = content.shape[0], content.shape[1]
+            tr, tc = frame.shape[0], frame.shape[1]
             xl_header_count, xl_index_count = 0, 0
-            export_data = content.to_numpy().tolist()
+            export_data = frame.to_numpy().tolist()
             header_row_count = 0
             range_index = 'N/A'
             range_indexnames = 'N/A'
             range_header = 'N/A'
         else:
             self.export_type = 'htif'
-            tr, tc = content.shape[0] + header_row_count, content.shape[1]
+            tr, tc = frame.shape[0] + header_row_count, frame.shape[1]
             xl_header_count, xl_index_count = header_row_count, 0
-            if isinstance(content.columns, pd.MultiIndex):
-                column_export = [list(lst) for lst in list(zip(*content.columns.values))]
+            if isinstance(frame.columns, pd.MultiIndex):
+                column_export = [list(lst) for lst in list(zip(*frame.columns.values))]
             else:
-                column_export = [content.columns.to_list()]
+                column_export = [frame.columns.to_list()]
             # noinspection PyTypeChecker
-            export_data = column_export + content.to_numpy().tolist()
+            export_data = column_export + frame.to_numpy().tolist()
             range_index = 'N/A'
             range_indexnames = 'N/A'
             range_header = cellobj.resize(header_row_count, tc)

@@ -2,9 +2,11 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 import os
+
+import pandas
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
-from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
+from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
 from pandaspro.io.excel._utils import cell_range_combine, CellPro
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
 from pandaspro.utils.cpd_logger import cpd_logger
@@ -128,7 +130,7 @@ class PutxlSet:
             self,
             content = None,
             sheet_name: str = None,
-            cell: str = None,
+            cell: str = 'A1',
             index: bool = True,
             header: bool = True,
             replace: str = None,
@@ -169,6 +171,7 @@ class PutxlSet:
             cd_style: str | list = None,
             cd_format: list | dict = None,
             config: dict = None,
+            mode: str = None,
             debug: str | bool = 'critical',
             debug_file: str | bool = None,
     ) -> None:
@@ -221,10 +224,10 @@ class PutxlSet:
 
             if original_index == total_count:
                 new_sheet = self.wb.sheets.add(after=self.wb.sheets[_sheetmap[original_index]])
-                self.logger.info(f"Sheet [is] the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
+                self.logger.info(f"Sheet <is> the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
             else:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
-                self.logger.info(f"Sheet [is not] the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
+                self.logger.info(f"Sheet <is not> the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
 
             self.ws.delete()
             new_sheet.name = original_name
@@ -232,22 +235,21 @@ class PutxlSet:
 
         # Declare IO Object
         ################################
-        self.info_section_lv1("SECTION: IO object declaration")
-        if content is None:
-            pass
+        self.info_section_lv1("SECTION: content (i.e. IO object) declaration")
+        if isinstance(content, str):
+            self.logger.info(f"Validation 1: **{content}** is passed as a valid str type object")
+            self.logger.info(f"Validation 2: **{content}** value will lead to [CellPro(content).valid] taking the value of **{CellPro(content).valid}**")
 
-        elif isinstance(content, str):
-            self.logger.info(f"Validation 1: **{content}** is a valid str type object")
-            self.logger.info(f"Validation 2: **{content}** results in CellPro(content).valid being **{CellPro(content).valid}**")
-            if CellPro(content).valid and cell is None:
-                io = StringxlWriter(cell=content)
-                self.logger.info(f"Passed [Cell]: updating **{content}** format")
+            if CellPro(content).valid and mode != 'text':
+                io = CellxlWriter(cell=content)
+                self.logger.info(f"Passed <Cell>: updating **{content}** format")
+
             else:
-                io = StringxlWriter(content=content, cell=cell)
+                io = StringxlWriter(text=content, cell=cell)
                 # Note: start_cell is named intentional to be consistent with DF mode and may refer to a cell range
-                self.logger.info(f"Passed [Text]: filling **{io.content}** into **{io.start_cell}** format")
-                print('The entry validation condition booleans: ', CellPro(content).valid, cell)
-            RangeOperator(self.ws.range(io.start_cell)).format(
+                self.logger.info(f"Passed <Text>: filling **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
+
+            RangeOperator(self.ws.range(io.range_cell)).format(
                 width=width,
                 height=height,
                 font=font,
@@ -273,17 +275,17 @@ class PutxlSet:
                 debug=debug
             )
             self.io = io
+            self.ws.range(io.range_cell).value = io.content
+            self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
+
+        elif isinstance(content, pandas.DataFrame):
+            io = FramexlWriter(frame=content, cell=cell, index=index, header=header)
             self.ws.range(io.start_cell).value = io.content
-            self.curr_cell = CellPro(io.start_cell).offset(1, 0).cell
+            self.io = io
+            self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
 
         else:
-            if cell is None:
-                raise ValueError('Must provide a valid cell to export the frame object')
-            else:
-                io = FramexlWriter(content=content, cell=cell, index=index, header=header)
-                self.ws.range(io.start_cell).value = io.content
-                self.io = io
-                self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
+            raise ValueError('Invalid type for parameter [content] is passed, only takes either str (for cell/text to fill in) or dataframe-like objects.')
 
         # Format the sheet (Shelley, Li)
         ################################
@@ -656,18 +658,18 @@ class PutxlSet:
 
         # Print Export Success Message to Console ...
         ################################
-        if not isinstance(content, str):
-            name = self.wb.name
-            if len(name) > 24:
-                name = name.replace('.xlsx', '')[0:20] + ' (...) .xlsx'
-            print(f"Frame with size {content.shape} successfully exported to <<{name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+        export_notice_name = self.wb.name
+        export_notice_name = export_notice_name.replace('.xlsx', '')[0:35] + ' (...) .xlsx' if len(export_notice_name) > 36 else export_notice_name
 
-        if io.iotype == 'df' and debug:
-            print(f"\n>>> Cell Range Analysis")
-            print(f" ----------------------")
-            print(f">>> Total row: {io.tr}, Total column: {io.tc}")
-            print(
-                f">>> Range index: {io.range_index}, Range header: {io.range_header}, Range index names: {io.range_indexnames}\n")
+        if isinstance(content, str):
+            if CellPro(content).valid and mode != 'text':
+                print(f"Cell range {content} successfully updated in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> with declared format")
+            else:
+                print(f"Text {content} successfully filled in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> in cell {cell}")
+
+        elif isinstance(content, pandas.DataFrame):
+            print(f"Frame with size {content.shape} successfully exported to <<{export_notice_name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+        # for else, an error should already been thrown in the previous content/io declaration stage
 
     def tab(self, sheet_name: str, sheetreplace: bool = False, debug: bool = False) -> None:
         """
