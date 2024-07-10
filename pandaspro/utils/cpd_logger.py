@@ -11,9 +11,11 @@ def cpd_logger(cls):
         BOLD = "\033[1m"
         ITALIC = "\033[3m"
         UNDERLINE = "\033[4m"
-        RED = "\033[31m"
-        BLUE = "\033[34m"
-        YELLOW = "\033[93m"
+        FG_RED = "\033[31m"
+        FG_BLUE = "\033[34m"
+        FG_WHITE = "\033[37m"
+        BG_DARKRED = "\033[41m"
+        YELLOW = "\033[103m"
 
         def format(self, record):
             msg = record.msg
@@ -21,7 +23,7 @@ def cpd_logger(cls):
                 return "\n"
 
             # Apply bold and red formatting to text enclosed in **
-            msg = re.sub(r"\*\*(.*?)\*\*", f"{self.BOLD}{self.ITALIC}{self.UNDERLINE}{self.YELLOW}\\1{self.RESET}", msg)
+            msg = re.sub(r"\*\*(.*?)\*\*", f"{self.BOLD}{self.ITALIC}{self.UNDERLINE}{self.FG_WHITE}{self.BG_DARKRED}\\1{self.RESET}", msg)
             record.msg = msg
 
             return super().format(record)
