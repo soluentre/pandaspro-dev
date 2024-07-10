@@ -233,7 +233,10 @@ class PutxlSet:
         # Declare IO Object
         ################################
         self.info_section_lv1("SECTION: IO object declaration")
-        if isinstance(content, str):
+        if content is None:
+            pass
+
+        elif isinstance(content, str):
             self.logger.info(f"Validation 1: **{content}** is a valid str type object")
             self.logger.info(f"Validation 2: **{content}** results in CellPro(content).valid being **{CellPro(content).valid}**")
             if CellPro(content).valid and cell is None:
