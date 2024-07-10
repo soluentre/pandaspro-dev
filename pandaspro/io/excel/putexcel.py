@@ -1,4 +1,5 @@
 import re
+import textwrap
 from collections.abc import Iterable
 from pathlib import Path
 import os
@@ -172,14 +173,21 @@ class PutxlSet:
             cd_format: list | dict = None,
             config: dict = None,
             mode: str = None,
+            log: bool = False,
             debug: str | bool = 'critical',
             debug_file: str | bool = None,
     ) -> None:
         if debug or debug_file:
             self.reconfigure_logger(debug=debug or self.debug, debug_file=debug_file or self.debug_file)
 
-        self.logger.debug(">>>> LOG ACTIVATED - DEBUG <<<<")
-        self.logger.info(">>>> LOG ACTIVATED - INFO <<<<")
+        self.logger.info(">" * 30)
+        self.logger.info(">>>>>>> LOG FOR PUTXL  <<<<<<<")
+        self.logger.info(">" * 30)
+        self.logger.info(f">>>> CONTENT: {content}")
+        self.logger.info(f">>>> SHEET_NAME: {sheet_name}")
+        self.logger.info(f">>>> CELL: {cell}")
+        self.logger.info(">>>> LOG ACTIVATED - INFO LEVEL")
+        self.logger.debug(">>>> LOG ACTIVATED - DEBUG LEVEL")
 
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
@@ -332,17 +340,22 @@ class PutxlSet:
                 index_columns = match.group(3)
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
                 self.info_section_lv2("Sub-section: _index as suffix for design argument")
-                self.logger.info(f"Recognized **{design}**, with style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
+                self.logger.info(f"Recognized **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
             else:
                 design_style = local_design[design]['style']
-                self.logger.info(f"Recognized **{design}**, with style of **{design_style}**")
+                self.logger.info(f"Recognized **{design}**, with extra df_style of **{design_style}**")
 
             design_config = local_design[design]['config']
-            self.logger.info(f"Recognized **{design}**, with config of **{design_config}**")
+            design_config_shorten_version = {key: design_config[key] for key in list(design_config.keys())[:3]}
+            self.logger.info(f"Recognized **{design}**, with extra config of **{design_config_shorten_version}**")
+            self.logger.debug(f"Full-length design_config is **{design_config}**")
 
             design_cd = local_design[design]['cd']
-            self.logger.info(f"Recognized **{design}**, with style of **{design_cd}**")
+            self.logger.info(f"Recognized **{design}**, with extra style of **{design_cd}**")
 
+            message_warning_design = "Note that the design will not override, but instead added to the df_style, cd_style and config arguments you passed. And it will take effect before df_style, cd_style, ... which further means it could be overwritten by customized claimed arguments"
+            wrapped_message = textwrap.fill(message_warning_design, width=40)
+            self.logger.info(message_warning_design)
             if df_style:
                 df_style = ";".join([design_style, df_style])
             else:
@@ -725,7 +738,7 @@ if __name__ == '__main__':
     debuglevel = 'info'
     r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
     ps = cpd.PutxlSet('delete_impact_table.xlsx')
-    ps.putxl(cell='A4', font_size=12, bold=True, sheetreplace=True, debug=debuglevel)
+    ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True, debug=debuglevel)
     ps.putxl(
         r.table_region('AFW'),
         cell='A5', index=False,
