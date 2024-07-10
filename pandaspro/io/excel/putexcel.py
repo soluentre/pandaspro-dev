@@ -1,4 +1,6 @@
+import logging
 import re
+from datetime import datetime
 from pathlib import Path
 import os
 import xlwings as xw
@@ -6,6 +8,7 @@ from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl
 from pandaspro.io.excel._utils import cell_range_combine, CellPro
 from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
+from pandaspro.utils.cpd_logger import cpd_logger
 
 
 def is_range_filled(ws, range_str: str = None):
@@ -26,13 +29,14 @@ def is_sheet_empty(sheet):
     return False
 
 
+@cpd_logger
 class PutxlSet:
     def __init__(
             self,
             workbook: str,
             sheet_name: str = None,
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
-            noisily: bool = None
+            noisily: bool = None,
     ):
         def _extract_filename_from_path(path):
             return Path(path).name
@@ -166,8 +170,13 @@ class PutxlSet:
             cd_style: str | list = None,
             cd_format: list | dict = None,
             config: dict = None,
-            debug: bool = False,
+            debug: str | bool = 'critical',
+            debug_file: str | bool = None,
     ) -> None:
+        if debug or debug_file:
+            self.reconfigure_logger(debug=debug or self.debug, debug_file=debug_file or self.debug_file)
+
+        self.logger.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
         if hasattr(content, 'df'):
