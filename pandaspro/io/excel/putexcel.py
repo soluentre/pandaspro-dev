@@ -128,7 +128,7 @@ class PutxlSet:
 
     def putxl(
             self,
-            content = None,
+            content,
             sheet_name: str = None,
             cell: str = 'A1',
             index: bool = True,
@@ -285,7 +285,7 @@ class PutxlSet:
             self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
 
         else:
-            raise ValueError('Invalid type for parameter [content] is passed, only takes either str (for cell/text to fill in) or dataframe-like objects.')
+            raise ValueError(f'Invalid type for parameter [content] as {type(content)} is passed, only takes either str (for cell/text to fill in) or dataframe-like objects.')
 
         # Format the sheet (Shelley, Li)
         ################################
