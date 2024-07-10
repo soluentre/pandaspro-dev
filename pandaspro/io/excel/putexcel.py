@@ -302,22 +302,25 @@ class PutxlSet:
             }
             for direction in list(match_dict.keys()):
                 if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'],
-                                                                           debug=debug)
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'], debug=debug)
 
         if tab_color:
+            self.info_section_lv1("SECTION: tab_color")
             paint_tab = color_to_int(tab_color)
-            if debug:
-                print('tab_color setting:', paint_tab)
+            self.logger.info(f"Setting sheet <{self.ws.name}> tab color to **{tab_color}**, the value was transformed into int **{paint_tab}**")
             self.ws.api.Tab.Color = paint_tab
 
         if design:
+            self.info_section_lv1("SECTION: design")
+            self.logger.info("The design argument passed with look up values from the dictionary in excel_table_mydesign.py file in the pandaspro package. Both pre-defined style and cd rules can be passed through 1 design")
+            self.logger.info("A str is expected to be used as the lookup key")
+
             '''
+            SPECIAL DESIGN: _index as suffix for design arguemnt:
+            -----------------------------------------------------------
             For index_merge, add the _index to the selected design like: wbblue_index(indexname, columnnames)
             This will add index_merge(level=..., columns=...) to the style keys
-            
-            design = style + cd
-            
+
             For example
             >>> wbblue_index(PGs) === index_merge(level=PGs)
             '''
@@ -328,18 +331,17 @@ class PutxlSet:
                 index_key = match.group(2)
                 index_columns = match.group(3)
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
-                if debug:
-                    print("================================================")
-                    print("design")
-                    print(design, index_key, index_columns)
+                self.info_section_lv2("Sub-section: _index as suffix for design argument")
+                self.logger.info(f"Recognized **{design}**, with style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
             else:
                 design_style = local_design[design]['style']
-
-            if debug:
-                print("Using advanced style: ", design_style)
+                self.logger.info(f"Recognized **{design}**, with style of **{design_style}**")
 
             design_config = local_design[design]['config']
+            self.logger.info(f"Recognized **{design}**, with config of **{design_config}**")
+
             design_cd = local_design[design]['cd']
+            self.logger.info(f"Recognized **{design}**, with style of **{design_cd}**")
 
             if df_style:
                 df_style = ";".join([design_style, df_style])
