@@ -247,17 +247,17 @@ class PutxlSet:
         ################################
         self.info_section_lv1("SECTION: content (i.e. IO object) declaration")
         if isinstance(content, str):
-            self.logger.info(f"Validation 1: **{content}** is passed as a valid str type object")
-            self.logger.info(f"Validation 2: **{content}** value will lead to [CellPro(content).valid] taking the value of **{CellPro(content).valid}**")
+            self.logger.info(f"Validation 1: [content] **{content}** is passed as a valid str type object")
+            self.logger.info(f"Validation 2: [content] **{content}** value will lead to [CellPro(content).valid] taking the value of **{CellPro(content).valid}**")
 
             if CellPro(content).valid and mode != 'text':
                 io = CellxlWriter(cell=content)
-                self.logger.info(f"Passed <Cell>: updating **{content}** format")
+                self.logger.info(f"Passed <Cell>: updating sheet <{self.ws.name}> [content] **{content}** format")
 
             else:
                 io = StringxlWriter(text=content, cell=cell)
                 # Note: start_cell is named intentional to be consistent with DF mode and may refer to a cell range
-                self.logger.info(f"Passed <Text>: filling **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
+                self.logger.info(f"Passed <Text>: filling in sheet <{self.ws.name}> [content] **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
 
             RangeOperator(self.ws.range(io.range_cell)).format(
                 width=width,
@@ -289,7 +289,9 @@ class PutxlSet:
             self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
 
         elif isinstance(content, pandas.DataFrame):
+            self.logger.info(f"Validation: [content] type of **{type(content)}** object is passed")
             io = FramexlWriter(frame=content, cell=cell, index=index, header=header)
+            self.logger.info(f"Passed <Frame>: exporting to sheet <{self.ws.name}> [content] frame with size of **{str(content.shape)}** into **{io.start_cell}** plus any other format settings ... ")
             self.ws.range(io.start_cell).value = io.content
             self.io = io
             self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
@@ -322,7 +324,8 @@ class PutxlSet:
 
         if design:
             self.info_section_lv1("SECTION: design")
-            self.logger.info("The design argument passed with look up values from the dictionary in excel_table_mydesign.py file in the pandaspro package. Both pre-defined style and cd rules can be passed through 1 design")
+            message_init_design = "The design argument passed with look up values from the dictionary in excel_table_mydesign.py file in the pandaspro package. Both pre-defined style and cd rules can be passed through 1 design"
+            self.logger.info(message_init_design)
             self.logger.info("A str is expected to be used as the lookup key")
 
             '''
@@ -342,22 +345,21 @@ class PutxlSet:
                 index_columns = match.group(3)
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
                 self.info_section_lv2("Sub-section: _index as suffix for design argument")
-                self.logger.info(f"Recognized **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
+                self.logger.info(f"Recognized [design] of **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
             else:
                 design_style = local_design[design]['style']
-                self.logger.info(f"Recognized **{design}**, with extra df_style of **{design_style}**")
+                self.logger.info(f"Recognized [design] of **{design}**, with extra df_style of **{design_style}**")
 
             design_config = local_design[design]['config']
             design_config_shorten_version = {key: design_config[key] for key in list(design_config.keys())[:3]}
-            self.logger.info(f"Recognized **{design}**, with extra config of **{design_config_shorten_version}**")
+            self.logger.info(f"Recognized [design] of **{design}**, with extra config of (shortened, use debug level to view all) **{design_config_shorten_version}**")
             self.logger.debug(f"Full-length design_config is **{design_config}**")
 
             design_cd = local_design[design]['cd']
-            self.logger.info(f"Recognized **{design}**, with extra style of **{design_cd}**")
+            self.logger.info(f"Recognized [design] of **{design}**, with extra style of **{design_cd}**")
 
             message_warning_design = "Note that the design will not override, but instead added to the df_style, cd_style and config arguments you passed. And it will take effect before df_style, cd_style, ... which further means it could be overwritten by customized claimed arguments"
-            wrapped_message = textwrap.fill(message_warning_design, width=120)
-            self.logger.info(wrapped_message)
+            self.logger.info(message_warning_design)
             if df_style:
                 df_style = ";".join([design_style, df_style])
             else:
@@ -391,17 +393,15 @@ class PutxlSet:
         '''
         if config:
             self.info_section_lv1("SECTION: config")
-            self.logger.info(f"Config is taking the value of **{config}**")
+            self.logger.info(f"[config] is taking the value of a dictionary with length of **{len(config)}**, view details in debug level")
+            self.logger.debug(f"Passed [config] argument value: **{config}**")
             for name, setting in config.items():
-                format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                self.logger.debug(f"Adjusting [{name}]: from config file read format setting: **{format_update}**")
+                self.debug_section_lv2(f"{name}")
                 if name in io.columns_with_indexnames:
-                    if debug:
-                        print(self.ws.range(io.range_columns(name, header=True)))
-                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(
-                        **format_update,
-                        debug=debug
-                    )
+                    format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
+                    self.logger.debug(f"Adjusting [{name}]: 01 - from config file read format setting: **{format_update}**")
+                    self.logger.debug(f"Adjust [{name}]: 02 - range is analyzed as: **{self.ws.range(io.range_columns(name, header=True))}**")
+                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(**format_update, debug=debug)
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
@@ -416,12 +416,11 @@ class PutxlSet:
         Example: {'level': 'cmu_dept', 'columns': '*Total'}
         '''
         if index_merge:
-            if debug:
-                print("================================================")
-                print(index_merge)
+            self.info_section_lv1("SECTION: index_merge")
+            self.logger.info(f"[index_merge] is taking the value of **{index_merge}**")
+            self.logger.info(f"Parsing into ...")
             for key, local_range in io.range_index_merge_inputs(**index_merge).items():
-                if debug:
-                    print(key, local_range)
+                self.logger.info(f"key: {key}, local_range: {local_range}")
                 RangeOperator(self.ws.range(local_range)).format(merge=True, wrap=True, debug=debug)
 
         if header_wrap:
@@ -505,6 +504,7 @@ class PutxlSet:
         use style_sheets command to view pre-defined formats
         '''
         if df_style:
+            self.info_section_lv1("SECTION: df_style")
             from pandaspro.user_config.style_sheets import style_sheets
 
             # First parse string to lists
@@ -514,8 +514,10 @@ class PutxlSet:
                 loop_list = df_style
             else:
                 raise ValueError('Invalid object for style parameter, only str or list accepted')
+            self.logger.info(f"[df_style] argument is automatically parsed into a loop_list: **{loop_list}**")
 
-            # Reorder the items in loop
+            # Reorder the items in loop: first do the others, then come to index_merge (merge after fill color, etc.)
+            # Allow to pass str like df_style = "index_merge(..., ...)"
             checked_dict = {}
             for element in loop_list:
                 if element in style_sheets:
@@ -532,6 +534,9 @@ class PutxlSet:
 
             # Loop and apply style by checking the style py module
             for each_style in checked_list:
+                self.info_section_lv2(f"Sub-section: {each_style}")
+                self.logger.info(f"Validation of index_merge: **{each_style}** vs. index_merge\(([^,]+),?\s*(.*)\)")
+                self.logger.info(f"Validation result: **{match}**")
                 match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_style)
                 if match:
                     index_name = match.group(1)
@@ -541,6 +546,7 @@ class PutxlSet:
                     style_sheets['index_merge']['merge'] = style_sheets['index_merge']['merge'].replace(
                         '__index__', index_name).replace('__columns__', columns)
                     apply_style = style_sheets['index_merge']
+                    self.logger.info()
                 else:
                     apply_style = style_sheets[each_style]
 
