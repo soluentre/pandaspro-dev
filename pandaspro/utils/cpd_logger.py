@@ -98,7 +98,7 @@ def cpd_logger(cls):
 
     def _info_section_lv2(self, section_name):
         self.logger.info("")
-        self.logger.info(">" * 10)
+        self.logger.info(">" * 20)
         self.logger.info(f"{section_name}")
 
     def _reconfigure_logger(self, debug='critical', debug_file=None):

@@ -431,50 +431,56 @@ class PutxlSet:
             for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
-                self.logger.info(f"## Going into the [apply_style] dictionary: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
+                self.logger.info("")
+                self.logger.info(f"## Viewing [apply_style]: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"## (1) Parsing the key [rule]")
-                self.logger.info(f"Method parse_format_rule is called ...")
+                self.logger.debug(f"Method parse_format_rule is called ...")
                 format_kwargs = parse_format_rule(rule)
                 self.logger.info(f"Parsed result: [format_kwargs] = **{format_kwargs}**")
 
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
+                    self.logger.debug("_declare_ranges can detail with: str/list/cpdFramexl objects")
                     if isinstance(local_input, str):
                         parsedlist = [local_input]
-                        if debug:
-                            print(parsedlist)
                         cpdframexl_dict = None
+                        self.logger.debug(f"<str> local_input **{local_input}** detected")
+
                     elif isinstance(local_input, list):
                         parsedlist = local_input
                         cpdframexl_dict = None
+                        self.logger.debug(f"<list> local_input **{local_input}** detected")
+
                     elif isinstance(local_input, cpdFramexl):
                         parsedlist = None
                         cpdframexl_dict = getattr(io, 'range' + local_input.name)(**local_input.paras)
+                        self.logger.debug(f"<cpdFramexl> local_input **{local_input}** detected")
+                        self.logger.debug(f"[local_input] as cpdFramexl: local_input.name = **{local_input.name}**")
+                        self.logger.debug(f"[local_input] as cpdFramexl: local_input.paras = **{local_input.paras}**")
+
                     else:
                         raise ValueError('Unsupported type in df_format dictionary values')
+
                     return parsedlist, cpdframexl_dict
 
                 self.logger.info(f"## (2) Parsing the value [rangeinput]")
-                self.logger.info(f"Method _declare_ranges is called ...")
+                self.logger.debug(f"Method _declare_ranges is called ...")
                 ioranges, dict_from_cpdframexl = _declare_ranges(rangeinput)
                 self.logger.info(f"Parsed 1st result: [ioranges] = **{ioranges}**")
                 self.logger.info(f"Parsed 2nd result: [dict_from_cpdframexl] = **{dict_from_cpdframexl}**")
 
-                if debug:
-                    print("------------------------------")
-                    print("ioranges and dict")
-                    print(ioranges)
-                    print(dict_from_cpdframexl)
-
                 if ioranges:
+                    self.logger.info("")
+                    self.logger.info(f"In total there are **{len(ioranges)}** ranges to be parsed")
+                    i = 0
                     for each_range in ioranges:
-                        if debug:
-                            print(">>>>>>>>")
-                            print("IO Ranges - Each Range", each_range, type(each_range))
+                        self.logger.info(f"\t({i+1}) [each_range] = **{each_range}**")
                         # Parse the input string as method name + kwargs
+                        self.logger.debug(f"\tMethod parse_method is called ...")
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
-                        if debug:
-                            print("Parsing the methods:", range_affix, method_kwargs)
+                        self.logger.info(f"\tParsed 1st result: [range_affix] = **{range_affix}**")
+                        self.logger.info(f"\tParsed 2nd result: [method_kwargs] = **{method_kwargs}**")
+
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
                             range_cells = attr_method(**method_kwargs)
@@ -538,9 +544,9 @@ class PutxlSet:
             # Loop and apply style by checking the style py module
             for each_style in checked_list:
                 self.info_section_lv2(f"Sub-section: {each_style}")
-                self.logger.info(f"Validation of index_merge: **{each_style}** vs. index_merge\(([^,]+),?\s*(.*)\)")
-                self.logger.info(f"Validation result: **{match}**")
+                self.logger.debug(f"Validation of index_merge: **{each_style}** vs. index_merge\(([^,]+),?\s*(.*)\)")
                 match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_style)
+                self.logger.debug(f"Validation result: **{match}**")
                 if match:
                     index_name = match.group(1)
                     columns = match.group(2) if match.group(2) != '' else 'None'
