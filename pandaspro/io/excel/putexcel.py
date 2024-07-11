@@ -431,10 +431,10 @@ class PutxlSet:
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"## Number {i+1} Formatting")
-                self.logger.info(f"#" * 2 + '-' * 30)
-                self.logger.info(f"## Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
-                self.logger.info(f"## (1) Parsing the key [rule]")
+                self.logger.info(f"# Number {i+1} Formatting")
+                self.logger.info(f"#" * 1 + ' ' + '-' * 45)
+                self.logger.info(f"Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
+                self.logger.info(f"(1) Parsing the key [rule]")
                 self.logger.debug(f"Method parse_format_rule is called ...")
                 format_kwargs = parse_format_rule(rule)
                 self.logger.info(f"Parsed result: [format_kwargs] = **{format_kwargs}**")
@@ -464,7 +464,7 @@ class PutxlSet:
 
                     return parsedlist, cpdframexl_dict
 
-                self.logger.info(f"## (2) Parsing the value [rangeinput]")
+                self.logger.info(f"(2) Parsing the value [rangeinput]")
                 self.logger.debug(f"Method _declare_ranges is called ...")
                 ioranges, dict_from_cpdframexl = _declare_ranges(rangeinput)
                 self.logger.info(f"Parsed 1st result: [ioranges] = **{ioranges}**")
@@ -501,7 +501,7 @@ class PutxlSet:
                         else:
                             raise ValueError('Invalid Parsed Range Cells from [range_affix] and [method_kwargs]: check <attr_method>')
                         j += 1
-                    self.logger.info(f"\t[ioranges] - end")
+                    self.logger.info(f"\t[ioranges] - END")
 
                 if dict_from_cpdframexl:
                     self.logger.info("")
@@ -511,7 +511,7 @@ class PutxlSet:
                         self.logger.info(f"\t{k + 1}. [range_content] = **{range_content}**")
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         k += 1
-                    self.logger.info(f"\t[dict_from_cpdframexl] - end")
+                    self.logger.info(f"\t[dict_from_cpdframexl] - END")
 
                 i += 1
 
@@ -585,7 +585,7 @@ class PutxlSet:
         '''
         if df_format:
             self.info_section_lv1(f"df_format")
-            self.logger.info(f"A **{len(df_format)}** dictionary is passed to [df_format]")
+            self.logger.info(f"A length **{len(df_format)}** dictionary is passed to [df_format]")
             apply_df_format(df_format)
 
         # Conditional Format (1 column based)
@@ -763,7 +763,7 @@ class PutxlSet:
 if __name__ == '__main__':
     import wbhrdata as wb
     import pandaspro as cpd
-    debuglevel = 'debug'
+    debuglevel = 'info'
     r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
     ps = cpd.PutxlSet('delete_impact_table.xlsx')
     ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
