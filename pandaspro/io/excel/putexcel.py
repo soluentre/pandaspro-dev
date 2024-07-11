@@ -251,11 +251,15 @@ class PutxlSet:
             if CellPro(content).valid and mode != 'text':
                 io = CellxlWriter(cell=content)
                 self.logger.info(f"Passed <Cell>: updating sheet <{self.ws.name}> [content] **{content}** format")
+                self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
 
             else:
                 io = StringxlWriter(text=content, cell=cell)
                 # Note: start_cell is named intentional to be consistent with DF mode and may refer to a cell range
                 self.logger.info(f"Passed <Text>: filling in sheet <{self.ws.name}> [content] **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
+                self.io = io
+                self.ws.range(io.range_cell).value = io.content
+                self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
 
             RangeOperator(self.ws.range(io.range_cell)).format(
                 width=width,
@@ -282,9 +286,6 @@ class PutxlSet:
                 appendix=appendix,
                 debug=debug
             )
-            self.io = io
-            self.ws.range(io.range_cell).value = io.content
-            self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
 
         elif isinstance(content, pandas.DataFrame):
             self.logger.info(f"Validation: [content] type of **{type(content)}** object is passed")
