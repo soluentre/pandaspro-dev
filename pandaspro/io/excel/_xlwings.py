@@ -235,7 +235,6 @@ class RangeOperator:
             gridlines: bool = None,
             appendix: bool = False,
             debug: bool = False,
-            **kwargs
     ) -> None:
 
         if appendix:
@@ -448,8 +447,6 @@ class RangeOperator:
                 colorlist = find_border_color(border_para)
                 if len(colorlist) == 0:
                     colorlist = ['#000000']
-                if debug:
-                    print('Created lists from border para', sidelist, stylelist, weightlist, colorlist)
 
                 if any(len(lst) > 1 for lst in [sidelist, stylelist, weightlist, colorlist]):
                     raise ValueError(

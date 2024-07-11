@@ -81,17 +81,19 @@ def cpd_logger(cls):
 
     def _debug_section_lv1(self, section_name):
         self.logger.debug("")
+        self.logger.debug("")
         self.logger.debug("=" * 60)
         self.logger.debug(f"{section_name} START")
         self.logger.debug("=" * 60)
 
     def _debug_section_lv2(self, section_name):
         self.logger.debug("")
-        self.logger.debug(">" * 10)
+        self.logger.debug(">" * 20)
         self.logger.debug(f"{section_name}")
 
     def _info_section_lv1(self, section_name):
         self.logger.info("")
+        self.logger.debug("")
         self.logger.info("=" * 60)
         self.logger.info(f"{section_name} START")
         self.logger.info("=" * 60)

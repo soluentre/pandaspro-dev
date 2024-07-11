@@ -1,6 +1,4 @@
 import re
-import textwrap
-# import textwrap
 from pathlib import Path
 import os
 
@@ -396,8 +394,8 @@ class PutxlSet:
             self.logger.info(f"[config] is taking the value of a dictionary with length of **{len(config)}**, view details in debug level")
             self.logger.debug(f"Passed [config] argument value: **{config}**")
             for name, setting in config.items():
-                self.debug_section_lv2(f"{name}")
                 if name in io.columns_with_indexnames:
+                    self.debug_section_lv2(f"{name}")
                     format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
                     self.logger.debug(f"Adjusting [{name}]: 01 - from config file read format setting: **{format_update}**")
                     self.logger.debug(f"Adjust [{name}]: 02 - range is analyzed as: **{self.ws.range(io.range_columns(name, header=True))}**")
@@ -433,7 +431,8 @@ class PutxlSet:
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"## Number ({i}) Formatting")
+                self.logger.info(f"## Number {i+1} Formatting")
+                self.logger.info(f"#" * 2 + '-' * 30)
                 self.logger.info(f"## Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"## (1) Parsing the key [rule]")
                 self.logger.debug(f"Method parse_format_rule is called ...")
@@ -473,44 +472,46 @@ class PutxlSet:
 
                 if ioranges:
                     self.logger.info("")
-                    self.logger.info(f"[ioranges] - In total there are **{len(ioranges)}** ranges to be parsed")
+                    self.logger.info(f"\t[ioranges] - In total there are **{len(ioranges)}** ranges to be parsed")
                     j = 0
                     for each_range in ioranges:
-                        self.logger.info(f"\t({j+1}) [each_range] = **{each_range}**")
+                        self.logger.info(f"\t\t{j+1}. [each_range] = **{each_range}**")
                         # Parse the input string as method name + kwargs
-                        self.logger.debug(f"\tMethod parse_method is called ...")
+                        self.logger.debug(f"\t\tMethod parse_method is called ...")
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
-                        self.logger.info(f"\tParsed 1st result: [range_affix] = **{range_affix}**")
-                        self.logger.info(f"\tParsed 2nd result: [method_kwargs] = **{method_kwargs}**")
+                        self.logger.info(f"\t\tParsed 1st result: [range_affix] = **{range_affix}**")
+                        self.logger.info(f"\t\tParsed 2nd result: [method_kwargs] = **{method_kwargs}**")
 
                         attr_method = getattr(io, 'range_' + range_affix)
                         if callable(attr_method):
                             range_cells = attr_method(**method_kwargs)
                         else:
                             range_cells = attr_method
-                        self.logger.info(f"\tParsed [range_cells] from the two results above: [range_cells] = **{range_cells}**")
+                        self.logger.info(f"\t\tParsed [range_cells] from the two results above: [range_cells] = **{range_cells}**")
 
                         if isinstance(range_cells, dict):
-                            self.logger.info(f"\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
+                            self.logger.info(f"\t\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
                             for range_key, range_content in range_cells.items():
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str) and range_cells != '':
-                            self.logger.info(f"\t[range_cells] is str type, apply [format_kwargs] **{format_kwargs}**")
+                            self.logger.info(f"\t\t[range_cells] is str type, apply [format_kwargs] **{format_kwargs}**")
                             RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
                         elif range_cells == '':
-                            self.logger.info(f"\t[range_cells] is empty(''), no actions")
+                            self.logger.info(f"\t\t[range_cells] is empty(''), no actions")
                         else:
                             raise ValueError('Invalid Parsed Range Cells from [range_affix] and [method_kwargs]: check <attr_method>')
                         j += 1
+                    self.logger.info(f"\t[ioranges] - end")
 
                 if dict_from_cpdframexl:
                     self.logger.info("")
                     self.logger.info(f"[dict_from_cpdframexl] - With length of **{len(dict_from_cpdframexl)}**, formatting [range_content] in a loop")
                     k = 0
                     for range_key, range_content in dict_from_cpdframexl.items():
-                        self.logger.info(f"\t({k + 1}) [range_content] = **{range_content}**")
+                        self.logger.info(f"\t{k + 1}. [range_content] = **{range_content}**")
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         k += 1
+                    self.logger.info(f"\t[dict_from_cpdframexl] - end")
 
                 i += 1
 
@@ -583,6 +584,8 @@ class PutxlSet:
         NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''
         if df_format:
+            self.info_section_lv1(f"df_format")
+            self.logger.info(f"A **{len(df_format)}** dictionary is passed to [df_format]")
             apply_df_format(df_format)
 
         # Conditional Format (1 column based)
@@ -760,7 +763,7 @@ class PutxlSet:
 if __name__ == '__main__':
     import wbhrdata as wb
     import pandaspro as cpd
-    debuglevel = 'info'
+    debuglevel = 'debug'
     r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
     ps = cpd.PutxlSet('delete_impact_table.xlsx')
     ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
