@@ -87,8 +87,8 @@ def cpd_logger(cls):
 
     def _debug_section_lv2(self, section_name):
         self.logger.debug("")
-        self.logger.debug(">" * 3 + f"{section_name} SUB-SECTION START")
-        self.logger.debug(f"{section_name} END")
+        self.logger.debug(">" * 10)
+        self.logger.debug(f"{section_name}")
 
     def _info_section_lv1(self, section_name):
         self.logger.info("")
@@ -98,8 +98,8 @@ def cpd_logger(cls):
 
     def _info_section_lv2(self, section_name):
         self.logger.info("")
-        self.logger.info(">" * 3 + f"{section_name} SUB-SECTION START")
-        self.logger.info(f"{section_name} END")
+        self.logger.info(">" * 10)
+        self.logger.info(f"{section_name}")
 
     def _reconfigure_logger(self, debug='critical', debug_file=None):
         self.debug = debug.lower()
