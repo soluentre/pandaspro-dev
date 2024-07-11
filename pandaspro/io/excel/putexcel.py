@@ -428,11 +428,13 @@ class PutxlSet:
 
         # Format with defined rules using a Dictionary
         def apply_df_format(localinput_format):
+            i = 0
             for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"## Viewing [apply_style]: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
+                self.logger.info(f"## Number ({i}) Formatting")
+                self.logger.info(f"## Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"## (1) Parsing the key [rule]")
                 self.logger.debug(f"Method parse_format_rule is called ...")
                 format_kwargs = parse_format_rule(rule)
@@ -472,9 +474,9 @@ class PutxlSet:
                 if ioranges:
                     self.logger.info("")
                     self.logger.info(f"In total there are **{len(ioranges)}** ranges to be parsed")
-                    i = 0
+                    j = 0
                     for each_range in ioranges:
-                        self.logger.info(f"\t({i+1}) [each_range] = **{each_range}**")
+                        self.logger.info(f"\t({j+1}) [each_range] = **{each_range}**")
                         # Parse the input string as method name + kwargs
                         self.logger.debug(f"\tMethod parse_method is called ...")
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
@@ -486,11 +488,11 @@ class PutxlSet:
                             range_cells = attr_method(**method_kwargs)
                         else:
                             range_cells = attr_method
+                        self.logger.info(f"\tParsed [range_cells] from the two results above: [range_cells] = **{range_cells}**")
 
                         if isinstance(range_cells, dict):
+                            self.logger.info(f"\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
                             for range_key, range_content in range_cells.items():
-                                if debug:
-                                    print("d_format Dictionary Reading This Range", range_content, "as", f'"{range_affix}"')
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str) and range_cells != '':
                             if debug:
@@ -500,14 +502,14 @@ class PutxlSet:
                             print('Empty Range Cells: ', range_cells)
                         else:
                             print('Invalid Range Cells')
+                        j += 1
 
                 if dict_from_cpdframexl:
                     for range_key, range_content in dict_from_cpdframexl.items():
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
-            if debug:
-                print("")
-                print("--------- End of Apply Format ---------")
-                print("")
+
+                i += 1
+
         '''
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
