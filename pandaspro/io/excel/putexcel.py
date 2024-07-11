@@ -1,10 +1,11 @@
 import re
 import textwrap
-from collections.abc import Iterable
+# import textwrap
 from pathlib import Path
 import os
 
 import pandas
+import pandas as pd
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
@@ -173,21 +174,22 @@ class PutxlSet:
             cd_format: list | dict = None,
             config: dict = None,
             mode: str = None,
-            log: bool = False,
+            log: bool = True,
             debug: str | bool = 'critical',
             debug_file: str | bool = None,
     ) -> None:
         if debug or debug_file:
             self.reconfigure_logger(debug=debug or self.debug, debug_file=debug_file or self.debug_file)
 
+        self.logger.info("")
         self.logger.info(">" * 30)
         self.logger.info(">>>>>>> LOG FOR PUTXL  <<<<<<<")
         self.logger.info(">" * 30)
-        self.logger.info(f">>>> CONTENT: {content}")
-        self.logger.info(f">>>> SHEET_NAME: {sheet_name}")
-        self.logger.info(f">>>> CELL: {cell}")
-        self.logger.info(">>>> LOG ACTIVATED - INFO LEVEL")
-        self.logger.debug(">>>> LOG ACTIVATED - DEBUG LEVEL")
+        self.logger.info(f"> CONTENT: {content if isinstance(content, str) else 'DataFrame with Size of: ' + str(content.shape)}")
+        self.logger.info(f"> SHEET_NAME: {sheet_name}")
+        self.logger.info(f"> CELL: {cell}")
+        self.logger.info("> LOG ACTIVATED - INFO LEVEL")
+        self.logger.debug("> LOG ACTIVATED - DEBUG LEVEL")
 
         # Pre-Cleaning: (1) transfer FramePro to dataframe; (2) change tuple cells to str
         ################################
@@ -354,8 +356,8 @@ class PutxlSet:
             self.logger.info(f"Recognized **{design}**, with extra style of **{design_cd}**")
 
             message_warning_design = "Note that the design will not override, but instead added to the df_style, cd_style and config arguments you passed. And it will take effect before df_style, cd_style, ... which further means it could be overwritten by customized claimed arguments"
-            wrapped_message = textwrap.fill(message_warning_design, width=40)
-            self.logger.info(message_warning_design)
+            wrapped_message = textwrap.fill(message_warning_design, width=120)
+            self.logger.info(wrapped_message)
             if df_style:
                 df_style = ";".join([design_style, df_style])
             else:
@@ -388,11 +390,11 @@ class PutxlSet:
         >>> }
         '''
         if config:
-            import pandas as pd
+            self.info_section_lv1("SECTION: config")
+            self.logger.info(f"Config is taking the value of **{config}**")
             for name, setting in config.items():
                 format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                if debug:
-                    print("config file reading: ", name, "; format setting: ", format_update)
+                self.logger.debug(f"Adjusting [{name}]: from config file read format setting: **{format_update}**")
                 if name in io.columns_with_indexnames:
                     if debug:
                         print(self.ws.range(io.range_columns(name, header=True)))
@@ -738,7 +740,7 @@ if __name__ == '__main__':
     debuglevel = 'info'
     r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
     ps = cpd.PutxlSet('delete_impact_table.xlsx')
-    ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True, debug=debuglevel)
+    ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
     ps.putxl(
         r.table_region('AFW'),
         cell='A5', index=False,
