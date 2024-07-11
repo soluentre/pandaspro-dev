@@ -473,7 +473,7 @@ class PutxlSet:
 
                 if ioranges:
                     self.logger.info("")
-                    self.logger.info(f"In total there are **{len(ioranges)}** ranges to be parsed")
+                    self.logger.info(f"[ioranges] - In total there are **{len(ioranges)}** ranges to be parsed")
                     j = 0
                     for each_range in ioranges:
                         self.logger.info(f"\t({j+1}) [each_range] = **{each_range}**")
@@ -495,18 +495,22 @@ class PutxlSet:
                             for range_key, range_content in range_cells.items():
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str) and range_cells != '':
-                            if debug:
-                                print("d_format Dictionary Reading This Range", range_cells, "as", range_affix)
+                            self.logger.info(f"\t[range_cells] is str type, apply [format_kwargs] **{format_kwargs}**")
                             RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
                         elif range_cells == '':
-                            print('Empty Range Cells: ', range_cells)
+                            self.logger.info(f"\t[range_cells] is empty(''), no actions")
                         else:
-                            print('Invalid Range Cells')
+                            raise ValueError('Invalid Parsed Range Cells from [range_affix] and [method_kwargs]: check <attr_method>')
                         j += 1
 
                 if dict_from_cpdframexl:
+                    self.logger.info("")
+                    self.logger.info(f"[dict_from_cpdframexl] - With length of **{len(dict_from_cpdframexl)}**, formatting [range_content] in a loop")
+                    k = 0
                     for range_key, range_content in dict_from_cpdframexl.items():
+                        self.logger.info(f"\t({k + 1}) [range_content] = **{range_content}**")
                         RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
+                        k += 1
 
                 i += 1
 
