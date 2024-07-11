@@ -706,12 +706,12 @@ class PutxlSet:
 
         if isinstance(content, str):
             if CellPro(content).valid and mode != 'text':
-                print(f"Cell range {content} successfully updated in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> with declared format")
+                print(f"Cell range <<{content}>> successfully updated in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> with declared format")
             else:
-                print(f"Text {content} successfully filled in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> in cell {cell}")
+                print(f"Text <<{content}>> successfully filled in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> in cell {cell}")
 
         elif isinstance(content, pandas.DataFrame):
-            print(f"Frame with size {content.shape} successfully exported to <<{export_notice_name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+            print(f"Frame with size <<{content.shape}>> successfully exported to <<{export_notice_name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
         # for else, an error should already been thrown in the previous content/io declaration stage
 
     def tab(self, sheet_name: str, sheetreplace: bool = False, debug: bool = False) -> None:

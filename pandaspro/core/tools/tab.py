@@ -60,26 +60,20 @@ def tab(
     if isinstance(name, list):
         ascending = [True for i in range(len(name))]
 
-    def custom_sort_key(val):
-        try:
-            return 0, int(val)
-        except ValueError:
-            return 1, val
-
     sort_dict = {
         f'{name}': name,
         'index': name,
         'percent': 'Percent'
     }
     if m == 'missing' or m == True:
-        df = data[name].value_counts(dropna=False).sort_index(key=lambda x: x.map(custom_sort_key)).to_frame()
+        df = data[name].value_counts(dropna=False).sort_index().to_frame()
     else:
-        df = data[name].value_counts().sort_index(key=lambda x: x.map(custom_sort_key)).to_frame()
+        df = data[name].value_counts().sort_index().to_frame()
 
     if d == 'brief':
         # Sort
         if sort == 'index':
-            df = df.sort_index(key=lambda x: x.map(custom_sort_key), ascending=ascending)
+            df = df.sort_index(ascending=ascending)
         else:
             df = df.sort_values(sort_dict[sort], ascending=ascending)
 
