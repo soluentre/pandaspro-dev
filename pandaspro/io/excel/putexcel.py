@@ -428,16 +428,14 @@ class PutxlSet:
 
         # Format with defined rules using a Dictionary
         def apply_df_format(localinput_format):
-            if debug:
-                print("Applying Df Format: ")
-                print(localinput_format)
             for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
+                self.logger.info(f"## Going into the [apply_style] dictionary: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
+                self.logger.info(f"## (1) Parsing the key [rule]")
+                self.logger.info(f"Method parse_format_rule is called ...")
                 format_kwargs = parse_format_rule(rule)
-                if debug:
-                    print("================================================")
-                    print(format_kwargs)
+                self.logger.info(f"Parsed result: [format_kwargs] = **{format_kwargs}**")
 
                 # Declare range as list/cpdFramexl Object
                 def _declare_ranges(local_input):
@@ -456,7 +454,12 @@ class PutxlSet:
                         raise ValueError('Unsupported type in df_format dictionary values')
                     return parsedlist, cpdframexl_dict
 
+                self.logger.info(f"## (2) Parsing the value [rangeinput]")
+                self.logger.info(f"Method _declare_ranges is called ...")
                 ioranges, dict_from_cpdframexl = _declare_ranges(rangeinput)
+                self.logger.info(f"Parsed 1st result: [ioranges] = **{ioranges}**")
+                self.logger.info(f"Parsed 2nd result: [dict_from_cpdframexl] = **{dict_from_cpdframexl}**")
+
                 if debug:
                     print("------------------------------")
                     print("ioranges and dict")
@@ -546,9 +549,11 @@ class PutxlSet:
                     style_sheets['index_merge']['merge'] = style_sheets['index_merge']['merge'].replace(
                         '__index__', index_name).replace('__columns__', columns)
                     apply_style = style_sheets['index_merge']
-                    self.logger.info()
+                    self.logger.info("[apply_style] is the var passed to apply_df_format method")
+                    self.logger.info(f"As index_merge <is> detected, [apply_style] is taking value **{apply_style}**")
                 else:
                     apply_style = style_sheets[each_style]
+                    self.logger.info(f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
 
                 apply_df_format(apply_style)
 
