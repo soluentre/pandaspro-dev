@@ -39,19 +39,8 @@ class PutxlSet:
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
             noisily: bool = None,
     ):
-        def _extract_filename_from_path(path):
-            return Path(path).name
-
-        def _get_open_workbook_by_name(name):
-            # Return the open workbook by its name if exists, otherwise return None
-            for curr_app in xw.apps:
-                for curr_wb in curr_app.books:
-                    if curr_wb.name == name:
-                        return curr_wb, curr_app
-            return None, None
-
         # App and Workbook declaration
-        open_wb, app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
+        open_wb, app = PutxlSet._get_open_workbook_by_name(PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
         if open_wb:
             if noisily:
                 print(f"{workbook} is already open, closing ...")
@@ -82,13 +71,26 @@ class PutxlSet:
         if 'Sheet1' in current_sheets and is_sheet_empty(open_wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
             open_wb.sheets['Sheet1'].delete()
 
-        self.open_wb, self.app = _get_open_workbook_by_name(_extract_filename_from_path(workbook))  # Check if the file is already open
+        self.open_wb, self.app = PutxlSet._get_open_workbook_by_name(PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
         self.workbook = workbook
         self.wb = open_wb
         self.ws = sheet
         self.alwaysreplace = alwaysreplace
         self.io = None
         self.curr_cell = None
+
+    @staticmethod
+    def _extract_filename_from_path(path):
+        return Path(path).name
+
+    @staticmethod
+    def _get_open_workbook_by_name(name):
+        # Return the open workbook by its name if exists, otherwise return None
+        for curr_app in xw.apps:
+            for curr_wb in curr_app.books:
+                if curr_wb.name == name:
+                    return curr_wb, curr_app
+        return None, None
 
     # noinspection PyMethodMayBeStatic
     def helpfile(self, para='all'):
@@ -756,9 +758,12 @@ class PutxlSet:
 
         return
 
+    def open(self):
+        xw.Book(self.workbook)
+        self.open_wb, self.app = PutxlSet._get_open_workbook_by_name(self.workbook)
+
     def close(self):
         self.open_wb.close()
-        self.app.quit()
 
 
 if __name__ == '__main__':
@@ -767,14 +772,15 @@ if __name__ == '__main__':
     debuglevel = 'info'
     r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
     ps = cpd.PutxlSet('delete_impact_table.xlsx')
-    ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
-    ps.putxl(
-        r.table_region('AFW'),
-        cell='A5', index=False,
-        design='wbblue',
-        df_format={
-            'font_size=12': 'all',
-            'number_format=0.0': 'cspan(s="Overall Rating Average", e="Results")'
-        },
-        debug=debuglevel
-    )
+    # ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
+    # ps.putxl(
+    #     r.table_region('AFW'),
+    #     cell='A5', index=False,
+    #     design='wbblue',
+    #     df_format={
+    #         'font_size=12': 'all',
+    #         'number_format=0.0': 'cspan(s="Overall Rating Average", e="Results")'
+    #     },
+    #     debug=debuglevel
+    # )
+    ps.close()
