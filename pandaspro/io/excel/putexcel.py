@@ -758,10 +758,6 @@ class PutxlSet:
 
         return
 
-    def open(self):
-        xw.Book(self.workbook)
-        self.open_wb, self.app = PutxlSet._get_open_workbook_by_name(self.workbook)
-
     def close(self):
         self.open_wb.close()
 

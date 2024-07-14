@@ -193,7 +193,7 @@ def color_to_int(color: str | tuple):
     elif isinstance(color, tuple) and _is_valid_rgb(color):
         return xw.utils.rgb_to_int(color)
     else:
-        return None
+        raise ValueError("Invalid color type, none RGB or HEX format")
 
 
 def list_str_w_color(mystr: str):
