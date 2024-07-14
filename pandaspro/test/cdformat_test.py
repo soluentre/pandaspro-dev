@@ -1,7 +1,7 @@
 from pandaspro.io.excel.cdformat import CdFormat
 from pandaspro.sampledf.sampledf import wbuse_pivot
 
-path = '.pandaspro/test/sampledf.xlsx'
+path = '.pandaspro/tests/sampledf.xlsx'
 
 f = CdFormat(
     wbuse_pivot,

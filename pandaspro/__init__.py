@@ -29,7 +29,7 @@ from pandaspro.io.api import (
     WorkbookExportSimplifier,
     fw
 )
-from pandaspro.io.excel.base import lowervarlist
+from pandaspro.core.frame import lowervarlist
 
 from pandaspro.sampledf.api import (
     sysuse_countries,

@@ -6,7 +6,7 @@ from pandaspro.io.cellpro.cellpro import (
     offset,
     getrange
 )
-from pandaspro import lowervarlist
+
 from pandaspro.io.excel.putexcel import PutxlSet
 from pandaspro.io.excel.writer import FramexlWriter as fw
 from pandaspro.io.excel.base import pwread

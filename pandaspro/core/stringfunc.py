@@ -72,12 +72,12 @@ def parse_wild(promptstring: str, checklist: list, dictmap: dict = None):
         if dictmap and varkey in dictmap.keys():
             varkey = varkey.lower()
             for term in dictmap[varkey]:
-                # -- debug test
+                # -- debug tests
                 # print(wildcardread(checklist, term))
                 varlist += wildcardread(checklist, term)
 
         else:
-            # -- debug test
+            # -- debug tests
             # print(wildcardread(checklist, varkey))
             varlist += wildcardread(checklist, varkey)
     for x in varlist:

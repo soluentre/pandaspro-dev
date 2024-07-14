@@ -1,7 +1,7 @@
 from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter
 from pandaspro.sampledf.sampledf import wbuse_pivot
 
-path = '.pandaspro/test/sampledf.xlsx'
+path = '.pandaspro/tests/sampledf.xlsx'
 
 f = FramexlWriter(wbuse_pivot, 'B2', index=True, header=True)
 s = StringxlWriter(cell='B3:B10')
