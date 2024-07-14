@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pandaspro
+import pandaspro.io.excel.base
 
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.csort import csort
@@ -13,7 +14,7 @@ from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.inlist import inlist
 from pandaspro.core.tools.indate import indate
-from pandaspro.io.excel._utils import lowervarlist
+from pandaspro import lowervarlist
 from pandaspro.io.excel.wbexportsimple import WorkbookExportSimplifier
 
 
@@ -463,7 +464,7 @@ class FramePro(pd.DataFrame):
     dfilter.__doc__ = pandaspro.core.tools.dfilter.dfilter.__doc__
     inlist.__doc__ = pandaspro.core.tools.inlist.__doc__
     varnames.__doc__ = pandaspro.core.tools.varnames.varnames.__doc__
-    lowervarlist.__doc__ = pandaspro.io.excel._utils.lowervarlist.__doc__
+    lowervarlist.__doc__ = pandaspro.io.excel.base.lowervarlist.__doc__
 
     # Overwriting original methods
     def merge(self, *args, **kwargs):

@@ -1,4 +1,4 @@
-from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter
+from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter
 from pandaspro.sampledf.sampledf import wbuse_pivot
 
 path = '.pandaspro/test/sampledf.xlsx'

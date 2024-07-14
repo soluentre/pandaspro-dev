@@ -1,5 +1,5 @@
-from pandaspro.io.excel._framewriter import FramexlWriter
-from pandaspro.io.excel._xlwings import RangeOperator
+from pandaspro.io.excel.writer import FramexlWriter
+from pandaspro.io.excel.range import RangeOperator
 import xlwings as xw
 
 

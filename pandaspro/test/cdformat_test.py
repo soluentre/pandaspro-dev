@@ -1,4 +1,4 @@
-from pandaspro.io.excel._cdformat import CdFormat
+from pandaspro.io.excel.cdformat import CdFormat
 from pandaspro.sampledf.sampledf import wbuse_pivot
 
 path = '.pandaspro/test/sampledf.xlsx'

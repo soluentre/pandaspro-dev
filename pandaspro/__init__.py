@@ -27,9 +27,9 @@ from pandaspro.io.api import (
     PutxlSet,
     pwread,
     WorkbookExportSimplifier,
-    lowervarlist,
     fw
 )
+from pandaspro.io.excel.base import lowervarlist
 
 from pandaspro.sampledf.api import (
     sysuse_countries,

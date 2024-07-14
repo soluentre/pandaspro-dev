@@ -1,3 +1,4 @@
+import logging
 import re
 from pathlib import Path
 import os
@@ -6,9 +7,9 @@ import pandas
 import pandas as pd
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
-from pandaspro.io.excel._framewriter import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
-from pandaspro.io.excel._utils import cell_range_combine, CellPro
-from pandaspro.io.excel._xlwings import RangeOperator, parse_format_rule, color_to_int
+from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
+from pandaspro.io.cellpro.cellpro import cell_range_combine, CellPro
+from pandaspro.io.excel.range import RangeOperator, parse_format_rule, color_to_int
 from pandaspro.utils.cpd_logger import cpd_logger
 
 
@@ -38,9 +39,24 @@ class PutxlSet:
             sheet_name: str = None,
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
             noisily: bool = None,
+            debug: str = 'critical',
+            debug_file: str = None
     ):
+        # Initialize logging module
+        # noinspection PyTypeChecker
+        self.logger: logging.Logger = None
+        self.debug_section_lv1: callable = None
+        self.debug_section_lv2: callable = None
+        self.info_section_lv1: callable = None
+        self.info_section_lv2: callable = None
+        self.reconfigure_logger: callable = None
+        self.debug = debug.lower()
+        self.debug_file = debug_file
+        self.configure_logger: callable = None
+
         # App and Workbook declaration
-        open_wb, app = PutxlSet._get_open_workbook_by_name(PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
+        open_wb, app = PutxlSet._get_open_workbook_by_name(
+            PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
         if open_wb:
             if noisily:
                 print(f"{workbook} is already open, closing ...")
@@ -71,7 +87,8 @@ class PutxlSet:
         if 'Sheet1' in current_sheets and is_sheet_empty(open_wb.sheets['Sheet1']) and sheet_name != 'Sheet1':
             open_wb.sheets['Sheet1'].delete()
 
-        self.open_wb, self.app = PutxlSet._get_open_workbook_by_name(PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
+        self.open_wb, self.app = PutxlSet._get_open_workbook_by_name(
+            PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
         self.workbook = workbook
         self.wb = open_wb
         self.ws = sheet
@@ -185,7 +202,8 @@ class PutxlSet:
         self.logger.info(">" * 30)
         self.logger.info(">>>>>>> LOG FOR PUTXL  <<<<<<<")
         self.logger.info(">" * 30)
-        self.logger.info(f"> CONTENT: {content if isinstance(content, str) else 'DataFrame with Size of: ' + str(content.shape)}")
+        self.logger.info(
+            f"> CONTENT: {content if isinstance(content, str) else 'DataFrame with Size of: ' + str(content.shape)}")
         self.logger.info(f"> SHEET_NAME: {sheet_name}")
         self.logger.info(f"> CELL: {cell}")
         self.logger.info("> LOG ACTIVATED - INFO LEVEL")
@@ -229,15 +247,19 @@ class PutxlSet:
             original_name = self.ws.name
             total_count = self.wb.sheets.count
             self.info_section_lv1("SECTION: sheetreplace or replace_type")
-            self.logger.info(f"Replacing sheet **!'{self.ws.name}'**: [sheetreplace] is declared as **True**, [alwaysreplace] for PutxlSet is declared as **{self.alwaysreplace}**")
-            self.logger.info(f"In the workbook, total sheets number is **{total_count}**, while original index is **{original_index}**")
+            self.logger.info(
+                f"Replacing sheet **!'{self.ws.name}'**: [sheetreplace] is declared as **True**, [alwaysreplace] for PutxlSet is declared as **{self.alwaysreplace}**")
+            self.logger.info(
+                f"In the workbook, total sheets number is **{total_count}**, while original index is **{original_index}**")
 
             if original_index == total_count:
                 new_sheet = self.wb.sheets.add(after=self.wb.sheets[_sheetmap[original_index]])
-                self.logger.info(f"Sheet <is> the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
+                self.logger.info(
+                    f"Sheet <is> the last sheet, new sheet added after the sheet **!'{_sheetmap[original_index]}'**")
             else:
                 new_sheet = self.wb.sheets.add(before=self.wb.sheets[_sheetmap[original_index + 1]])
-                self.logger.info(f"Sheet <is not> the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
+                self.logger.info(
+                    f"Sheet <is not> the last sheet, new sheet added before the sheet **!'{_sheetmap[original_index + 1]}'**")
 
             self.ws.delete()
             new_sheet.name = original_name
@@ -248,7 +270,8 @@ class PutxlSet:
         self.info_section_lv1("SECTION: content (i.e. IO object) declaration")
         if isinstance(content, str):
             self.logger.info(f"Validation 1: [content] **{content}** is passed as a valid str type object")
-            self.logger.info(f"Validation 2: [content] **{content}** value will lead to [CellPro(content).valid] taking the value of **{CellPro(content).valid}**")
+            self.logger.info(
+                f"Validation 2: [content] **{content}** value will lead to [CellPro(content).valid] taking the value of **{CellPro(content).valid}**")
 
             if CellPro(content).valid and mode != 'text':
                 io = CellxlWriter(cell=content)
@@ -258,7 +281,8 @@ class PutxlSet:
             else:
                 io = StringxlWriter(text=content, cell=cell)
                 # Note: start_cell is named intentional to be consistent with DF mode and may refer to a cell range
-                self.logger.info(f"Passed <Text>: filling in sheet <{self.ws.name}> [content] **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
+                self.logger.info(
+                    f"Passed <Text>: filling in sheet <{self.ws.name}> [content] **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
                 self.io = io
                 self.ws.range(io.range_cell).value = io.content
                 self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
@@ -292,13 +316,15 @@ class PutxlSet:
         elif isinstance(content, pandas.DataFrame):
             self.logger.info(f"Validation: [content] type of **{type(content)}** object is passed")
             io = FramexlWriter(frame=content, cell=cell, index=index, header=header)
-            self.logger.info(f"Passed <Frame>: exporting to sheet <{self.ws.name}> [content] frame with size of **{str(content.shape)}** into **{io.start_cell}** plus any other format settings ... ")
+            self.logger.info(
+                f"Passed <Frame>: exporting to sheet <{self.ws.name}> [content] frame with size of **{str(content.shape)}** into **{io.start_cell}** plus any other format settings ... ")
             self.ws.range(io.start_cell).value = io.content
             self.io = io
             self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
 
         else:
-            raise ValueError(f'Invalid type for parameter [content] as {type(content)} is passed, only takes either str (for cell/text to fill in) or dataframe-like objects.')
+            raise ValueError(
+                f'Invalid type for parameter [content] as {type(content)} is passed, only takes either str (for cell/text to fill in) or dataframe-like objects.')
 
         # Format the sheet (Shelley, Li)
         ################################
@@ -315,12 +341,14 @@ class PutxlSet:
             }
             for direction in list(match_dict.keys()):
                 if is_range_filled(self.ws, match_dict[direction]):
-                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'], debug=debug)
+                    RangeOperator(self.ws.range(self.io.range_all)).format(border=[direction, 'thicker', '#FF0000'],
+                                                                           debug=debug)
 
         if tab_color:
             self.info_section_lv1("SECTION: tab_color")
             paint_tab = color_to_int(tab_color)
-            self.logger.info(f"Setting sheet <{self.ws.name}> tab color to **{tab_color}**, the value was transformed into int **{paint_tab}**")
+            self.logger.info(
+                f"Setting sheet <{self.ws.name}> tab color to **{tab_color}**, the value was transformed into int **{paint_tab}**")
             self.ws.api.Tab.Color = paint_tab
 
         if design:
@@ -346,14 +374,16 @@ class PutxlSet:
                 index_columns = match.group(3)
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
                 self.info_section_lv2("Sub-section: _index as suffix for design argument")
-                self.logger.info(f"Recognized [design] of **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
+                self.logger.info(
+                    f"Recognized [design] of **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
             else:
                 design_style = local_design[design]['style']
                 self.logger.info(f"Recognized [design] of **{design}**, with extra df_style of **{design_style}**")
 
             design_config = local_design[design]['config']
             design_config_shorten_version = {key: design_config[key] for key in list(design_config.keys())[:3]}
-            self.logger.info(f"Recognized [design] of **{design}**, with extra config of (shortened, use debug level to view all) **{design_config_shorten_version}**")
+            self.logger.info(
+                f"Recognized [design] of **{design}**, with extra config of (shortened, use debug level to view all) **{design_config_shorten_version}**")
             self.logger.debug(f"Full-length design_config is **{design_config}**")
 
             design_cd = local_design[design]['cd']
@@ -394,15 +424,19 @@ class PutxlSet:
         '''
         if config:
             self.info_section_lv1("SECTION: config")
-            self.logger.info(f"[config] is taking the value of a dictionary with length of **{len(config)}**, view details in debug level")
+            self.logger.info(
+                f"[config] is taking the value of a dictionary with length of **{len(config)}**, view details in debug level")
             self.logger.debug(f"Passed [config] argument value: **{config}**")
             for name, setting in config.items():
                 if name in io.columns_with_indexnames:
                     self.debug_section_lv2(f"{name}")
                     format_update = {k: v for k, v in setting.items() if not pd.isna(v)}
-                    self.logger.debug(f"Adjusting [{name}]: 01 - from config file read format setting: **{format_update}**")
-                    self.logger.debug(f"Adjust [{name}]: 02 - range is analyzed as: **{self.ws.range(io.range_columns(name, header=True))}**")
-                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(**format_update, debug=debug)
+                    self.logger.debug(
+                        f"Adjusting [{name}]: 01 - from config file read format setting: **{format_update}**")
+                    self.logger.debug(
+                        f"Adjust [{name}]: 02 - range is analyzed as: **{self.ws.range(io.range_columns(name, header=True))}**")
+                    RangeOperator(self.ws.range(io.range_columns(name, header=True))).format(**format_update,
+                                                                                             debug=debug)
 
         '''
         For index_merge para, the accepted dict only accepts two keys:
@@ -434,7 +468,7 @@ class PutxlSet:
                 # Parse the format to a dictionary, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"# Number {i+1} Formatting")
+                self.logger.info(f"# Number {i + 1} Formatting")
                 self.logger.info(f"#" * 1 + ' ' + '-' * 45)
                 self.logger.info(f"Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"(1) Parsing the key [rule]")
@@ -478,7 +512,7 @@ class PutxlSet:
                     self.logger.info(f"\t[ioranges] - In total there are **{len(ioranges)}** ranges to be parsed")
                     j = 0
                     for each_range in ioranges:
-                        self.logger.info(f"\t\t{j+1}. [each_range] = **{each_range}**")
+                        self.logger.info(f"\t\t{j + 1}. [each_range] = **{each_range}**")
                         # Parse the input string as method name + kwargs
                         self.logger.debug(f"\t\tMethod parse_method is called ...")
                         range_affix, method_kwargs = parse_method(each_range)[0], parse_method(each_range)[1]
@@ -490,25 +524,30 @@ class PutxlSet:
                             range_cells = attr_method(**method_kwargs)
                         else:
                             range_cells = attr_method
-                        self.logger.info(f"\t\tParsed [range_cells] from the two results above: [range_cells] = **{range_cells}**")
+                        self.logger.info(
+                            f"\t\tParsed [range_cells] from the two results above: [range_cells] = **{range_cells}**")
 
                         if isinstance(range_cells, dict):
-                            self.logger.info(f"\t\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
+                            self.logger.info(
+                                f"\t\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
                             for range_key, range_content in range_cells.items():
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str) and range_cells != '':
-                            self.logger.info(f"\t\t[range_cells] is str type, apply [format_kwargs] **{format_kwargs}**")
+                            self.logger.info(
+                                f"\t\t[range_cells] is str type, apply [format_kwargs] **{format_kwargs}**")
                             RangeOperator(self.ws.range(range_cells)).format(**format_kwargs, debug=debug)
                         elif range_cells == '':
                             self.logger.info(f"\t\t[range_cells] is empty(''), no actions")
                         else:
-                            raise ValueError('Invalid Parsed Range Cells from [range_affix] and [method_kwargs]: check <attr_method>')
+                            raise ValueError(
+                                'Invalid Parsed Range Cells from [range_affix] and [method_kwargs]: check <attr_method>')
                         j += 1
                     self.logger.info(f"\t[ioranges] - END")
 
                 if dict_from_cpdframexl:
                     self.logger.info("")
-                    self.logger.info(f"[dict_from_cpdframexl] - With length of **{len(dict_from_cpdframexl)}**, formatting [range_content] in a loop")
+                    self.logger.info(
+                        f"[dict_from_cpdframexl] - With length of **{len(dict_from_cpdframexl)}**, formatting [range_content] in a loop")
                     k = 0
                     for range_key, range_content in dict_from_cpdframexl.items():
                         self.logger.info(f"\t{k + 1}. [range_content] = **{range_content}**")
@@ -569,7 +608,8 @@ class PutxlSet:
                     self.logger.info(f"As index_merge <is> detected, [apply_style] is taking value **{apply_style}**")
                 else:
                     apply_style = style_sheets[each_style]
-                    self.logger.info(f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
+                    self.logger.info(
+                        f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
 
                 apply_df_format(apply_style)
 
@@ -705,16 +745,20 @@ class PutxlSet:
         # Print Export Success Message to Console ...
         ################################
         export_notice_name = self.wb.name
-        export_notice_name = export_notice_name.replace('.xlsx', '')[0:35] + ' (...) .xlsx' if len(export_notice_name) > 36 else export_notice_name
+        export_notice_name = export_notice_name.replace('.xlsx', '')[0:35] + ' (...) .xlsx' if len(
+            export_notice_name) > 36 else export_notice_name
 
         if isinstance(content, str):
             if CellPro(content).valid and mode != 'text':
-                print(f"Cell range <<{content}>> successfully updated in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> with declared format")
+                print(
+                    f"Cell range <<{content}>> successfully updated in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> with declared format")
             else:
-                print(f"Text <<{content}>> successfully filled in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> in cell {cell}")
+                print(
+                    f"Text <<{content}>> successfully filled in <<{export_notice_name}>>, worksheet <<{self.ws.name}>> in cell {cell}")
 
         elif isinstance(content, pandas.DataFrame):
-            print(f"Frame with size <<{content.shape}>> successfully exported to <<{export_notice_name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
+            print(
+                f"Frame with size <<{content.shape}>> successfully exported to <<{export_notice_name}>>, worksheet <<{self.ws.name}>> at cell {cell}")
         # for else, an error should already been thrown in the previous content/io declaration stage
 
     def tab(self, sheet_name: str, sheetreplace: bool = False, debug: bool = False) -> None:
@@ -763,11 +807,10 @@ class PutxlSet:
 
 
 if __name__ == '__main__':
-    import wbhrdata as wb
     import pandaspro as cpd
+    d = cpd.sysuse_auto
     debuglevel = 'info'
-    r = wb.impact(analysis_year='FY24', sob_version='2024-05-31', mgr_anchor_version='2023-06-30')
-    ps = cpd.PutxlSet('delete_impact_table.xlsx')
+    # ps = cpd.PutxlSet('delete_impact_table.xlsx')
     # ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
     # ps.putxl(
     #     r.table_region('AFW'),
@@ -779,4 +822,4 @@ if __name__ == '__main__':
     #     },
     #     debug=debuglevel
     # )
-    ps.close()
+    # ps.close()
