@@ -268,7 +268,7 @@ def get_cell_lists(rowlist: list,
     return result_dict
 
 
-def cell_range_combine(cells: list = None):
+def cell_combine_by_row(cells: list = None):
     cells_by_row = {}
     for cell in cells:
         row = cell_index(cell)[0]
@@ -295,5 +295,32 @@ def cell_range_combine(cells: list = None):
     return merged_cells
 
 
+def cell_combine_by_column(cells: list = None):
+    cells_by_column = {}
+    for cell in cells:
+        row = cell_index(cell)[0]
+        column = get_column_letter(cell_index(cell)[1])
+        if column not in cells_by_column:
+            cells_by_column[column] = []
+        cells_by_column[column].append(row)
+
+    merged_cells = {}
+    for column, rows in cells_by_column.items():
+        merged = []
+        current_range = [rows[0]]
+
+        for i in range(1, len(rows)):
+            if rows[i] == current_range[-1] + 1:
+                current_range.append(rows[i])
+            else:
+                merged.append(f"{column}{current_range[0]}:{column}{current_range[-1]}")
+                current_range = [rows[i]]
+
+        merged.append(f"{column}{current_range[0]}:{column}{current_range[-1]}")
+        merged_cells[column] = merged
+
+    return merged_cells
+
+
 if __name__ == '__main__':
-    print(CellPro('A3').valid)
+    print(cell_combine_by_row('E16,F16,E21,E22,E25,E26,E27,E50,E56'.split(',')))

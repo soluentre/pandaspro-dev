@@ -8,7 +8,7 @@ import pandas as pd
 import xlwings as xw
 from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
-from pandaspro.io.cellpro.cellpro import cell_range_combine, CellPro
+from pandaspro.io.cellpro.cellpro import cell_combine_by_row, CellPro, cell_combine_by_column
 from pandaspro.io.excel.range import RangeOperator, parse_format_rule, color_to_int
 from pandaspro.utils.cpd_logger import cpd_logger
 
@@ -656,7 +656,6 @@ class PutxlSet:
                 self.logger.info(f"This will result in a **cleaned dict with multi sub-dicts: [cleaned_rules] with {len(cleaned_rules)}**")
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
-                m = 0
                 for rulename, lc_content in cleaned_rules.items():
                     self.logger.info(f"")
                     self.logger.info(f"\t[rulename] = **{rulename}**")
@@ -691,7 +690,7 @@ class PutxlSet:
                             After combine will be:
                             {2: ['B2:M2', 'O2:O2'], 3: ['B3:B3']}
                             '''
-                            cellrange_dict = cell_range_combine(cellrange.split(','))
+                            cellrange_dict = cell_combine_by_column(cellrange.split(','))
                             self.logger.info(f"\tCombined into 1 dict [cell_range_combine] with length of **{len(cellrange_dict)}**")
                             self.logger.info(f"\t--> Applying to range:")
 
