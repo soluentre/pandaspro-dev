@@ -673,12 +673,12 @@ class PutxlSet:
                         cd_format_kwargs = parse_format_rule(cd_format_rule)
                         self.logger.info(f"\tResult: [cd_format_kwargs] = **{cd_format_kwargs}**")
 
-                        if len(cellrange) <= 30:
-                            self.logger.info(f"\tDirectly apply - length of [cellrange] is **{len(cellrange)}**, no larger than 30")
+                        if len(cellrange) <= 45:
+                            self.logger.info(f"\tDirectly apply - length of [cellrange] is **{len(cellrange)}**, no larger than 45")
                             self.logger.info(f"\t--> Applying to range: **{cellrange}**")
                             RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                         else:
-                            self.logger.info(f"\tCombine cells first - length of [cellrange] is **{len(cellrange)}**, larger than 30")
+                            self.logger.info(f"\tCombine cells first - length of [cellrange] is **{len(cellrange)}**, larger than 45")
                             # Here is the combine function
                             '''
                             cell_range_combine method from _utils
@@ -695,7 +695,7 @@ class PutxlSet:
                             self.logger.info(f"\t--> Applying to range:")
 
                             for key, range_list in cellrange_dict.items():
-                                self.logger.info(f"\t\tRange ID: [key] = **{key}**")
+                                self.logger.info(f"\t\tRange ID: [column key] = **{key}**")
                                 for combined_range in range_list:
                                     self.logger.info(f"\t\tRange Content: [combined_range] = **{combined_range}**")
                                     RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
