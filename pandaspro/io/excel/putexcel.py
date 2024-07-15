@@ -651,36 +651,34 @@ class PutxlSet:
         # So whether dict or a list of dictionaries, the format has to comply with standard cpd cd dict format
         # .. which you may refer to the comments before "if cd" line
         def apply_cd_format(input_cd):
-            def cd_paint(lcinput):
-                if debug:
-                    print("================================================")
-                    print("Applying Cd Format: ")
-                    print(lcinput)
-                cleaned_rules = io.range_cdformat(**lcinput)
+            def cd_paint(input_cd_instance):
+                self.logger.info("Parsing the dict [input_cd] with <io> and <range_cdformat> instance method")
+                cleaned_rules = io.range_cdformat(**input_cd_instance)
+                self.logger.info(f"This will result in a **cleaned dict with multi sub-dicts: [cleaned_rules] with {len(cleaned_rules)}**")
 
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
+                m = 0
                 for rulename, lc_content in cleaned_rules.items():
+                    self.logger.info(f"\t{m + 1}. [rulename] = **{rulename}**")
                     cellrange = lc_content['cellrange']
                     cd_format_rule = lc_content['format']
-                    if debug:
-                        print("Cd format name and content >>>")
-                        print(rulename, lc_content)
+                    self.logger.info(f"\t[cellrange] = **{cellrange}**")
+                    self.logger.info(f"\t[cd_format_rule] = **{cd_format_rule}**")
 
                     if cellrange == 'no cells':
-                        return
+                        self.logger.info(f"\t.. because [cellrange] is taking value <no cells>, no actions needed")
                     else:
                         # Parse the cd_format_rule to a dict, as **kwargs to be passed to the .format for RangeOperator
                         # parse_format_rule is taken from _xlwings module
+                        self.logger.info(f"\tParsing the [cd_format_rule] with <parse_format_rule> method from range.py under io.excel directory")
                         cd_format_kwargs = parse_format_rule(cd_format_rule)
-                        if debug:
-                            print("Cd format kwargs >>>")
-                            print(cd_format_kwargs)
 
-                        if cellrange == '':
-                            pass
-                        elif len(cellrange) <= 30:
+                        if len(cellrange) <= 30:
+                            self.logger.info(f"\tDirectly apply - length of [cellrange] is **{len(cellrange)}**, no larger than 30")
+                            self.logger.info(f"\tApplying to range: **{cellrange}**")
                             RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                         else:
+                            self.logger.info(f"\tCombine cells first - length of [cellrange] is **{len(cellrange)}**, larger than 30")
                             # Here is the combine function
                             '''
                             cell_range_combine method from _utils
@@ -693,20 +691,29 @@ class PutxlSet:
                             {2: ['B2:M2', 'O2:O2'], 3: ['B3:B3']}
                             '''
                             cellrange_dict = cell_range_combine(cellrange.split(','))
-                            if debug:
-                                print(cellrange_dict)
-                            for range_list in cellrange_dict.values():
+                            self.logger.info(f"\tCombined into 1 dict [cell_range_combine] with length of **{len(cellrange_dict)}**")
+                            self.logger.info(f"")
+                            self.logger.info(f"\tApplying to range:")
+
+                            for key, range_list in cellrange_dict.items():
+                                self.logger.info(f"\t\tRange ID: [key] = **{key}**")
                                 for combined_range in range_list:
+                                    self.logger.info(f"\t\tRange Content: [combined_range] = **{combined_range}**")
                                     RangeOperator(self.ws.range(combined_range)).format(debug=debug, **cd_format_kwargs)
 
             # Decide if cd_format is a dict or not
             if isinstance(input_cd, dict):
-                self.logger.info(f"# Only 1 [rule] = a dict with keys of **{input_cd.keys()}**")
+                self.logger.info("")
+                self.logger.info(f"# Only 1 [rule] as dict-type is passed to <apply_cd_format>")
+                self.logger.info(f"#" * 1 + ' ' + '-' * 45)
+                self.logger.info(f"This cd_format dict is built from keys: **{input_cd.keys()}**")
+
                 cd_paint(input_cd)
 
             if isinstance(input_cd, list):
                 l = 0
                 for rule in input_cd:
+                    self.logger.info("")
                     self.logger.info(f"# Number {l + 1} cd_format")
                     self.logger.info(f"#" * 1 + ' ' + '-' * 45)
                     self.logger.info(f"This cd_format dict is built from keys: **{rule.keys()}**")
