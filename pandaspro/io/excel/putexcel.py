@@ -837,8 +837,9 @@ if __name__ == '__main__':
     import pandaspro as cpd
     d = cpd.sysuse_auto
     debuglevel = 'info'
-    # ps = cpd.PutxlSet('delete_impact_table.xlsx')
-    # ps.putxl('AFW', cell='A4', font_size=12, bold=True, sheetreplace=True)
+    ps = cpd.PutxlSet('delete_table.xlsx')
+    ps.putxl(d, cell='A4', cd_format={'column': 'rep78', 'rules': {1: 'red', 2: 'blue'}, 'applyto': 'self'})
+
     # ps.putxl(
     #     r.table_region('AFW'),
     #     cell='A5', index=False,
