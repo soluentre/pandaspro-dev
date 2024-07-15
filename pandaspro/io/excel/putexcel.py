@@ -701,11 +701,15 @@ class PutxlSet:
 
             # Decide if cd_format is a dict or not
             if isinstance(input_cd, dict):
+                self.logger.info(f"Only 1 [rule] = a dictionary with declared keys of **{rule.keys()}**")
                 cd_paint(input_cd)
 
             if isinstance(input_cd, list):
+                l = 0
                 for rule in input_cd:
+                    self.logger.info(f"\t\t{l + 1}. [rule] = a dictionary with declared keys of **{rule.keys()}**")
                     cd_paint(rule)
+                    l += 1
 
         '''
         cd: the main parameter to add pre-defined conditional formatting to core export data ranges (exc. headers and indices)
@@ -731,16 +735,21 @@ class PutxlSet:
                 self.info_section_lv2(f"Sub-section: {each_cd}")
                 self.logger.debug(f"The [apply_cd] var will be checking **{each_cd}** from <cd_sheets>, check cd_sheets.py under user_config directory")
                 self.logger.debug(f"Checked [apply_cd]: **{apply_cd}** is a **{type(apply_cd)}**")
+                apply_cd_format(apply_cd)
 
-                if isinstance(apply_cd, list):
-                    for each_cd_sub in apply_cd:
-                        apply_cd_format(each_cd_sub)
-                elif isinstance(apply_cd, dict):
-                    apply_cd_format(apply_cd)
-                else:
-                    raise ValueError('Invalid type for [apply_cd]')
+                # To Delete, apply_cd_format can take dictionaries/lists
+                # ------------------------------------------
+                # if isinstance(apply_cd, list):
+                #     for each_cd_sub in apply_cd:
+                #         apply_cd_format(each_cd_sub)
+                # elif isinstance(apply_cd, dict):
+                #     apply_cd_format(apply_cd)
+                # else:
+                #     raise ValueError('Invalid type for [apply_cd]')
 
         if cd_format:
+            self.info_section_lv1(f"cd_format")
+            self.logger.info(f"A length **{len(cd_format)}** with type of **{type(cd_format)}** is passed to [df_format]")
             apply_cd_format(cd_format)
 
         # Remove Sheet1 if blank and exists (the Default tab) ...
