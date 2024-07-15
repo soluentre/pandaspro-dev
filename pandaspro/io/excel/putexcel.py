@@ -113,20 +113,20 @@ class PutxlSet:
     def helpfile(self, para='all'):
         cd_file = """
         cd_format: the main function to add format to core export data ranges (exc. headers and indices)
-        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        This parameter will take a dict which allows only three keys (and applyto maybe omitted)
         (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
 
         key 1: column = indicating the conditional formatting columns
-        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 2: rules = a dict with formatting rules (only based on the column above, like inlist, value equals to, etc.)
         key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
         (default = self)
 
         >>> ... cd_format={'column': 'age', 'rules': {...}}
         >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
         
-        For rules, it should be a dictionary:
+        For rules, it should be a dict:
         (1) the key can be values in the selected, then the value should be parable format
-        (2) the key can also be a rule token, then the value should be a dictionary with r and f
+        (2) the key can also be a rule token, then the value should be a dict with r and f
         
         >>> ... {'GA': '#FF0000'}
         >>> ... {   
@@ -353,7 +353,7 @@ class PutxlSet:
 
         if design:
             self.info_section_lv1("SECTION: design")
-            message_init_design = "The design argument passed with look up values from the dictionary in excel_table_mydesign.py file in the pandaspro package. Both pre-defined style and cd rules can be passed through 1 design"
+            message_init_design = "The design argument passed with look up values from the dict in excel_table_mydesign.py file in the pandaspro package. Both pre-defined style and cd rules can be passed through 1 design"
             self.logger.info(message_init_design)
             self.logger.info("A str is expected to be used as the lookup key")
 
@@ -408,7 +408,7 @@ class PutxlSet:
 
         '''
         For config para, the accepted dict must use column/index name as keys
-        The direct value follow each column/index name must be a dictionary, 
+        The direct value follow each column/index name must be a dict, 
         and there must be readable keys in it.
     
         Currently support: 
@@ -425,7 +425,7 @@ class PutxlSet:
         if config:
             self.info_section_lv1("SECTION: config")
             self.logger.info(
-                f"[config] is taking the value of a dictionary with length of **{len(config)}**, view details in debug level")
+                f"[config] is taking the value of a dict with length of **{len(config)}**, view details in debug level")
             self.logger.debug(f"Passed [config] argument value: **{config}**")
             for name, setting in config.items():
                 if name in io.columns_with_indexnames:
@@ -463,7 +463,7 @@ class PutxlSet:
 
         '''
         apply_df_format: the main function to add format to ranges
-        This parameter will take a dictionary which uses:
+        This parameter will take a dict which uses:
         (1) format prompt key words as the keys
         (2) a list of range key words, which may be just a str term (attribute) ... 
             or a cpdFramexl object 
@@ -474,14 +474,14 @@ class PutxlSet:
 
         NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''
-        # Format with defined rules using a Dictionary
+        # Format with defined rules using a Dict
         def apply_df_format(localinput_format):
             i = 0
             for rule, rangeinput in localinput_format.items():
-                # Parse the format to a dictionary, passed to the .format for RangeOperator
+                # Parse the format to a dict, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"# Number {i + 1} Formatting")
+                self.logger.info(f"# Number {i + 1} df_format")
                 self.logger.info(f"#" * 1 + ' ' + '-' * 45)
                 self.logger.info(f"Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"(1) Parsing the key [rule]")
@@ -510,7 +510,7 @@ class PutxlSet:
                         self.logger.debug(f"[local_input] as cpdFramexl: local_input.paras = **{local_input.paras}**")
 
                     else:
-                        raise ValueError('Unsupported type in df_format dictionary values')
+                        raise ValueError('Unsupported type in df_format dict values')
 
                     return parsedlist, cpdframexl_dict
 
@@ -542,7 +542,7 @@ class PutxlSet:
 
                         if isinstance(range_cells, dict):
                             self.logger.info(
-                                f"\t\t[range_cells] is dictionary type, looping through items to apply [format_kwargs] **{format_kwargs}**")
+                                f"\t\t[range_cells] is dict type, looping through items to apply [format_kwargs] **{format_kwargs}**")
                             for range_key, range_content in range_cells.items():
                                 RangeOperator(self.ws.range(range_content)).format(**format_kwargs, debug=debug)
                         elif isinstance(range_cells, str) and range_cells != '':
@@ -628,16 +628,16 @@ class PutxlSet:
 
         if df_format:
             self.info_section_lv1(f"df_format")
-            self.logger.info(f"A length **{len(df_format)}** dictionary is passed to [df_format]")
+            self.logger.info(f"A length **{len(df_format)}** dict is passed to [df_format]")
             apply_df_format(df_format)
 
         '''
         cd_format: the main function to add format to core export data ranges (exc. headers and indices)
-        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        This parameter will take a dict which allows only three keys (and applyto maybe omitted)
         (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
 
         key 1: column = indicating the conditional formatting columns
-        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 2: rules = a dict with formatting rules (only based on the column above, like inlist, value equals to, etc.)
         key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
         (default = self)
 
@@ -648,7 +648,7 @@ class PutxlSet:
         # Conditional Format (1 column based)
         # This function will always check the type of the argument that is passed to this parameter
         # If a list type is detected, then use loop to loop through the list and call the cd_paint function many times
-        # So whether dictionary or a list of dictionaries, the format has to comply with standard cpd cd dict format
+        # So whether dict or a list of dictionaries, the format has to comply with standard cpd cd dict format
         # .. which you may refer to the comments before "if cd" line
         def apply_cd_format(input_cd):
             def cd_paint(lcinput):
@@ -669,7 +669,7 @@ class PutxlSet:
                     if cellrange == 'no cells':
                         return
                     else:
-                        # Parse the cd_format_rule to a dictionary, as **kwargs to be passed to the .format for RangeOperator
+                        # Parse the cd_format_rule to a dict, as **kwargs to be passed to the .format for RangeOperator
                         # parse_format_rule is taken from _xlwings module
                         cd_format_kwargs = parse_format_rule(cd_format_rule)
                         if debug:
@@ -701,13 +701,15 @@ class PutxlSet:
 
             # Decide if cd_format is a dict or not
             if isinstance(input_cd, dict):
-                self.logger.info(f"Only 1 [rule] = a dictionary with declared keys of **{rule.keys()}**")
+                self.logger.info(f"# Only 1 [rule] = a dict with keys of **{input_cd.keys()}**")
                 cd_paint(input_cd)
 
             if isinstance(input_cd, list):
                 l = 0
                 for rule in input_cd:
-                    self.logger.info(f"\t\t{l + 1}. [rule] = a dictionary with declared keys of **{rule.keys()}**")
+                    self.logger.info(f"# Number {l + 1} cd_format")
+                    self.logger.info(f"#" * 1 + ' ' + '-' * 45)
+                    self.logger.info(f"This cd_format dict is built from keys: **{rule.keys()}**")
                     cd_paint(rule)
                     l += 1
 
