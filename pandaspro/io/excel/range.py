@@ -515,8 +515,6 @@ class RangeOperator:
                 colorlist_fill = find_colors(fill_list)
                 if len(colorlist_fill) == 0:
                     colorlist_fill = ['none']
-                if debug:
-                    print("Check Fill >>> ", patternlist_fill, colorlist_fill)
                 if len(patternlist_fill) > 1 or len(colorlist_fill) > 1:
                     raise ValueError(
                         'Invalid input. Please check if pattern or color are specified correctly. At most 1 color and 1 pattern')
@@ -528,11 +526,6 @@ class RangeOperator:
                 if parse_fill_color == 'none':
                     self.xwrange.color = None
                 else:
-                    if debug:
-                        print("parse_fill_pattern >>> ", parse_fill_pattern)
-                        print("parse_fill_color >>> ", parse_fill_color)
-                        print("color_to_int >>> ", color_to_int(parse_fill_color))
-
                     if parse_fill_pattern == 1:
                         self.xwrange.api.Interior.Color = color_to_int(parse_fill_color)
                     else:

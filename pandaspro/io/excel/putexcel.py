@@ -52,7 +52,6 @@ class PutxlSet:
         self.reconfigure_logger: callable = None
         self.debug = debug.lower()
         self.debug_file = debug_file
-        self.configure_logger: callable = None
 
         # App and Workbook declaration
         open_wb, app = PutxlSet._get_open_workbook_by_name(
@@ -659,7 +658,8 @@ class PutxlSet:
                 # Work with the cleaned_rules to adjust the cell formats in Excel with RangeOperator
                 m = 0
                 for rulename, lc_content in cleaned_rules.items():
-                    self.logger.info(f"\t{m + 1}. [rulename] = **{rulename}**")
+                    self.logger.info(f"")
+                    self.logger.info(f"\t[rulename] = **{rulename}**")
                     cellrange = lc_content['cellrange']
                     cd_format_rule = lc_content['format']
                     self.logger.info(f"\t[cellrange] = **{cellrange}**")
@@ -672,10 +672,11 @@ class PutxlSet:
                         # parse_format_rule is taken from _xlwings module
                         self.logger.info(f"\tParsing the [cd_format_rule] with <parse_format_rule> method from range.py under io.excel directory")
                         cd_format_kwargs = parse_format_rule(cd_format_rule)
+                        self.logger.info(f"\tResult: [cd_format_kwargs] = **{cd_format_kwargs}**")
 
                         if len(cellrange) <= 30:
                             self.logger.info(f"\tDirectly apply - length of [cellrange] is **{len(cellrange)}**, no larger than 30")
-                            self.logger.info(f"\tApplying to range: **{cellrange}**")
+                            self.logger.info(f"\t--> Applying to range: **{cellrange}**")
                             RangeOperator(self.ws.range(cellrange)).format(debug=debug, **cd_format_kwargs)
                         else:
                             self.logger.info(f"\tCombine cells first - length of [cellrange] is **{len(cellrange)}**, larger than 30")
@@ -692,8 +693,7 @@ class PutxlSet:
                             '''
                             cellrange_dict = cell_range_combine(cellrange.split(','))
                             self.logger.info(f"\tCombined into 1 dict [cell_range_combine] with length of **{len(cellrange_dict)}**")
-                            self.logger.info(f"")
-                            self.logger.info(f"\tApplying to range:")
+                            self.logger.info(f"\t--> Applying to range:")
 
                             for key, range_list in cellrange_dict.items():
                                 self.logger.info(f"\t\tRange ID: [key] = **{key}**")
@@ -838,7 +838,7 @@ if __name__ == '__main__':
     d = cpd.sysuse_auto
     debuglevel = 'info'
     ps = cpd.PutxlSet('delete_table.xlsx')
-    ps.putxl(d, cell='A4', cd_format={'column': 'rep78', 'rules': {1: 'red', 2: 'blue'}, 'applyto': 'self'})
+    ps.putxl(d, cell='A4', cd_format={'column': 'rep78', 'rules': {1: 'red', 2: 'blue'}, 'applyto': 'self'}, debug='info')
 
     # ps.putxl(
     #     r.table_region('AFW'),
