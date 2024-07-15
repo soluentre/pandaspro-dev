@@ -461,6 +461,19 @@ class PutxlSet:
         if header_wrap:
             RangeOperator(self.ws.range(io.range_header)).format(wrap=True, debug=debug)
 
+        '''
+        apply_df_format: the main function to add format to ranges
+        This parameter will take a dictionary which uses:
+        (1) format prompt key words as the keys
+        (2) a list of range key words, which may be just a str term (attribute) ... 
+            or a cpdFramexl object 
+
+        >>> ... df_format={'msblue80': 'header'}
+        >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
+        >>> ... df_format={'blued25; font_color=white': 'columns(['a','b'], header=only)'}
+
+        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
+        '''
         # Format with defined rules using a Dictionary
         def apply_df_format(localinput_format):
             i = 0
@@ -594,6 +607,7 @@ class PutxlSet:
             for each_style in checked_list:
                 self.info_section_lv2(f"Sub-section: {each_style}")
                 self.logger.debug(f"Validation of index_merge: **{each_style}** vs. index_merge\(([^,]+),?\s*(.*)\)")
+                self.logger.debug(f"The [apply_style] var will be checking **{each_style}** from <style_sheets>, check style_sheets.py under user_config directory")
                 match = re.match(r'index_merge\(([^,]+),?\s*(.*)\)', each_style)
                 self.logger.debug(f"Validation result: **{match}**")
                 if match:
@@ -608,29 +622,29 @@ class PutxlSet:
                     self.logger.info(f"As index_merge <is> detected, [apply_style] is taking value **{apply_style}**")
                 else:
                     apply_style = style_sheets[each_style]
-                    self.logger.info(
-                        f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
+                    self.logger.info(f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
 
                 apply_df_format(apply_style)
 
-        '''
-        df_format: the main function to add format to ranges
-        This parameter will take a dictionary which uses:
-        (1) format prompt key words as the keys
-        (2) a list of range key words, which may be just a str term (attribute) ... 
-            or a cpdFramexl object 
-
-        >>> ... df_format={'msblue80': 'header'}
-        >>> ... df_format={'msblue80': cpdFramexl(name='index_merge_inputs', level='cmu_dept_major', columns=['age', 'salary']}
-        >>> ... df_format={'blued25; font_color=white': 'columns(['a','b'], header=only)'}
-
-        NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
-        '''
         if df_format:
             self.info_section_lv1(f"df_format")
             self.logger.info(f"A length **{len(df_format)}** dictionary is passed to [df_format]")
             apply_df_format(df_format)
 
+        '''
+        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
+        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
+        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
+
+        key 1: column = indicating the conditional formatting columns
+        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
+        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
+        (default = self)
+
+        >>> ... cd_format={'column': 'age', 'rules': {...}}
+        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
+        >>> ... cd_format={'column': 'grade', 'rules': {'rule1':{'r':...(pd.Series), 'f':...}}, 'applyto': 'self'}
+        '''
         # Conditional Format (1 column based)
         # This function will always check the type of the argument that is passed to this parameter
         # If a list type is detected, then use loop to loop through the list and call the cd_paint function many times
@@ -698,6 +712,7 @@ class PutxlSet:
         use cd_sheets command to view pre-defined formats
         '''
         if cd_style:
+            self.info_section_lv1("SECTION: cd_style")
             from pandaspro.user_config.cd_sheets import cd_sheets
 
             # First parse string to lists
@@ -707,30 +722,24 @@ class PutxlSet:
                 loop_list = cd_style
             else:
                 raise ValueError('Invalid object for cd parameter, only str or list accepted')
+            self.logger.info(f"[cd_style] argument is automatically parsed into a loop_list: **{loop_list}**")
+            self.logger.info(f"Note that some of these styles having multiple dictionaries as target reference, while others only refers to one")
 
             # Loop and apply cd by checking the cd py module
             for each_cd in loop_list:
                 apply_cd = cd_sheets[each_cd]
+                self.info_section_lv2(f"Sub-section: {each_cd}")
+                self.logger.debug(f"The [apply_cd] var will be checking **{each_cd}** from <cd_sheets>, check cd_sheets.py under user_config directory")
+                self.logger.debug(f"Checked [apply_cd]: **{apply_cd}** is a **{type(apply_cd)}**")
+
                 if isinstance(apply_cd, list):
                     for each_cd_sub in apply_cd:
                         apply_cd_format(each_cd_sub)
                 elif isinstance(apply_cd, dict):
-                    apply_df_format(apply_cd)
+                    apply_cd_format(apply_cd)
+                else:
+                    raise ValueError('Invalid type for [apply_cd]')
 
-        '''
-        cd_format: the main function to add format to core export data ranges (exc. headers and indices)
-        This parameter will take a dictionary which allows only three keys (and applyto maybe omitted)
-        (refer to the module _cdformat on the class design: _cdformat >> _framewriter.range_cdformat >> _putexcel.PutxlSet.putxl)
-
-        key 1: column = indicating the conditional formatting columns
-        key 2: rules = a dictionary with formatting rules (only based on the column above, like inlist, value equals to, etc.)
-        key 3: applyto = where to apply, whether column itself or the whole dataframe, or, several selected columns     
-        (default = self)
-
-        >>> ... cd_format={'column': 'age', 'rules': {...}}
-        >>> ... cd_format={'column': 'grade', 'rules': {'GA':'#FF0000'}, 'applyto': 'self'}
-        >>> ... cd_format={'column': 'grade', 'rules': {'rule1':{'r':...(pd.Series), 'f':...}}, 'applyto': 'self'}
-        '''
         if cd_format:
             apply_cd_format(cd_format)
 
