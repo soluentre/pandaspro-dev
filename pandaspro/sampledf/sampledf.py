@@ -1051,7 +1051,7 @@ data = [
         "foreign": "Foreign",
     },
 ]
-sysuse_auto = FramePro(pd.DataFrame(data)).head(5)
+sysuse_auto = FramePro(pd.DataFrame(data))
 
 # World Bank HR Temp
 mypivot = {
