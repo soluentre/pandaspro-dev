@@ -1,7 +1,7 @@
-from pandaspro.email.api import (
-    emailfetcher,
-    create_mail_class
-)
+# from pandaspro.email.api import (
+#     emailfetcher,
+#     create_mail_class
+# )
 
 from pandaspro.core.api import (
     bdate,
