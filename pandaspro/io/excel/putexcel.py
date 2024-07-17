@@ -652,6 +652,8 @@ class PutxlSet:
         def apply_cd_format(input_cd):
             def cd_paint(input_cd_instance):
                 self.logger.info("Parsing the dict [input_cd] with <io> and <range_cdformat> instance method")
+                for key, value in input_cd_instance.items():
+                    self.logger.info(f"Dict [{key}]: {value}")
                 cleaned_rules = io.range_cdformat(**input_cd_instance)
                 self.logger.info(f"This will result in a **cleaned dict with multi sub-dicts: [cleaned_rules] with {len(cleaned_rules)}**")
 

@@ -6,8 +6,8 @@ setup(
     description='Upgraded pandas package for easier dataframe operations',
     packages=find_packages(),
     install_requires=[
-        'numpy~=2.0.0',
-        'pandas~=2.2.2',
+        'numpy>=1.24',
+        'pandas~=2.2.1',
         'openpyxl~=3.1.5',
         'xlwings~=0.31.10',
         'jinja2~=3.1.4',

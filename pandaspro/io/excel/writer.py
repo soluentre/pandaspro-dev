@@ -324,6 +324,7 @@ class FramexlWriter:
                 temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
                 cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
+
             self.cd_cellrange_1col = cd_cellrange_1col
 
         '''
