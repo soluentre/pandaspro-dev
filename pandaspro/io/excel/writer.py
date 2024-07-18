@@ -325,17 +325,22 @@ class FramexlWriter:
             def _df_to_mystring(df):
                 lcarray = df.values.flatten()
                 long_string = ','.join([str(value) for value in lcarray])
+                self.logger.debug(f'++ \t[flattened lcarray]: a numpy array **{temp_dfmap.shape}**')
+                self.logger.debug(f'++ \t[long string]: a string **<{long_string}>** with length **{len(long_string)}**')
+
                 return long_string
 
             cd_cellrange_1col = {}
             self.debug_section_spec_start('Parsing this_rules_mask which is the CdFormat class <get_rules_mask()> method')
             self.logger.debug(f'++ [this_rules_mask]: keys are **{this_rules_mask.keys()}**')
             for key, mask_rule in this_rules_mask.items():
-                self.logger.debug(f'++ [key]: **{key}**, [mask_rule]: **a {type(mask_rule)} with size {len(mask_rule)}**')
+                self.logger.debug("")
+                self.logger.debug(f'++ \t[key]: **{key}**, [mask_rule]: a **{type(mask_rule)}** with size **{len(mask_rule)}**')
                 cd_cellrange_1col[key] = {}
                 temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
-                self.logger.debug(f'++ [temp_dfmap]: **a {type(temp_dfmap)} with size {temp_dfmap.shape}**')
+                self.logger.debug(f'++ \t[temp_dfmap]: a **{type(temp_dfmap)}** with size **{temp_dfmap.shape}**')
                 cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
+
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
 
             self.cd_cellrange_1col = cd_cellrange_1col
