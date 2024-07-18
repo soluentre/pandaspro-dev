@@ -9,7 +9,7 @@ from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
 from pandaspro.io.cellpro.cellpro import cell_combine_by_row, CellPro, cell_combine_by_column
 from pandaspro.io.excel.range import RangeOperator, parse_format_rule, color_to_int
-from pandaspro.utils.cpdLogger import cpdLogger
+from pandaspro.utils.cpd_logger import cpdLogger
 
 
 def is_range_filled(ws, range_str: str = None):

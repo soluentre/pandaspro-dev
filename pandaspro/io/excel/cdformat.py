@@ -2,7 +2,7 @@ import pandas as pd
 from pandaspro.core.tools.toolObject import toolObject
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.utils import df_with_index_for_mask
-from pandaspro.utils.cpdLogger import cpdLogger
+from pandaspro.utils.cpd_logger import cpdLogger
 
 mytools = toolObject()
 

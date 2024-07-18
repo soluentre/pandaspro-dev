@@ -4,7 +4,7 @@ from pandaspro.core.tools.utils import df_with_index_for_mask
 from pandaspro.io.cellpro.cellpro import CellPro, index_cell
 import pandas as pd
 
-from pandaspro.utils.cpdLogger import cpdLogger
+from pandaspro.utils.cpd_logger import cpdLogger
 
 
 class CellxlWriter:
