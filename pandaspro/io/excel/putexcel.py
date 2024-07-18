@@ -460,13 +460,13 @@ class PutxlSet:
         NOTE! You must specify the kwargs' paras when declaring, like name=, c=, level=, otherwise will be error
         '''
         # Format with defined rules using a Dict
-        def apply_df_format(localinput_format):
+        def apply_df_format(localinput_format, name=None):
             i = 0
             for rule, rangeinput in localinput_format.items():
                 # Parse the format to a dict, passed to the .format for RangeOperator
                 # parse_format_rule is taken from _xlwings module
                 self.logger.info("")
-                self.logger.info(f"# Number {i + 1} df_format")
+                self.logger.info(f"# df_format sub: {name} - Number {i + 1} df_format")
                 self.logger.info(f"#" * 1 + ' ' + '-' * 45)
                 self.logger.info(f"Viewing: key [rule] = **{rule}**, value [rangeinput] = **{rangeinput}**")
                 self.logger.info(f"(1) Parsing the key [rule]")
@@ -609,7 +609,7 @@ class PutxlSet:
                     apply_style = style_sheets[each_style]
                     self.logger.info(f"As index_merge <is not> detected, [apply_style] is taking value **{apply_style}**")
 
-                apply_df_format(apply_style)
+                apply_df_format(apply_style, each_style)
 
         if df_format:
             self.info_section_lv1(f"df_format")
@@ -635,7 +635,7 @@ class PutxlSet:
         # If a list type is detected, then use loop to loop through the list and call the cd_paint function many times
         # So whether dict or a list of dictionaries, the format has to comply with standard cpd cd dict format
         # .. which you may refer to the comments before "if cd" line
-        def apply_cd_format(input_cd):
+        def apply_cd_format(input_cd, name=None):
             def cd_paint(input_cd_instance):
                 self.logger.info("Parsing the dict [input_cd] with <io> and <range_cdformat> instance method")
                 for key, value in input_cd_instance.items():
@@ -701,7 +701,7 @@ class PutxlSet:
                 l = 0
                 for rule in input_cd:
                     self.logger.info("")
-                    self.logger.info(f"# Number {l + 1} cd_format")
+                    self.logger.info(f"# cd_format sub: {name} - Number {l + 1}")
                     self.logger.info(f"#" * 1 + ' ' + '-' * 45)
                     self.logger.info(f"This cd_format dict is built from keys: **{rule.keys()}**")
                     cd_paint(rule)
@@ -731,7 +731,7 @@ class PutxlSet:
                 self.info_section_lv2(f"Sub-section: {each_cd}")
                 self.logger.debug(f"The [apply_cd] var will be checking **{each_cd}** from <cd_sheets>, check cd_sheets.py under user_config directory")
                 self.logger.debug(f"Checked [apply_cd]: **{apply_cd}** is a **{type(apply_cd)}**")
-                apply_cd_format(apply_cd)
+                apply_cd_format(apply_cd, each_cd)
 
                 # To Delete, apply_cd_format can take dictionaries/lists
                 # ------------------------------------------

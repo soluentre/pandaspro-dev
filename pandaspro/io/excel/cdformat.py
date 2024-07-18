@@ -66,7 +66,7 @@ class CdFormat:
     def _configure_rules_mask(self):
         result = {}
         self.debug_section_spec_start('Creating CdFormat Class')
-        self.logger.debug('+++ Created result dict as blank {}')
+        self.logger.debug('++ Created result dict as blank {}')
 
         for rulename, value in self.cd_rules.items():
             self.logger.debug(f'++ [key-rulename]: **{rulename}**, [value-value]: **{value}**')
