@@ -81,9 +81,8 @@ def cpdLogger(cls):
             self.logger.addHandler(file_handler)
 
     def _debug_section_spec_start(self, section_name):
-        self.logger.debug("")
         self.logger.debug("+" * 60)
-        self.logger.debug(f"{section_name} START")
+        self.logger.debug(f"+ DIVE DEEPER: {section_name}")
         self.logger.debug("+" * 60)
 
     def _debug_section_spec_end(self):

@@ -298,7 +298,7 @@ class FramexlWriter:
             rules = None,
             applyto = 'self',
     ):
-        self.logger.debug_section_spec_start('CdFormat Class')
+        self.debug_section_spec_start('Creating CdFormat Class')
         mycd = CdFormat(
             df=self.rawdata,
             column=column,

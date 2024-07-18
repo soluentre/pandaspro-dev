@@ -19,7 +19,6 @@ class CdFormat:
         self.df = df
         self.column = column
         self.cd_rules = cd_rules
-        self.rules_mask = None
         self.locate = None
         self.df_with_index = df_with_index_for_mask(self.df)
         self.col_not_exist = None if self.column in self.df_with_index.columns else True
@@ -38,11 +37,18 @@ class CdFormat:
             else:
                 raise TypeError('Unexpected type of applyto parameter, only str/list being accepted')
 
-        # self.logger.debug_section_spec_start("Creating CdFormat Instance")
         self.apply = _apply_decide(applyto)
+
+        # self.logger.debug_section_spec_start("Creating CdFormat Instance")
+
+    def update_rules_mask(self):
         if self.column in self.df_with_index.columns:
             self.rules_mask = self._configure_rules_mask()
+            return self.rules_mask
+        else:
+            return {}
         # self.logger.debug_section_spec_end()
+
     '''
     Example of the rules parameter
 
@@ -59,13 +65,13 @@ class CdFormat:
     '''
     def _configure_rules_mask(self):
         result = {}
+        self.logger.debug('+ Created result dict as blank {}')
 
         for rulename, value in self.cd_rules.items():
+            self.logger.debug(f'+ [key - rulename]: **{rulename}**, [value - value]: **{value}**')
             result[rulename] = {}
 
-            if self.column in self.df_with_index.columns:
-                pass
-            else:
+            if self.column not in self.df_with_index.columns:
                 raise ValueError('Invalid column name specified.')
 
             # Mask and Format Prompt
