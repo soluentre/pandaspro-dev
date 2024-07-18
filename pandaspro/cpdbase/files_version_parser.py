@@ -144,6 +144,12 @@ class FilesVersionParser:
     def get_suffix(self, version):
         return self.check_single_file(version)[1]
 
+    def get_version_str(self, version):
+        return self.get_file(version).split('_')[1]
+
+    def get_version_dt(self, version):
+        return datetime.strptime(self.get_version_str(version), self.dateid_expression)
+
 
 if __name__ == '__main__':
     vp = FilesVersionParser(

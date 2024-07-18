@@ -99,9 +99,6 @@ def cpdBaseFrame(
                 cpd_kwargs = extract_params(CombinedClass.get_process_method())[1]
                 version_kwarg = {'version': kwargs.pop('version', default_version)}
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
-                print(kwargs)
-                print(other_kwargs)
-
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
                 # self.debug.info(f'[version_kwarg]: {version_kwarg}')
                 # self.debug.info(f'[other_kwargs]: {other_kwargs}')
@@ -116,16 +113,25 @@ def cpdBaseFrame(
                     except ValueError as e:
                         raise ValueError(textwrap.dedent(f'''
                             --------------------------------------
-                            DataFrame constructor not properly called!
+                            {e}
                             Please only pass key-word arguments when you want to create new instances of the <{myclass.__name__}>. 
                             You are passing {args} as positional arguments, which can not be parsed by the pandas DataFrame constructor
                         '''))
-                    except
+                    except TypeError as e:
+                        raise TypeError(textwrap.dedent(f'''
+                            --------------------------------------
+                            {e}
+                            Please check that you don't pass any extra key-word arguments besides those you declared in load defined in class <{myclass.__name__}>.
+                            For the load method defined, the class constructor can only take the following kwargs: {list(other_kwargs.keys())}  
+                        '''))
                 else:
                     # self.logger.info('Entered Below Part of init: no args or kwargs detected')
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
+
+                    self.filename = CombinedClass.get_filename(version_kwarg['version'])
+                    self.version =  CombinedClass.get_file_versions_parser().get
 
             @property
             def _constructor(self):
@@ -141,7 +147,7 @@ def cpdBaseFrame(
     return decorator
 
 
-@cpdBaseFrame(default_version='latest_month', dateid='%Y%m%d')
+@cpdBaseFrame(default_version='latest_month')
 class SOB(pd.DataFrame):
     path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
 
@@ -167,7 +173,7 @@ class SOB(pd.DataFrame):
 
 
 # 测试
-df1 = SOB(region='balabala', debug='info')
+df1 = SOB(region='balabala')
 print(df1.shape)
 
 # df2 = MyDataFrame2(region="Asia")
