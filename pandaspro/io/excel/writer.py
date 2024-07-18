@@ -327,7 +327,7 @@ class FramexlWriter:
                 long_string = ','.join([str(value) for value in lcarray])
                 self.logger.debug(f'++ \t[flattened lcarray]: a numpy array **{temp_dfmap.shape}**')
                 self.logger.debug(f'++ \t[long string]: a string **<{long_string}>** with length **{len(long_string)}**')
-                result_string = long_string if len(long_string) == 0 else "no cells"
+                result_string = "no cells" if len(long_string) == 0 else long_string
                 return result_string
 
             cd_cellrange_1col = {}
