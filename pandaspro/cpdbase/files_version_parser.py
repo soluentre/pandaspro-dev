@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
+from pandaspro.utils.cpd_logger import cpdLogger
 
 
+@cpdLogger
 class FilesVersionParser:
     def __init__(self, path, class_prefix, dateid_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
@@ -100,18 +102,6 @@ class FilesVersionParser:
 
         return max(freq_filtered_dates, key=lambda x: x[1])[0] if freq_filtered_dates else None
 
-    def check_for_duplicates(self):
-        files = self.list_all_files()
-        dates = [f.split('_')[1] for f in files]
-        parsed_dates = [datetime.strptime(date, self.dateid_expression) for date in dates]
-        duplicates = FilesVersionParser._find_duplicates(parsed_dates)
-
-        if duplicates:
-            duplicate_files = [files[i] for i in duplicates]
-            print(f'Note your data tables should be unique at the <<{self.granularity}>> level.')
-            print(f'Duplicate dates detected in the database folder for files: {duplicate_files}.')
-            raise ValueError('See info printed above: go and fix the duplicates')
-
     @staticmethod
     def _find_duplicates(items):
         seen = {}
@@ -123,6 +113,18 @@ class FilesVersionParser:
             else:
                 seen[item] = i
         return duplicates
+
+    def check_for_duplicates(self):
+        files = self.list_all_files()
+        dates = [f.split('_')[1] for f in files]
+        parsed_dates = [datetime.strptime(date, self.dateid_expression) for date in dates]
+        duplicates = FilesVersionParser._find_duplicates(parsed_dates)
+
+        if duplicates:
+            duplicate_files = [files[i] for i in duplicates]
+            print(f'Note your data tables should be unique at the <<{self.granularity}>> level.')
+            print(f'Duplicate dates detected in the database folder for files: {duplicate_files}.')
+            raise ValueError('See info printed above: go and fix the duplicates')
 
     def check_single_file(self, version):
         filename_start = self.class_prefix + '_' + version
@@ -147,12 +149,12 @@ if __name__ == '__main__':
     vp = FilesVersionParser(
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv',
         class_prefix = 'SOB',
-        id_expression = '%Y%m%d',
+        dateid_expression = '%Y-%m-%d',
         fiscal_year_end = '05-31'
     )
     print(vp.path)
     print(vp.check_single_file('20240715'))
-    print(vp.get_latest_file(''))
+    print(vp.get_latest_file())
     # print(vp._can_parse_date('no date'))
     # print(vp.list_all_files())
 

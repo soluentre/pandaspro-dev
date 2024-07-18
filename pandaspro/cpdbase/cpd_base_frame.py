@@ -19,9 +19,25 @@ def extract_params(func):
     return pos_params, kw_params_with_defaults
 
 
-def cpdBaseFrame(path=None):
+def cpdBaseFrame(
+        path: str = None,
+        default_version: str = 'latest',
+        dateid: str = '%Y-%m-%d',
+        file_type: str = 'csv',
+        fiscal_year_end: str = '06-30'
+):
     def decorator(myclass):
         class CombinedClass(myclass, cpdBaseFrameDesign, ABC):
+            @classmethod
+            def get_file_versions_parser(cls):
+                return FilesVersionParser(
+                    path = cls.get_path(),
+                    class_prefix = cls.__name__,
+                    dateid_expression = dateid,
+                    file_type = file_type,
+                    fiscal_year_end = fiscal_year_end
+                )
+
             @classmethod
             def get_path(cls):
                 if path and (hasattr(myclass, 'get_path') or hasattr(myclass, 'path')):
@@ -39,20 +55,26 @@ def cpdBaseFrame(path=None):
                         raise TypeError("Can't instantiate abstract class MyConcreteClass with abstract method get_path")
 
             @classmethod
+            def get_filename(cls):
+                if default_version == 'latest':
+                    filename = cls.get_file_versions_parser().get_latest_file()
+                elif 'latest' in default_version:
+                    freq = default_version.split('_')[1]
+                    filename = cls.get_file_versions_parser().get_latest_file(freq)
+                else:
+                    filename = cls.get_file_versions_parser().get_file(default_version)
+
+                return filename
+
+            @classmethod
             def load(cls, version='latest'):
-                files_version_parser = FilesVersionParser(
-                    path = cls.get_path(),
-                    class_prefix= cls.__name__,
-                    dateid_expression = date
-                )
-                if 'latest' in version:
-                    freq = version.split('_')[0], version.split('_')[1]
-                    if len(freq) != 0:
-                        freq = 'none'
-
-
-
-                return cpd.pwread(cls.get_path() + f'/{version}.csv', low_memory=False)[0]
+                filename = cls.get_filename()
+                if file_type == 'csv':
+                    return cpd.pwread(cls.get_path() + f'/{filename}', low_memory=False)[0]
+                elif file_type == 'xlsx':
+                    return cpd.pwread(cls.get_path() + f'/{filename}')[0]
+                else:
+                    raise ValueError('Invalid file type, can only read .csv/.xlsx format.')
 
             def __init__(self, *args, **kwargs):
                 cpd_kwargs = extract_params(CombinedClass.load)[1]
@@ -77,8 +99,8 @@ def cpdBaseFrame(path=None):
     return decorator
 
 
-@cpdBaseFrame()
-class sob(pd.DataFrame):
+@cpdBaseFrame(default_version='latest_month', dateid='%Y%m%d')
+class SOB(pd.DataFrame):
     path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
     pass
     # @classmethod
@@ -98,7 +120,7 @@ class sob(pd.DataFrame):
 
 
 # 测试
-df1 = sob(version='SOB_20240715_2407151819')
+df1 = SOB()
 print(df1.shape)
 
 # df2 = MyDataFrame2(region="Asia")
