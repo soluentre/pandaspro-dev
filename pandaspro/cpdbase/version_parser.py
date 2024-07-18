@@ -3,13 +3,15 @@ from datetime import datetime
 
 
 class VersionParser:
-    def __init__(self, path, class_prefix, id_expression='%Y-%m-%d', file_type='csv'):
+    def __init__(self, path, class_prefix, id_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\')
         self.path = path
         self.class_prefix = class_prefix
         self.id_expression = id_expression
         self.file_type = file_type
+        self.fiscal_year_end_month = int(fiscal_year_end.split('-')[0])
+        self.fiscal_year_end_day = int(fiscal_year_end.split('-')[1])
 
     def check_single_file(self, version):
         filename_start = self.class_prefix + '_' + version
@@ -23,10 +25,10 @@ class VersionParser:
             self.suffix = matching_files[0][len(self.filename_start) + 1:]
             return matching_files[0], self.suffix
 
-    def get_file(self, class_prefix, version):
+    def get_file(self, version):
         return self.check_single_file(version)[0]
 
-    def get_suffix(self, class_prefix, version):
+    def get_suffix(self, version):
         return self.check_single_file(version)[1]
 
     def _can_parse_date(self, date_str):
@@ -35,6 +37,25 @@ class VersionParser:
             return True
         except ValueError:
             return False
+
+    def _filter_by_frequency(self, dates, freq):
+        if freq == 'fiscal_year':
+            return [(file, date) for file, date in dates if
+                    date.month == self.fiscal_year_end_month and date.day == self.fiscal_year_end_day]
+        elif freq == 'year':
+            return [(file, date) for file, date in dates if date.month == 12 and date.day == 31]
+        elif freq == 'quarter':
+            return [(file, date) for file, date in dates if date.month in [3, 6, 9, 12] and date.day == 31]
+        elif freq == 'month':
+            return [(file, date) for file, date in dates if date.day in (30, 31)]
+        elif freq == 'day':
+            return [(file, date) for file, date in dates if date.hour == 23 and date.minute == 59 and date.second == 59]
+        elif freq == 'hour':
+            return [(file, date) for file, date in dates if date.minute == 59 and date.second == 59]
+        elif freq == 'minute':
+            return [(file, date) for file, date in dates if date.second == 59]
+        else:
+            raise ValueError(f"Unknown frequency: {freq}")
 
     def get_latest_file(self, freq='none'):
         # Configure matching files
@@ -45,53 +66,26 @@ class VersionParser:
             f.endswith(f'.{self.file_type}') and
             self._can_parse_date(f.split('_')[1])
         ]
-        if len(matching_files) == 0:
-            raise ValueError('Database files should match format: class_vid[_suffix].csv/.xlsx, no such file detected')
-        print(matching_files)
+        if not matching_files:
+            raise ValueError('No matching files detected')
 
-        # Configure dates for comparison
+        # Configure dates list and apply use max method
         dates = [(file, datetime.strptime(file.split('_')[1], self.id_expression)) for file in matching_files]
-
         if freq == 'none':
             return max(dates, key=lambda x: x[1])[0] if dates else None
+        freq_filtered_dates = self._filter_by_frequency(dates, freq)
 
-        now = datetime.now()
-        if freq == 'fiscal_year':
-            fiscal_dates = [(file, date) for file, date in dates if date.month == 6 and date.day == 30]
-            return max(fiscal_dates, key=lambda x: x[1])[0] if fiscal_dates else None
-
-        elif freq == 'year':
-            year_dates = [(file, date) for file, date in dates if date.month == 12 and date.day == 31]
-            return max(year_dates, key=lambda x: x[1])[0] if year_dates else None
-
-        elif freq == 'month':
-            month_dates = [(file, date) for file, date in dates if date.day == 30 or date.day == 31]
-            return max(month_dates, key=lambda x: x[1])[0] if month_dates else None
-
-        elif freq == 'day':
-            day_dates = [(file, date) for file, date in dates if
-                         date.hour == 23 and date.minute == 59 and date.second == 59]
-            return max(day_dates, key=lambda x: x[1])[0] if day_dates else None
-
-        elif freq == 'hour':
-            hour_dates = [(file, date) for file, date in dates if date.minute == 59 and date.second == 59]
-            return max(hour_dates, key=lambda x: x[1])[0] if hour_dates else None
-
-        elif freq == 'minute':
-            minute_dates = [(file, date) for file, date in dates if date.second == 59]
-            return max(minute_dates, key=lambda x: x[1])[0] if minute_dates else None
-
-        else:
-            raise ValueError(f"Unknown frequency: {freq}")
+        return max(freq_filtered_dates, key=lambda x: x[1])[0] if freq_filtered_dates else None
 
 
 if __name__ == '__main__':
     vp = VersionParser(
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv',
         class_prefix = 'SOB',
-        id_expression = '%Y%m%d'
+        id_expression = '%Y%m%d',
+        fiscal_year_end = '05-31'
     )
     print(vp.path)
     print(vp.check_single_file('20240715'))
-    print(vp.get_latest_file('year'))
+    print(vp.get_latest_file('fiscal_year'))
     print(vp._can_parse_date('no date'))
