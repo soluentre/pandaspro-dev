@@ -151,7 +151,9 @@ class FilesVersionParser:
         return datetime.strptime(self.get_version_str(version), self.dateid_expression)
 
 ## create a class: cpdDateStr - dt.year, dt.B, dt.b, dt.showtypes, dt.type1 + maya.parse
-## A new package: datepro
+## A new package: datepro under cpd.
+
+## cpd.DatePro('2024-03-01') like that
 
 if __name__ == '__main__':
     vp = FilesVersionParser(
