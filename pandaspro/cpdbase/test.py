@@ -4,9 +4,6 @@ from abc import ABC
 import inspect
 from pandaspro.cpdbase.design import cpdBaseFrameDesign
 from pandaspro.cpdbase.files_version_parser import FilesVersionParser
-import textwrap
-
-from pandaspro.utils.cpd_logger import cpdLogger
 
 
 def extract_params(func):
@@ -59,20 +56,20 @@ def cpdBaseFrame(
                         raise TypeError("Can't instantiate abstract class MyConcreteClass with abstract method get_path.")
 
             @classmethod
-            def get_filename(cls, version):
-                if version == 'latest':
+            def get_filename(cls):
+                if default_version == 'latest':
                     filename = cls.get_file_versions_parser().get_latest_file()
-                elif 'latest' in version:
-                    freq = version.split('_')[1]
+                elif 'latest' in default_version:
+                    freq = default_version.split('_')[1]
                     filename = cls.get_file_versions_parser().get_latest_file(freq)
                 else:
-                    filename = cls.get_file_versions_parser().get_file(version)
+                    filename = cls.get_file_versions_parser().get_file(default_version)
 
                 return filename
 
             @classmethod
-            def read_table(cls, version):
-                filename = cls.get_filename(version)
+            def read_table(cls):
+                filename = cls.get_filename()
                 if file_type == 'csv':
                     return cpd.pwread(cls.get_path() + f'/{filename}', low_memory=False)
                 elif file_type == 'xlsx':
@@ -80,12 +77,8 @@ def cpdBaseFrame(
                 else:
                     raise ValueError('Invalid file type, can only read .csv/.xlsx format.')
 
-            @staticmethod
-            def load(data, **kwargs):
-                return data.head(5)
-
             @classmethod
-            def get_process_method(cls):
+            def load(cls):
                 if load and hasattr(myclass, 'load'):
                     raise AttributeError('Declaring both load argument (1) in @decorator and (2) in-class load attribute/method at the same time is not allowed, please only declare one.')
                 elif hasattr(myclass, 'load'):
@@ -93,39 +86,24 @@ def cpdBaseFrame(
                 elif load:
                     return load
                 else:
-                    return CombinedClass.load
+
+                    return default_load
 
             def __init__(self, *args, **kwargs):
-                cpd_kwargs = extract_params(CombinedClass.get_process_method())[1]
-                version_kwarg = {'version': kwargs.pop('version', default_version)}
-                other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
-                print(kwargs)
-                print(other_kwargs)
-
-                # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
-                # self.debug.info(f'[version_kwarg]: {version_kwarg}')
-                # self.debug.info(f'[other_kwargs]: {other_kwargs}')
-                # self.debug.info(f'[kwargs]: {kwargs}')
-                # self.debug.info(f'[args]: {args}')
+                print("CombinedClass __init__ called")
+                print("CombinedClass load method: ", CombinedClass.load())
+                print("Extracted load params: ", extract_params(CombinedClass.load())[1])
+                cpd_kwargs = extract_params(CombinedClass.load())[1]
+                cpd_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
                 if args or kwargs:
-                    # self.debug_info_lv1('Inside __init__')
-                    # self.logger.info(f'Entered Above Part of init: args: **{type(args)}**, kwargs: **{type(kwargs)}**')
-                    # self.logger.debug(f'Seeing values -> args: **{args}**, kwargs: **{kwargs}**')
-                    try:
-                        super(CombinedClass, self).__init__(*args, **kwargs)
-                    except ValueError as e:
-                        raise ValueError(textwrap.dedent(f'''
-                            --------------------------------------
-                            DataFrame constructor not properly called!
-                            Please only pass key-word arguments when you want to create new instances of the <{myclass.__name__}>. 
-                            You are passing {args} as positional arguments, which can not be parsed by the pandas DataFrame constructor
-                        '''))
-                    except
+                    print("Calling super init with args and kwargs")
+                    super(CombinedClass, self).__init__(*args, **kwargs)
                 else:
-                    # self.logger.info('Entered Below Part of init: no args or kwargs detected')
-                    raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
-                    processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
-                    super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
+                    print("Calling CombinedClass load method with cpd_kwargs: ", cpd_kwargs)
+                    this_frame = CombinedClass.load()(**cpd_kwargs)
+
+                    print("Loaded frame: ", this_frame)
+                    # super(CombinedClass, self).__init__(this_frame)  # Ensure DataFrame initialization
 
             @property
             def _constructor(self):
@@ -145,11 +123,9 @@ def cpdBaseFrame(
 class SOB(pd.DataFrame):
     path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
 
-    @staticmethod
-    def load(data, region=None):
-        print(region)
-        return data.head(30)
-
+    @classmethod
+    def load(cls, region=None):
+        print('123', region)
     # @classmethod
     # def get_path(cls):
     #     return "345"
@@ -159,16 +135,7 @@ class SOB(pd.DataFrame):
     #     return cpd.pwread(cls.get_path() + f'/{version}.csv', low_memory=False)[0]
 
 
-
-
-# @cpdBaseFrame("Greetings", 456, region=None)
-# class MyDataFrame2(pd.DataFrame):
-#     pass
-
-
 # 测试
-df1 = SOB(region='balabala', debug='info')
+df1 = SOB(region='234')
 print(df1.shape)
 
-# df2 = MyDataFrame2(region="Asia")
-# print(df2)

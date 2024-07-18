@@ -13,7 +13,7 @@ class cpdBaseFrameDesign(metaclass=ABCMeta):
     def get_path(cls):
         pass
 
-    @classmethod
+    @staticmethod
     @abstractmethod
-    def load(cls):
+    def load(data, **kwargs):
         pass
