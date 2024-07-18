@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 
-class VersionParser:
+class FilesVersionParser:
     def __init__(self, path, class_prefix, id_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\')
@@ -40,8 +40,7 @@ class VersionParser:
 
     def _filter_by_frequency(self, dates, freq):
         if freq == 'fiscal_year':
-            return [(file, date) for file, date in dates if
-                    date.month == self.fiscal_year_end_month and date.day == self.fiscal_year_end_day]
+            return [(file, date) for file, date in dates if date.month == self.fiscal_year_end_month and date.day == self.fiscal_year_end_day]
         elif freq == 'year':
             return [(file, date) for file, date in dates if date.month == 12 and date.day == 31]
         elif freq == 'quarter':
@@ -57,16 +56,24 @@ class VersionParser:
         else:
             raise ValueError(f"Unknown frequency: {freq}")
 
+    def list_all_files(self):
+        try:
+            files = os.listdir(self.path)
+            matching_files = [
+                f for f in files if
+                f.startswith(self.class_prefix + '_') and
+                f.endswith(f'.{self.file_type}') and
+                self._can_parse_date(f.split('_')[1])
+            ]
+            return matching_files
+        except Exception as e:
+            print(f"Error: {e}")
+            return []
+
     def get_latest_file(self, freq='none'):
         # Configure matching files
-        files = os.listdir(self.path)
-        matching_files = [
-            f for f in files if
-            f.startswith(self.class_prefix + '_') and
-            f.endswith(f'.{self.file_type}') and
-            self._can_parse_date(f.split('_')[1])
-        ]
-        if not matching_files:
+        matching_files = self.list_all_files()
+        if len(matching_files) == 0:
             raise ValueError('No matching files detected')
 
         # Configure dates list and apply use max method
@@ -78,8 +85,9 @@ class VersionParser:
         return max(freq_filtered_dates, key=lambda x: x[1])[0] if freq_filtered_dates else None
 
 
+
 if __name__ == '__main__':
-    vp = VersionParser(
+    vp = FilesVersionParser(
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv',
         class_prefix = 'SOB',
         id_expression = '%Y%m%d',
@@ -89,3 +97,4 @@ if __name__ == '__main__':
     print(vp.check_single_file('20240715'))
     print(vp.get_latest_file('fiscal_year'))
     print(vp._can_parse_date('no date'))
+    print(vp.list_all_files())
