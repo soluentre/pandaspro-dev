@@ -327,8 +327,8 @@ class FramexlWriter:
                 long_string = ','.join([str(value) for value in lcarray])
                 self.logger.debug(f'++ \t[flattened lcarray]: a numpy array **{temp_dfmap.shape}**')
                 self.logger.debug(f'++ \t[long string]: a string **<{long_string}>** with length **{len(long_string)}**')
-
-                return long_string
+                result_string = long_string if len(long_string) == 0 else "no cells"
+                return result_string
 
             cd_cellrange_1col = {}
             self.debug_section_spec_start('Parsing this_rules_mask which is the CdFormat class <get_rules_mask()> method')
@@ -340,7 +340,6 @@ class FramexlWriter:
                 temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
                 self.logger.debug(f'++ \t[temp_dfmap]: a **{type(temp_dfmap)}** with size **{temp_dfmap.shape}**')
                 cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
-
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
 
             self.cd_cellrange_1col = cd_cellrange_1col
