@@ -4,7 +4,7 @@ from functools import wraps
 import re
 
 
-def cpd_logger(cls):
+def cpdLogger(cls):
     class CustomFormatter(logging.Formatter):
         # ANSI escape sequences for text formatting
         RESET = "\033[0m"
@@ -79,6 +79,16 @@ def cpd_logger(cls):
             file_handler.setFormatter(file_formatter)
             self.logger.addHandler(file_handler)
 
+    def _debug_section_spec_start(self, section_name):
+        self.logger.debug("")
+        self.logger.debug("+" * 60)
+        self.logger.debug(f"{section_name} START")
+        self.logger.debug("+" * 60)
+
+    def _debug_section_spec_end(self):
+        self.logger.debug("+" * 60)
+        self.logger.debug("")
+
     def _debug_section_lv1(self, section_name):
         self.logger.debug("")
         self.logger.debug("")
@@ -110,6 +120,8 @@ def cpd_logger(cls):
 
     cls.__init__ = new_init
     cls.configure_logger = configure_logger
+    cls._debug_section_spec_start = _debug_section_spec_start
+    cls._debug_section_spec_end = _debug_section_spec_end
     cls._debug_section_lv1 = _debug_section_lv1
     cls._debug_section_lv2 = _debug_section_lv2
     cls._info_section_lv1 = _info_section_lv1
