@@ -150,7 +150,8 @@ class FilesVersionParser:
     def get_version_dt(self, version):
         return datetime.strptime(self.get_version_str(version), self.dateid_expression)
 
-## create a class: cpdDateStr - dt.year, dt.B, dt.b, dt.showtypes, dt.type1
+## create a class: cpdDateStr - dt.year, dt.B, dt.b, dt.showtypes, dt.type1 + maya.parse
+## A new package: datepro
 
 if __name__ == '__main__':
     vp = FilesVersionParser(
