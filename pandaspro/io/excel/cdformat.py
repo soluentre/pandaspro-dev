@@ -69,7 +69,7 @@ class CdFormat:
         self.logger.debug('+++ Created result dict as blank {}')
 
         for rulename, value in self.cd_rules.items():
-            self.logger.debug(f'+++ [key - rulename]: **{rulename}**, [value - value]: **{value}**')
+            self.logger.debug(f'++ [key-rulename]: **{rulename}**, [value-value]: **{value}**')
             result[rulename] = {}
 
             if self.column not in self.df_with_index.columns:

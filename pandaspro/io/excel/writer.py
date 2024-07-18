@@ -329,12 +329,12 @@ class FramexlWriter:
 
             cd_cellrange_1col = {}
             self.debug_section_spec_start('Parsing this_rules_mask which is the CdFormat class <get_rules_mask()> method')
-            self.logger.debug(f'+++ [this_rules_mask]: **{this_rules_mask}**')
+            self.logger.debug(f'++ [this_rules_mask]: keys are **{this_rules_mask.keys()}**')
             for key, mask_rule in this_rules_mask.items():
-                self.logger.debug(f'+++ [key]: **{key}**, [mask_rule]: **{mask_rule}**')
+                self.logger.debug(f'++ [key]: **{key}**, [mask_rule]: **a {type(mask_rule)} with size {len(mask_rule)}**')
                 cd_cellrange_1col[key] = {}
                 temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
-                self.logger.debug(f'+++ [temp_dfmap]: **{temp_dfmap}**')
+                self.logger.debug(f'++ [temp_dfmap]: **a {type(temp_dfmap)} with size {temp_dfmap.shape}**')
                 cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
 
