@@ -5,35 +5,39 @@ from datetime import datetime
 class FilesVersionParser:
     def __init__(self, path, class_prefix, id_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
-            raise ValueError(r'path cannot end with either / or \\')
+            raise ValueError(r'path cannot end with either / or \\.')
         self.path = path
         self.class_prefix = class_prefix
-        self.id_expression = id_expression
+        self.dateid_expression = id_expression
         self.file_type = file_type
         self.fiscal_year_end_month = int(fiscal_year_end.split('-')[0])
         self.fiscal_year_end_day = int(fiscal_year_end.split('-')[1])
 
-    def check_single_file(self, version):
-        filename_start = self.class_prefix + '_' + version
-        self.filename_start = filename_start
-        files = os.listdir(self.path)
-        matching_files = [f for f in files if f.startswith(self.filename_start) and (f.endswith(f'.{self.file_type}'))]
-        if len(matching_files) != 1:
-            raise Exception(
-                f"Expected exactly one file starting with '{self.filename_start}' but found {len(matching_files)}")
+        # Get the granularity of the id_expression
+        self.granularity = self.get_granularity()
+
+        # Perform duplicate check on initialization
+        self.check_for_duplicates()
+
+    def get_granularity(self):
+        if '%S' in self.dateid_expression:
+            return 'second'
+        elif '%M' in self.dateid_expression:
+            return 'minute'
+        elif '%H' in self.dateid_expression:
+            return 'hour'
+        elif '%d' in self.dateid_expression:
+            return 'day'
+        elif '%m' in self.dateid_expression or '%B' in self.dateid_expression or '%b' in self.dateid_expression:
+            return 'month'
+        elif '%Y' in self.dateid_expression:
+            return 'year'
         else:
-            self.suffix = matching_files[0][len(self.filename_start) + 1:]
-            return matching_files[0], self.suffix
-
-    def get_file(self, version):
-        return self.check_single_file(version)[0]
-
-    def get_suffix(self, version):
-        return self.check_single_file(version)[1]
+            raise ValueError('Invalid dateid_expression provided.')
 
     def _can_parse_date(self, date_str):
         try:
-            datetime.strptime(date_str, self.id_expression)
+            datetime.strptime(date_str, self.dateid_expression)
             return True
         except ValueError:
             return False
@@ -54,7 +58,7 @@ class FilesVersionParser:
         elif freq == 'minute':
             return [(file, date) for file, date in dates if date.second == 59]
         else:
-            raise ValueError(f"Unknown frequency: {freq}")
+            raise ValueError(f"Unknown frequency: <<{freq}>>.")
 
     def list_all_files(self):
         try:
@@ -74,16 +78,58 @@ class FilesVersionParser:
         # Configure matching files
         matching_files = self.list_all_files()
         if len(matching_files) == 0:
-            raise ValueError('No matching files detected')
+            raise ValueError('No matching files detected.')
 
         # Configure dates list and apply use max method
-        dates = [(file, datetime.strptime(file.split('_')[1], self.id_expression)) for file in matching_files]
+        dates = [(file, datetime.strptime(file.split('_')[1], self.dateid_expression)) for file in matching_files]
         if freq == 'none':
             return max(dates, key=lambda x: x[1])[0] if dates else None
         freq_filtered_dates = self._filter_by_frequency(dates, freq)
 
         return max(freq_filtered_dates, key=lambda x: x[1])[0] if freq_filtered_dates else None
 
+    def check_for_duplicates(self):
+        files = self.list_all_files()
+        dates = [f.split('_')[1] for f in files]
+        parsed_dates = [datetime.strptime(date, self.dateid_expression) for date in dates]
+        duplicates = FilesVersionParser._find_duplicates(parsed_dates)
+
+        if duplicates:
+            duplicate_files = [files[i] for i in duplicates]
+            raise ValueError(
+                f'Duplicate dates detected in the database folder for files: {duplicate_files}. '
+                f'Go fix the duplicates. Note your data tables should be unique at the {self.granularity} level.'
+            )
+
+    @staticmethod
+    def _find_duplicates(items):
+        seen = {}
+        duplicates = []
+        for i, item in enumerate(items):
+            if item in seen:
+                duplicates.append(i)
+                duplicates.append(seen[item])
+            else:
+                seen[item] = i
+        return duplicates
+
+    def check_single_file(self, version):
+        filename_start = self.class_prefix + '_' + version
+        self.filename_start = filename_start
+        files = os.listdir(self.path)
+        matching_files = [f for f in files if f.startswith(self.filename_start) and (f.endswith(f'.{self.file_type}'))]
+        if len(matching_files) != 1:
+            raise Exception(
+                f"Expected exactly one file starting with '{self.filename_start}' but found {len(matching_files)}.")
+        else:
+            self.suffix = matching_files[0][len(self.filename_start) + 1:]
+            return matching_files[0], self.suffix
+
+    def get_file(self, version):
+        return self.check_single_file(version)[0]
+
+    def get_suffix(self, version):
+        return self.check_single_file(version)[1]
 
 
 if __name__ == '__main__':
