@@ -41,7 +41,7 @@ class CdFormat:
 
         # self.logger.debug_section_spec_start("Creating CdFormat Instance")
 
-    def update_rules_mask(self):
+    def get_rules_mask(self):
         if self.column in self.df_with_index.columns:
             self.rules_mask = self._configure_rules_mask()
             return self.rules_mask
@@ -65,10 +65,11 @@ class CdFormat:
     '''
     def _configure_rules_mask(self):
         result = {}
-        self.logger.debug('+ Created result dict as blank {}')
+        self.debug_section_spec_start('Creating CdFormat Class')
+        self.logger.debug('+++ Created result dict as blank {}')
 
         for rulename, value in self.cd_rules.items():
-            self.logger.debug(f'+ [key - rulename]: **{rulename}**, [value - value]: **{value}**')
+            self.logger.debug(f'+++ [key - rulename]: **{rulename}**, [value - value]: **{value}**')
             result[rulename] = {}
 
             if self.column not in self.df_with_index.columns:
