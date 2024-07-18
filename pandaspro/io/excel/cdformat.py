@@ -2,7 +2,7 @@ import pandas as pd
 from pandaspro.core.tools.toolObject import toolObject
 from pandaspro.core.stringfunc import parse_wild
 from pandaspro.core.tools.utils import df_with_index_for_mask
-from pandaspro.utils.cpd_logger import cpdLogger
+from pandaspro.utils.cpdLogger import cpdLogger
 
 mytools = toolObject()
 
@@ -14,7 +14,7 @@ class CdFormat:
             df,
             column: str,
             cd_rules: dict,
-            applyto: str | list = 'self'
+            applyto: str | list = 'self',
     ):
         self.df = df
         self.column = column
@@ -38,10 +38,11 @@ class CdFormat:
             else:
                 raise TypeError('Unexpected type of applyto parameter, only str/list being accepted')
 
+        # self.logger.debug_section_spec_start("Creating CdFormat Instance")
         self.apply = _apply_decide(applyto)
         if self.column in self.df_with_index.columns:
             self.rules_mask = self._configure_rules_mask()
-
+        # self.logger.debug_section_spec_end()
     '''
     Example of the rules parameter
 

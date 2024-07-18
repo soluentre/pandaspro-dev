@@ -1,4 +1,3 @@
-import logging
 import re
 from pathlib import Path
 import os
@@ -10,7 +9,7 @@ from pandaspro.core.stringfunc import parse_method, str2list
 from pandaspro.io.excel.writer import FramexlWriter, StringxlWriter, cpdFramexl, CellxlWriter
 from pandaspro.io.cellpro.cellpro import cell_combine_by_row, CellPro, cell_combine_by_column
 from pandaspro.io.excel.range import RangeOperator, parse_format_rule, color_to_int
-from pandaspro.utils.cpd_logger import cpdLogger
+from pandaspro.utils.cpdLogger import cpdLogger
 
 
 def is_range_filled(ws, range_str: str = None):
@@ -39,20 +38,7 @@ class PutxlSet:
             sheet_name: str = None,
             alwaysreplace: str = None,  # a global config that sets all the following actions to replace ...
             noisily: bool = None,
-            debug: str = 'critical',
-            debug_file: str = None
     ):
-        # Initialize logging module
-        # noinspection PyTypeChecker
-        self.logger: logging.Logger = None
-        self.debug_section_lv1: callable = None
-        self.debug_section_lv2: callable = None
-        self.info_section_lv1: callable = None
-        self.info_section_lv2: callable = None
-        self.reconfigure_logger: callable = None
-        self.debug = debug.lower()
-        self.debug_file = debug_file
-
         # App and Workbook declaration
         open_wb, app = PutxlSet._get_open_workbook_by_name(
             PutxlSet._extract_filename_from_path(workbook))  # Check if the file is already open
@@ -191,11 +177,11 @@ class PutxlSet:
             config: dict = None,
             mode: str = None,
             log: bool = True,
-            debug: str | bool = 'critical',
+            debug: str | bool = None,
             debug_file: str | bool = None,
     ) -> None:
         if debug or debug_file:
-            self.reconfigure_logger(debug=debug or self.debug, debug_file=debug_file or self.debug_file)
+            self.reconfigure_logger(debug=debug, debug_file=debug_file)
 
         self.logger.info("")
         self.logger.info(">" * 30)
@@ -314,7 +300,7 @@ class PutxlSet:
 
         elif isinstance(content, pandas.DataFrame):
             self.logger.info(f"Validation: [content] type of **{type(content)}** object is passed")
-            io = FramexlWriter(frame=content, cell=cell, index=index, header=header)
+            io = FramexlWriter(frame=content, cell=cell, index=index, header=header, debug=self.debug, debug_file=self.debug_file)
             self.logger.info(
                 f"Passed <Frame>: exporting to sheet <{self.ws.name}> [content] frame with size of **{str(content.shape)}** into **{io.start_cell}** plus any other format settings ... ")
             self.ws.range(io.start_cell).value = io.content
@@ -838,8 +824,8 @@ if __name__ == '__main__':
     import pandaspro as cpd
     d = cpd.sysuse_auto
     debuglevel = 'info'
-    ps = cpd.PutxlSet('delete_table.xlsx')
-    ps.putxl(d, cell='A4', cd_format={'column': 'rep78', 'rules': {1: 'red', 2: 'blue'}, 'applyto': 'self'}, debug='info')
+    ps = cpd.PutxlSet('delete_table.xlsx', debug='debug')
+    ps.putxl(d, cell='A4', cd_format={'column': 'rep78', 'rules': {1: 'red', 2: 'blue'}, 'applyto': 'self'})
 
     # ps.putxl(
     #     r.table_region('AFW'),

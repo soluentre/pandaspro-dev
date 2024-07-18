@@ -37,8 +37,8 @@ def cpdLogger(cls):
     @wraps(original_init)
     def new_init(self, *args, **kwargs):
         # Ensure the debug and debug_file attributes are set before calling original __init__
-        self.debug = kwargs.get('debug', 'critical').lower()
-        self.debug_file = kwargs.get('debug_file', None)
+        self.debug = kwargs.pop('debug', 'critical')
+        self.debug_file = kwargs.pop('debug_file', None)
 
         original_init(self, *args, **kwargs)
 
@@ -46,6 +46,7 @@ def cpdLogger(cls):
         self.configure_logger()
 
         # Adding log_section and end_log_section methods to the instance
+        self.debug_section_spec_start = self._debug_section_spec_start
         self.debug_section_lv1 = self._debug_section_lv1
         self.debug_section_lv2 = self._debug_section_lv2
         self.info_section_lv1 = self._info_section_lv1
@@ -120,12 +121,12 @@ def cpdLogger(cls):
 
     cls.__init__ = new_init
     cls.configure_logger = configure_logger
+    cls._reconfigure_logger = _reconfigure_logger
     cls._debug_section_spec_start = _debug_section_spec_start
     cls._debug_section_spec_end = _debug_section_spec_end
     cls._debug_section_lv1 = _debug_section_lv1
     cls._debug_section_lv2 = _debug_section_lv2
     cls._info_section_lv1 = _info_section_lv1
     cls._info_section_lv2 = _info_section_lv2
-    cls._reconfigure_logger = _reconfigure_logger
 
     return cls

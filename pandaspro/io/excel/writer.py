@@ -4,6 +4,8 @@ from pandaspro.core.tools.utils import df_with_index_for_mask
 from pandaspro.io.cellpro.cellpro import CellPro, index_cell
 import pandas as pd
 
+from pandaspro.utils.cpdLogger import cpdLogger
+
 
 class CellxlWriter:
     def __init__(
@@ -25,6 +27,7 @@ class StringxlWriter:
         self.range_cell = cell
 
 
+@cpdLogger
 class FramexlWriter:
     def __init__(
             self,
@@ -295,11 +298,14 @@ class FramexlWriter:
             rules = None,
             applyto = 'self',
     ):
+        self.logger.debug_section_spec_start('CdFormat Class')
         mycd = CdFormat(
             df=self.rawdata,
             column=column,
             cd_rules=rules,
-            applyto=applyto
+            applyto=applyto,
+            debug=self.debug,
+            debug_file=self.debug_file
         )
         # print(mycd.df.columns, mycd.df_with_index.columns, mycd.column)
         if mycd.col_not_exist:
