@@ -3,12 +3,12 @@ from datetime import datetime
 
 
 class FilesVersionParser:
-    def __init__(self, path, class_prefix, id_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
+    def __init__(self, path, class_prefix, dateid_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\.')
         self.path = path
         self.class_prefix = class_prefix
-        self.dateid_expression = id_expression
+        self.dateid_expression = dateid_expression
         self.file_type = file_type
         self.fiscal_year_end_month = int(fiscal_year_end.split('-')[0])
         self.fiscal_year_end_day = int(fiscal_year_end.split('-')[1])
@@ -75,6 +75,18 @@ class FilesVersionParser:
             return []
 
     def get_latest_file(self, freq='none'):
+        # Define granularity levels
+        granularity_levels = ['second', 'minute', 'hour', 'day', 'month', 'year']
+
+        # Check if the provided frequency is valid
+        if freq != 'none' and freq not in granularity_levels:
+            raise ValueError(f"Unknown frequency: {freq}")
+
+        # Check if the provided frequency is higher or same level as the current granularity
+        if freq != 'none' and granularity_levels.index(freq) <= granularity_levels.index(self.granularity):
+            raise ValueError(
+                f"Invalid frequency: {freq}. The frequency must be higher than the current granularity: {self.granularity}")
+
         # Configure matching files
         matching_files = self.list_all_files()
         if len(matching_files) == 0:
@@ -96,10 +108,9 @@ class FilesVersionParser:
 
         if duplicates:
             duplicate_files = [files[i] for i in duplicates]
-            raise ValueError(
-                f'Duplicate dates detected in the database folder for files: {duplicate_files}. '
-                f'Go fix the duplicates. Note your data tables should be unique at the {self.granularity} level.'
-            )
+            print(f'Note your data tables should be unique at the <<{self.granularity}>> level.')
+            print(f'Duplicate dates detected in the database folder for files: {duplicate_files}.')
+            raise ValueError('See info printed above: go and fix the duplicates')
 
     @staticmethod
     def _find_duplicates(items):
@@ -141,6 +152,8 @@ if __name__ == '__main__':
     )
     print(vp.path)
     print(vp.check_single_file('20240715'))
-    print(vp.get_latest_file('fiscal_year'))
-    print(vp._can_parse_date('no date'))
-    print(vp.list_all_files())
+    print(vp.get_latest_file(''))
+    # print(vp._can_parse_date('no date'))
+    # print(vp.list_all_files())
+
+# if no 12 31

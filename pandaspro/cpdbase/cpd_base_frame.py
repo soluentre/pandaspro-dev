@@ -3,6 +3,7 @@ import pandaspro as cpd
 from abc import ABC
 import inspect
 from pandaspro.cpdbase.design import cpdBaseFrameDesign
+from pandaspro.cpdbase.files_version_parser import FilesVersionParser
 
 
 def extract_params(func):
@@ -39,6 +40,18 @@ def cpdBaseFrame(path=None):
 
             @classmethod
             def load(cls, version='latest'):
+                files_version_parser = FilesVersionParser(
+                    path = cls.get_path(),
+                    class_prefix= cls.__name__,
+                    dateid_expression = date
+                )
+                if 'latest' in version:
+                    freq = version.split('_')[0], version.split('_')[1]
+                    if len(freq) != 0:
+                        freq = 'none'
+
+
+
                 return cpd.pwread(cls.get_path() + f'/{version}.csv', low_memory=False)[0]
 
             def __init__(self, *args, **kwargs):
