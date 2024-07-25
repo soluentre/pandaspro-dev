@@ -84,7 +84,7 @@ def cpdBaseFrame(
 
             @staticmethod
             def load(data, **kwargs):
-                return data.head(5)
+                return data
 
             @classmethod
             def get_process_method(cls):
@@ -133,7 +133,7 @@ def cpdBaseFrame(
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
                     self.filename = CombinedClass.get_filename(version_kwarg['version'])
-                    self.version =  CombinedClass.get_file_versions_parser().get
+                    # self.version =  CombinedClass.get_file_versions_parser().get
 
             @property
             def _constructor(self):

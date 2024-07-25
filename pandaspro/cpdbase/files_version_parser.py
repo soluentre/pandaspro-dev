@@ -65,7 +65,7 @@ class FilesVersionParser:
     def list_all_files(self):
         try:
             files = os.listdir(self.path)
-            print(files, self.class_prefix, self.file_type)
+            # print(files, self.class_prefix, self.file_type)
             matching_files = [
                 f for f in files if
                 f.startswith(self.class_prefix + '_') and
