@@ -34,13 +34,15 @@ def cpdBaseFrame(
         class CombinedClass(myclass, cpdBaseFrameDesign, ABC):
             @classmethod
             def get_file_versions_parser(cls):
-                return FilesVersionParser(
+                fvp = FilesVersionParser(
                     path = cls.get_path(),
-                    class_prefix = cls.__name__,
+                    class_prefix = myclass.__name__,
                     dateid_expression = dateid,
                     file_type = file_type,
                     fiscal_year_end = fiscal_year_end
                 )
+                # print(fvp.list_all_files())
+                return fvp
 
             @classmethod
             def get_path(cls):
@@ -173,8 +175,8 @@ class SOB(pd.DataFrame):
 
 
 # 测试
-df1 = SOB(region='balabala')
-print(df1.shape)
+# df1 = SOB(region='balabala')
+# print(df1.shape)
 
 # df2 = MyDataFrame2(region="Asia")
 # print(df2)

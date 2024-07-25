@@ -5,7 +5,7 @@ from pandaspro.utils.cpd_logger import cpdLogger
 
 @cpdLogger
 class FilesVersionParser:
-    def __init__(self, path, class_prefix, dateid_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
+    def __init__(self, path, class_prefix, dateid_expression='%Y%m%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\.')
         self.path = path
@@ -65,11 +65,12 @@ class FilesVersionParser:
     def list_all_files(self):
         try:
             files = os.listdir(self.path)
+            print(files, self.class_prefix, self.file_type)
             matching_files = [
                 f for f in files if
                 f.startswith(self.class_prefix + '_') and
                 f.endswith(f'.{self.file_type}') and
-                self._can_parse_date(f.split('_')[1])
+                self._can_parse_date(f.split('.')[0].split('_')[1])
             ]
             return matching_files
         except Exception as e:
