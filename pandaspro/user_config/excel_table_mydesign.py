@@ -1,4 +1,10 @@
-from wbhrdata import hrconfig
+import pandas as pd
+dpath_config = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\config'
+
+_file = f'{dpath_config}/export_formatting.xlsm'
+_sheet = 'config'
+_df = pd.read_excel(_file, sheet_name=_sheet).drop('class', axis=1)
+hrconfig = _df.set_index('column').T.to_dict(orient='dict')
 
 excel_export_mydesign = {
     'wbblue': {
