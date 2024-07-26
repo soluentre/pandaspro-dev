@@ -53,7 +53,7 @@ class FramePro(pd.DataFrame):
             return self[list_column].drop_duplicates().to_list()
 
         else:
-            super().__getattribute__(item)
+            return super().__getattr__(item)
 
     @property
     def _constructor(self):
