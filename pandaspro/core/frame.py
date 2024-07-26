@@ -45,12 +45,18 @@ class FramePro(pd.DataFrame):
             return matched_columns
 
         if item.startswith('map_'):
-            dict_key_column, dict_value_column = _parse_and_match(self.columns, item)
-            return self.set_index(dict_key_column)[dict_value_column].to_dict()
+            if item in self.columns:
+                return super().__getattr__(item)
+            else:
+                dict_key_column, dict_value_column = _parse_and_match(self.columns, item)
+                return self.set_index(dict_key_column)[dict_value_column].to_dict()
 
         elif item.startswith('list_'):
-            list_column = _parse_and_match(self.columns, item)[0]
-            return self[list_column].drop_duplicates().to_list()
+            if item in self.columns:
+                return super().__getattr__(item)
+            else:
+                list_column = _parse_and_match(self.columns, item)[0]
+                return self[list_column].drop_duplicates().to_list()
 
         else:
             return super().__getattr__(item)
