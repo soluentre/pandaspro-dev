@@ -7,6 +7,7 @@ from pandaspro.core.api import (
     bdate,
     dfilter,
     FramePro,
+    lowervarlist,
     tab,
     str2list,
     wildcardread,
@@ -15,6 +16,11 @@ from pandaspro.core.api import (
     df_with_index_for_mask,
     create_column_color_dict,
     csort,
+)
+
+from pandaspro.cpdbase.api import (
+    cpdBaseFrame,
+    FilesVersionParser
 )
 
 from pandaspro.io.api import (
@@ -29,7 +35,6 @@ from pandaspro.io.api import (
     WorkbookExportSimplifier,
     fw
 )
-from pandaspro.core.frame import lowervarlist
 
 from pandaspro.sampledf.api import (
     sysuse_countries,

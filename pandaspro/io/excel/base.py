@@ -1,7 +1,8 @@
 import re
 import pandas as pd
 from openpyxl.utils import column_index_from_string, get_column_letter
-from pandaspro.core.frame import FramePro, lowervarlist
+from pandaspro.core.frame import FramePro
+from pandaspro.core.tools.lowervarlist import lowervarlist
 
 
 def pwread(

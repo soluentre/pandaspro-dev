@@ -4,7 +4,7 @@ from pandaspro.core.tools.dfilter import dfilter
 from pandaspro.core.tools.tab import tab
 from pandaspro.core.tools.varnames import varnames
 from pandaspro.core.tools.csort import csort
-
+from pandaspro.core.tools.lowervarlist import lowervarlist
 from pandaspro.core.tools.utils import (
     df_with_index_for_mask,
     create_column_color_dict
@@ -33,5 +33,6 @@ __all__ = [
     "wildcardread",
     "str2list",
     "csort",
-    "df_with_index_for_mask"
+    "df_with_index_for_mask",
+    "lowervarlist"
 ]
