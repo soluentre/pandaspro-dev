@@ -5,7 +5,7 @@ from pandaspro.utils.cpd_logger import cpdLogger
 
 @cpdLogger
 class FilesVersionParser:
-    def __init__(self, path, class_prefix, dateid_expression='%Y-%m-%d', file_type='csv', fiscal_year_end='06-30'):
+    def __init__(self, path, class_prefix, dateid_expression='%Y%m%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\.')
         self.path = path
@@ -65,11 +65,12 @@ class FilesVersionParser:
     def list_all_files(self):
         try:
             files = os.listdir(self.path)
+            # print(files, self.class_prefix, self.file_type)
             matching_files = [
                 f for f in files if
                 f.startswith(self.class_prefix + '_') and
                 f.endswith(f'.{self.file_type}') and
-                self._can_parse_date(f.split('_')[1])
+                self._can_parse_date(f.split('.')[0].split('_')[1])
             ]
             return matching_files
         except Exception as e:
@@ -95,7 +96,7 @@ class FilesVersionParser:
             raise ValueError('No matching files detected.')
 
         # Configure dates list and apply use max method
-        dates = [(file, datetime.strptime(file.split('_')[1], self.dateid_expression)) for file in matching_files]
+        dates = [(file, datetime.strptime(file.split('.')[0].split('_')[1], self.dateid_expression)) for file in matching_files]
         if freq == 'none':
             return max(dates, key=lambda x: x[1])[0] if dates else None
         freq_filtered_dates = self._filter_by_frequency(dates, freq)
@@ -116,7 +117,7 @@ class FilesVersionParser:
 
     def check_for_duplicates(self):
         files = self.list_all_files()
-        dates = [f.split('_')[1] for f in files]
+        dates = [f.split('.')[0].split('_')[1] for f in files]
         parsed_dates = [datetime.strptime(date, self.dateid_expression) for date in dates]
         duplicates = FilesVersionParser._find_duplicates(parsed_dates)
 
@@ -145,7 +146,7 @@ class FilesVersionParser:
         return self.check_single_file(version)[1]
 
     def get_version_str(self, version):
-        return self.get_file(version).split('_')[1]
+        return self.get_file(version).split('.')[0].split('_')[1]
 
     def get_version_dt(self, version):
         return datetime.strptime(self.get_version_str(version), self.dateid_expression)
