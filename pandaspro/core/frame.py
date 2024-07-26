@@ -23,13 +23,37 @@ class FramePro(pd.DataFrame):
         super().__init__(*args, **kwargs)
         self.namemap = "This attribute displays the original names when importing data using 'readpro' method in io.excel._base module, and currently is not activated"
 
-        # for attr_name in dir(pd.DataFrame):
-        #     if callable(getattr(pd.DataFrame, attr_name, None)) and not attr_name.startswith("_"):
-        #         if attr_name not in ['sparse']:
-        #             try:
-        #                 setattr(self, attr_name, partial(return_same_type_decor(getattr(self, attr_name)), self))
-        #             except AttributeError:
-        #                 pass
+    def __getattr__(self, item):
+        def _parse_and_match(columns_list, attribute_name):
+            if not attribute_name.startswith('map_') and not attribute_name.startswith('list_'):
+                raise ValueError("Invalid attribute format, should start with 'map_' or 'list_'")
+
+            if attribute_name.startswith('map_'):
+                key_part = attribute_name[4:]
+            else:
+                key_part = attribute_name[5:]
+
+            matched_columns = [col for col in columns_list if col in key_part]
+
+            if attribute_name.startswith('map_') and len(matched_columns) != 2:
+                raise ValueError("Attribute does not match exactly two columns in the frame columns")
+            elif attribute_name.startswith('list_') and len(matched_columns) != 1:
+                raise ValueError("Attribute does not match exactly 1 columns in the frame columns")
+
+            matched_columns.sort(key=lambda col: key_part.index(col))
+
+            return matched_columns
+
+        if item.startswith('map_'):
+            dict_key_column, dict_value_column = _parse_and_match(self.columns, item)
+            return self.set_index(dict_key_column)[dict_value_column].to_dict()
+
+        elif item.startswith('list_'):
+            list_column = _parse_and_match(self.columns, item)[0]
+            return self[list_column].drop_duplicates().to_list()
+
+        else:
+            super().__getattribute__(item)
 
     @property
     def _constructor(self):
