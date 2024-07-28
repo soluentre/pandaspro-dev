@@ -126,11 +126,12 @@ def cpdBaseFrame(
 
                     self.fvp = CombinedClass.get_file_versions_parser()
                     self.get_version_input = version_kwarg['version']
-                    self.get_filename = self.fvp.get_file(self.version_input)
-                    self.get_version = self.fvp.get_file_version_str(self.version_input)
-                    self.get_vo = self.fvp.get_file_version_dt(self.version_input)
+                    self.get_filename = self.fvp.get_file(self.get_version_input)
+                    self.get_filename_full = self.get_path() + '/' + self.get_filename
+                    self.get_version = self.fvp.get_file_version_str(self.get_version_input)
+                    self.get_vo = self.fvp.get_file_version_dt(self.get_version_input)
                     self.vo = self.get_vo
-                    self.get_more_info = self.fvp.get_suffix(self.version_input)
+                    self.get_more_info = self.fvp.get_suffix(self.get_version_input)
 
             @property
             def _constructor(self):
