@@ -65,6 +65,10 @@ class FramePro(pd.DataFrame):
         return FramePro
 
     @property
+    def DF(self):
+        return pd.DataFrame(self)
+
+    @property
     def df(self):
         return pd.DataFrame(self)
 
