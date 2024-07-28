@@ -12,7 +12,8 @@ setup(
         'xlwings~=0.31.10',
         'jinja2~=3.1.4',
         'termcolor~=2.4.0',
-        'tabulate~=0.9.0'
+        'tabulate~=0.9.0',
+        'maya~=0.6.1'
     ],
     python_requires='>=3.8',
     py_modules=[],

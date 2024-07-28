@@ -6,7 +6,7 @@ from pandaspro.cpdbase.design import cpdBaseFrameDesign
 from pandaspro.cpdbase.files_version_parser import FilesVersionParser
 import textwrap
 
-from pandaspro.utils.cpd_logger import cpdLogger
+# from pandaspro.utils.cpd_logger import cpdLogger
 
 
 def extract_params(func):
@@ -28,6 +28,8 @@ def cpdBaseFrame(
         default_version: str = 'latest',
         dateid: str = '%Y%m%d',
         file_type: str = 'csv',
+        sheet_name: str | int = 0,
+        cellrange: str = 'A1',
         fiscal_year_end: str = '06-30'
 ):
     def decorator(myclass):
@@ -76,9 +78,9 @@ def cpdBaseFrame(
             def read_table(cls, version):
                 filename = cls.get_filename(version)
                 if file_type == 'csv':
-                    return cpd.pwread(cls.get_path() + f'/{filename}', low_memory=False)
+                    return cpd.pwread(cls.get_path() + f'/{filename}', cellrange=cellrange, low_memory=False)
                 elif file_type == 'xlsx':
-                    return cpd.pwread(cls.get_path() + f'/{filename}')
+                    return cpd.pwread(cls.get_path() + f'/{filename}', sheet_name=sheet_name, cellrange=cellrange)
                 else:
                     raise ValueError('Invalid file type, can only read .csv/.xlsx format.')
 
@@ -133,7 +135,7 @@ def cpdBaseFrame(
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
                     self.filename = CombinedClass.get_filename(version_kwarg['version'])
-                    # self.version =  CombinedClass.get_file_versions_parser().get
+                    self.version = CombinedClass.get_file_versions_parser().get
 
             @property
             def _constructor(self):
@@ -149,34 +151,19 @@ def cpdBaseFrame(
     return decorator
 
 
-@cpdBaseFrame(default_version='latest_month')
-class SOB(pd.DataFrame):
-    path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
+if __name__ == '__main__':
 
-    @staticmethod
-    def load(data, region=None):
-        print(region)
-        return data.head(30)
+    @cpdBaseFrame(default_version='latest_month')
+    class SOB(pd.DataFrame):
+        path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
 
-    # @classmethod
-    # def get_path(cls):
-    #     return "345"
+        @staticmethod
+        def load(data, region=None):
+            print(region)
+            return data.head(30)
 
-    # @classmethod
-    # def load(cls, version='latest'):
-    #     return cpd.pwread(cls.get_path() + f'/{version}.csv', low_memory=False)[0]
+    df1 = SOB(region='balabala')
+    print(df1.shape)
 
-
-
-
-# @cpdBaseFrame("Greetings", 456, region=None)
-# class MyDataFrame2(pd.DataFrame):
-#     pass
-
-
-# 测试
-# df1 = SOB(region='balabala')
-# print(df1.shape)
-
-# df2 = MyDataFrame2(region="Asia")
-# print(df2)
+    # df2 = MyDataFrame2(region="Asia")
+    # print(df2)
