@@ -158,6 +158,7 @@ if __name__ == '__main__':
 
     df1 = SOB(region='balabala')
     print(df1.vo)
-
+    v = df1.vo
+    m = pd.DataFrame({'nick': [1,2,3,4,5,6,7,8,9,10], 'wang': [1,2,3,4,5,6,7,8,9,10]})
     # df2 = MyDataFrame2(region="Asia")
     # print(df2)
