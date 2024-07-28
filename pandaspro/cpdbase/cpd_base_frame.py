@@ -24,11 +24,11 @@ def extract_params(func):
 
 def cpdBaseFrame(
         path: str = None,
+        file_type: str = 'csv',
         load: str = None,
         default_version: str = 'latest',
         prefix: str = None,
         dateid: str = '%Y%m%d',
-        file_type: str = 'csv',
         sheet_name: str | int = 0,
         cellrange: str = 'A1',
         fiscal_year_end: str = '06-30'
