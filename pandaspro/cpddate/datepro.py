@@ -42,6 +42,12 @@ class DatePro:
             parse_format = item[-1]
             return self.dt.strftime('%' + parse_format)
 
+    def __repr__(self):
+        return f"DatePro(date={self.original_date}, datetype={self.datetype}, dt={self.dt})"
+
+    def __str__(self):
+        return f"DatePro: {self.dt.strftime('%Y-%m-%d %H:%M:%S')} (original: {self.original_date})"
+
     @staticmethod
     def help():
         print('DatePro object supports ... ')

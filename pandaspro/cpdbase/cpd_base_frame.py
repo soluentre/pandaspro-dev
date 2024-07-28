@@ -157,7 +157,7 @@ if __name__ == '__main__':
             return data.head(30)
 
     df1 = SOB(region='balabala')
-    print(df1.v)
+    print(df1.vo)
 
     # df2 = MyDataFrame2(region="Asia")
     # print(df2)
