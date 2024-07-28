@@ -63,16 +63,7 @@ def cpdBaseFrame(
                         raise TypeError("Can't instantiate abstract class MyConcreteClass with abstract method get_path.")
 
             @classmethod
-            def get_filename(cls, version):
-                if version == 'latest':
-                    filename = cls.get_file_versions_parser().get_latest_file()
-                elif 'latest' in version:
-                    freq = version.split('_')[1]
-                    filename = cls.get_file_versions_parser().get_latest_file(freq)
-                else:
-                    filename = cls.get_file_versions_parser().get_file(version)
 
-                return filename
 
             @classmethod
             def read_table(cls, version):
@@ -135,7 +126,7 @@ def cpdBaseFrame(
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
                     self.filename = CombinedClass.get_filename(version_kwarg['version'])
-                    self.version = CombinedClass.get_file_versions_parser().get
+                    self.version = CombinedClass.get_file_versions_parser().get_version_str(version_kwarg['version'])
 
             @property
             def _constructor(self):

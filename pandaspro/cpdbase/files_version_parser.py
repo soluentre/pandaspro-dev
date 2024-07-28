@@ -1,10 +1,15 @@
 import os
+import re
 from datetime import datetime
+
+from pandaspro.cpddate.datepro import DatePro
 from pandaspro.utils.cpd_logger import cpdLogger
 
 
 @cpdLogger
 class FilesVersionParser:
+    granularity_levels = ['second', 'minute', 'hour', 'day', 'month', 'year']
+
     def __init__(self, path, class_prefix, dateid_expression='%Y%m%d', file_type='csv', fiscal_year_end='06-30'):
         if path.endswith(('/', r'\\')):
             raise ValueError(r'path cannot end with either / or \\.')
@@ -79,14 +84,13 @@ class FilesVersionParser:
 
     def get_latest_file(self, freq='none'):
         # Define granularity levels
-        granularity_levels = ['second', 'minute', 'hour', 'day', 'month', 'year']
 
         # Check if the provided frequency is valid
-        if freq != 'none' and freq not in granularity_levels:
+        if freq != 'none' and freq not in FilesVersionParser.granularity_levels:
             raise ValueError(f"Unknown frequency: {freq}")
 
         # Check if the provided frequency is higher or same level as the current granularity
-        if freq != 'none' and granularity_levels.index(freq) <= granularity_levels.index(self.granularity):
+        if freq != 'none' and FilesVersionParser.granularity_levels.index(freq) <= FilesVersionParser.granularity_levels.index(self.granularity):
             raise ValueError(
                 f"Invalid frequency: {freq}. The frequency must be higher than the current granularity: {self.granularity}")
 
@@ -127,7 +131,7 @@ class FilesVersionParser:
             print(f'Duplicate dates detected in the database folder for files: {duplicate_files}.')
             raise ValueError('See info printed above: go and fix the duplicates')
 
-    def check_single_file(self, version):
+    def check_single_file_with_exact_version(self, version):
         filename_start = self.class_prefix + '_' + version
         self.filename_start = filename_start
         files = os.listdir(self.path)
@@ -137,24 +141,37 @@ class FilesVersionParser:
                 f"Expected exactly one file starting with '{self.filename_start}' but found {len(matching_files)}.")
         else:
             self.suffix = matching_files[0][len(self.filename_start) + 1:]
-            return matching_files[0], self.suffix
+            return matching_files[0]
+
+    def get_file_with_exact_version(self, version):
+        return self.check_single_file_with_exact_version(version)
 
     def get_file(self, version):
-        return self.check_single_file(version)[0]
+        if version == 'latest':
+            return self.get_latest_file()
+        elif re.fullmatch(r'latest_' + '|'.join(FilesVersionParser.granularity_levels), version):
+            freq = version.split('_')[1]
+            return self.get_latest_file(freq)
+        elif self._can_parse_date(version):
+            return self.get_file_with_exact_version(version)
+        else:
+            raise ValueError(f'Invalid version format passed as [{version}]')
 
     def get_suffix(self, version):
-        return self.check_single_file(version)[1]
+        name_split = self.get_file(version).split('.')[0].split('_')
+        if len(name_split) == 2:
+            return 'no suffix'
+        elif len(name_split) == 3:
+            return name_split[2]
+        else:
+            raise ValueError('Invalid filename parsed from get_file, should be xxx_xxx_xxx.csv/xlsx (3 underlines at maximum)')
 
     def get_version_str(self, version):
-        return self.get_file(version).split('.')[0].split('_')[1]
+        return self.get_file_with_exact_version(version).split('.')[0].split('_')[1]
 
     def get_version_dt(self, version):
-        return datetime.strptime(self.get_version_str(version), self.dateid_expression)
+        return DatePro(self.get_version_str(version)).dt
 
-## create a class: cpdDateStr - dt.year, dt.B, dt.b, dt.showtypes, dt.type1 + maya.parse
-## A new package: datepro under cpd.
-
-## cpd.DatePro('2024-03-01') like that
 
 if __name__ == '__main__':
     vp = FilesVersionParser(
@@ -164,8 +181,7 @@ if __name__ == '__main__':
         fiscal_year_end = '05-31'
     )
     print(vp.path)
-    print(vp.check_single_file('20240715'))
+    print(vp.check_single_file_with_exact_version('20240715'))
     print(vp.get_latest_file())
     # print(vp._can_parse_date('no date'))
     # print(vp.list_all_files())
-
