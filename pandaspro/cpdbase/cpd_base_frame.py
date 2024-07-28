@@ -125,11 +125,12 @@ def cpdBaseFrame(
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
                     self.fvp = CombinedClass.get_file_versions_parser()
-                    self.version_input = version_kwarg['version']
-                    self.filename = self.fvp.get_file(self.version_input)
-                    self.version = self.fvp.get_file_version_str(self.version_input)
-                    self.vo = self.fvp.get_file_version_dt(self.version_input)
-                    self.more_info = self.fvp.get_suffix(self.version_input)
+                    self.get_version_input = version_kwarg['version']
+                    self.get_filename = self.fvp.get_file(self.version_input)
+                    self.get_version = self.fvp.get_file_version_str(self.version_input)
+                    self.get_vo = self.fvp.get_file_version_dt(self.version_input)
+                    self.vo = self.get_vo
+                    self.get_more_info = self.fvp.get_suffix(self.version_input)
 
             @property
             def _constructor(self):
@@ -159,5 +160,3 @@ if __name__ == '__main__':
     df1 = SOB(region='balabala')
     print(df1.vo)
     v = df1.vo
-    # df2 = MyDataFrame2(region="Asia")
-    # print(df2)
