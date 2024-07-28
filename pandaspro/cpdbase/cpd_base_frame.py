@@ -26,6 +26,7 @@ def cpdBaseFrame(
         path: str = None,
         load: str = None,
         default_version: str = 'latest',
+        prefix: str = None,
         dateid: str = '%Y%m%d',
         file_type: str = 'csv',
         sheet_name: str | int = 0,
@@ -36,9 +37,10 @@ def cpdBaseFrame(
         class CombinedClass(myclass, cpdBaseFrameDesign, ABC):
             @classmethod
             def get_file_versions_parser(cls):
+                this_prefix = myclass.__name__ if prefix is None else prefix
                 fvp = FilesVersionParser(
                     path = cls.get_path(),
-                    class_prefix = myclass.__name__,
+                    class_prefix = this_prefix,
                     dateid_expression = dateid,
                     file_type = file_type,
                     fiscal_year_end = fiscal_year_end
