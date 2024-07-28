@@ -63,11 +63,9 @@ def cpdBaseFrame(
                         raise TypeError("Can't instantiate abstract class MyConcreteClass with abstract method get_path.")
 
             @classmethod
-
-
-            @classmethod
             def read_table(cls, version):
-                filename = cls.get_filename(version)
+                this_fvp = cls.get_file_versions_parser()
+                filename = this_fvp.get_file(version)
                 if file_type == 'csv':
                     return cpd.pwread(cls.get_path() + f'/{filename}', cellrange=cellrange, low_memory=False)
                 elif file_type == 'xlsx':
@@ -121,12 +119,17 @@ def cpdBaseFrame(
                         '''))
                 else:
                     # self.logger.info('Entered Below Part of init: no args or kwargs detected')
+
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
-                    self.filename = CombinedClass.get_filename(version_kwarg['version'])
-                    self.version = CombinedClass.get_file_versions_parser().get_version_str(version_kwarg['version'])
+                    self.fvp = CombinedClass.get_file_versions_parser()
+                    self.version_input = version_kwarg['version']
+                    self.filename = self.fvp.get_file(self.version_input)
+                    self.version = self.fvp.get_file_version_str(self.version_input)
+                    self.dt = self.fvp.get_file_version_dt(self.version_input)
+                    self.more_info = self.fvp.get_suffix(self.version_input)
 
             @property
             def _constructor(self):
@@ -154,7 +157,7 @@ if __name__ == '__main__':
             return data.head(30)
 
     df1 = SOB(region='balabala')
-    print(df1.shape)
+    print(df1.dt)
 
     # df2 = MyDataFrame2(region="Asia")
     # print(df2)

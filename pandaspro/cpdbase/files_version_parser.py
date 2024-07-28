@@ -149,7 +149,7 @@ class FilesVersionParser:
     def get_file(self, version):
         if version == 'latest':
             return self.get_latest_file()
-        elif re.fullmatch(r'latest_' + '|'.join(FilesVersionParser.granularity_levels), version):
+        elif re.fullmatch(r'latest_(' + '|'.join(FilesVersionParser.granularity_levels) + ')', version):
             freq = version.split('_')[1]
             return self.get_latest_file(freq)
         elif self._can_parse_date(version):
@@ -166,11 +166,11 @@ class FilesVersionParser:
         else:
             raise ValueError('Invalid filename parsed from get_file, should be xxx_xxx_xxx.csv/xlsx (3 underlines at maximum)')
 
-    def get_version_str(self, version):
-        return self.get_file_with_exact_version(version).split('.')[0].split('_')[1]
+    def get_file_version_str(self, version):
+        return self.get_file(version).split('.')[0].split('_')[1]
 
-    def get_version_dt(self, version):
-        return DatePro(self.get_version_str(version)).dt
+    def get_file_version_dt(self, version):
+        return DatePro(self.get_file_version_str(version)).dt
 
 
 if __name__ == '__main__':
