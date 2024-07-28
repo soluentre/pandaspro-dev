@@ -42,7 +42,21 @@ class DatePro:
             parse_format = item[-1]
             return self.dt.strftime('%' + parse_format)
 
-
+    @staticmethod
+    def help():
+        print('DatePro object supports ... ')
+        print('.original_date: to get the input object')
+        print('.datetype: to get the input format type')
+        print('.maya: to get the mayaDT object for a date')
+        print('.dt: to get the parsed datetime object for a date')
+        print('-------------------')
+        print('Almost all traditional attributes like year, month, day, weekday are available, too')
+        print('Plus monthB, monthb, dayA and daya for humanized strings')
+        print('And the following map applies ...')
+        print('')
+        print('>>>')
+        for key in DatePro.map.keys():
+            print(f'{key} = using {DatePro.map[key]}, like << {getattr(DatePro("2020-1-1"), key)} >>')
 
 
 if __name__ == '__main__':
