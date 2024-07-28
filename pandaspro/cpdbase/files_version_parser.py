@@ -170,7 +170,7 @@ class FilesVersionParser:
         return self.get_file(version).split('.')[0].split('_')[1]
 
     def get_file_version_dt(self, version):
-        return DatePro(self.get_file_version_str(version)).dt
+        return DatePro(self.get_file_version_str(version))
 
 
 if __name__ == '__main__':

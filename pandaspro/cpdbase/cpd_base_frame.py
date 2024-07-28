@@ -128,7 +128,7 @@ def cpdBaseFrame(
                     self.version_input = version_kwarg['version']
                     self.filename = self.fvp.get_file(self.version_input)
                     self.version = self.fvp.get_file_version_str(self.version_input)
-                    self.dt = self.fvp.get_file_version_dt(self.version_input)
+                    self.vo = self.fvp.get_file_version_dt(self.version_input)
                     self.more_info = self.fvp.get_suffix(self.version_input)
 
             @property
@@ -157,7 +157,7 @@ if __name__ == '__main__':
             return data.head(30)
 
     df1 = SOB(region='balabala')
-    print(df1.dt)
+    print(df1.v)
 
     # df2 = MyDataFrame2(region="Asia")
     # print(df2)
