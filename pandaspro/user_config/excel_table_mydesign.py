@@ -12,6 +12,11 @@ excel_export_mydesign = {
         'cd': 'ti; pr',
         'config': hrconfig
     },
+    'wbbluelist': {
+        'style': 'bluelist',
+        'cd': 'ti; pr',
+        'config': hrconfig
+    },
     'wbgreen': {
         'style': 'green',
         'cd': 'ti',

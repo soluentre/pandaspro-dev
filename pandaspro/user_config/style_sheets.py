@@ -27,6 +27,11 @@ style_sheets = {
         'border=outer_thick': 'all',
         'fill=#8ABDFF; font_color=black; wrap; bold': 'header_outer'
     },
+    'bluelist': {
+        'border=inner_thin; align=center': 'all',
+        'border=outer_thick': 'all',
+        'fill=#8ABDFF; font_color=black; wrap; bold; height=30': 'header_outer'
+    },
     'darkblue': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': ['all', 'header_outer'],
