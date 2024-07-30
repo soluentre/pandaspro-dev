@@ -16,6 +16,7 @@ class CellPro:
             else:
                 self.celltype = 'cell'
                 self.cell_cal = cell
+                self.cell_stop = cell
             self.cell = cell
         else:
             self.valid = False

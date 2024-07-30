@@ -79,7 +79,8 @@ class PutxlSet:
         self.ws = sheet
         self.alwaysreplace = alwaysreplace
         self.io = None
-        self.curr_cell = None
+        self.next_cell_down = None
+        self.next_cell_right = None
 
     @staticmethod
     def _extract_filename_from_path(path):
@@ -261,7 +262,8 @@ class PutxlSet:
             if CellPro(content).valid and mode != 'text':
                 io = CellxlWriter(cell=content)
                 self.logger.info(f"Passed <Cell>: updating sheet <{self.ws.name}> [content] **{content}** format")
-                self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
+                self.next_cell_down = CellPro(CellPro(io.range_cell).cell_stop).offset(1, 0).cell
+                self.next_cell_right = CellPro(CellPro(io.range_cell).cell_stop).offset(0, 1).cell
 
             else:
                 io = StringxlWriter(text=content, cell=cell)
@@ -270,7 +272,8 @@ class PutxlSet:
                     f"Passed <Text>: filling in sheet <{self.ws.name}> [content] **{io.content}** into **{io.range_cell}** plus any other format settings ... ")
                 self.io = io
                 self.ws.range(io.range_cell).value = io.content
-                self.curr_cell = CellPro(io.range_cell).offset(1, 0).cell
+                self.next_cell_down = CellPro(CellPro(io.range_cell).cell_stop).offset(1, 0).cell
+                self.next_cell_right = CellPro(CellPro(io.range_cell).cell_stop).offset(0, 1).cell
 
             RangeOperator(self.ws.range(io.range_cell)).format(
                 width=width,
@@ -305,7 +308,8 @@ class PutxlSet:
                 f"Passed <Frame>: exporting to sheet <{self.ws.name}> [content] frame with size of **{str(content.shape)}** into **{io.start_cell}** plus any other format settings ... ")
             self.ws.range(io.start_cell).value = io.content
             self.io = io
-            self.curr_cell = CellPro(io.bottom_left_cell).offset(1, 0).cell
+            self.next_cell_down = CellPro(io.bottom_left_cell).offset(1, 0).cell
+            self.next_cell_right = CellPro(io.top_right_cell).offset(0, 1).cell
 
         else:
             raise ValueError(
