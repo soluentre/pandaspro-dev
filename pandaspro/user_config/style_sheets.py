@@ -25,7 +25,7 @@ style_sheets = {
     'blue': {
         'border=inner_thin; align=center': 'all',
         'border=outer_thick': 'all',
-        'fill=#0070C0; font_color=white; wrap': 'header_outer'
+        'fill=#8ABDFF; font_color=black; wrap; bold': 'header_outer'
     },
     'darkblue': {
         'border=inner_thin; align=center': 'all',
