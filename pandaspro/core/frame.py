@@ -261,7 +261,7 @@ class FramePro(pd.DataFrame):
             replace=replace,
             sheetreplace=sheetreplace,
             design=design,
-            df_style=style,
+            style=style,
             df_format=df_format,
             cd_format=cd_format,
             config=config,

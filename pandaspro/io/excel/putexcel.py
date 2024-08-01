@@ -171,7 +171,7 @@ class PutxlSet:
             index_merge: dict = None,
             header_wrap: bool = None,
             design: str = None,
-            df_style: str | list = None,
+            style: str | list = None,
             df_format: dict = None,
             cd_style: str | list = None,
             cd_format: list | dict = None,
@@ -364,10 +364,10 @@ class PutxlSet:
                 design_style = local_design[design]['style'] + f"; index_merge({index_key},{index_columns})"
                 self.info_section_lv2("Sub-section: _index as suffix for design argument")
                 self.logger.info(
-                    f"Recognized [design] of **{design}**, with extra df_style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
+                    f"Recognized [design] of **{design}**, with extra style of **{local_design[design]['style']}** and added **index_merge({index_key}, {index_columns})** ")
             else:
                 design_style = local_design[design]['style']
-                self.logger.info(f"Recognized [design] of **{design}**, with extra df_style of **{design_style}**")
+                self.logger.info(f"Recognized [design] of **{design}**, with extra style of **{design_style}**")
 
             design_config = local_design[design]['config']
             design_config_shorten_version = {key: design_config[key] for key in list(design_config.keys())[:3]}
@@ -378,12 +378,12 @@ class PutxlSet:
             design_cd = local_design[design]['cd']
             self.logger.info(f"Recognized [design] of **{design}**, with extra style of **{design_cd}**")
 
-            message_warning_design = "Note that the design will not override, but instead added to the df_style, cd_style and config arguments you passed. And it will take effect before df_style, cd_style, ... which further means it could be overwritten by customized claimed arguments"
+            message_warning_design = "Note that the design will not override, but instead added to the style, cd_style and config arguments you passed. And it will take effect before style, cd_style, ... which further means it could be overwritten by customized claimed arguments"
             self.logger.info(message_warning_design)
-            if df_style:
-                df_style = ";".join([design_style, df_style])
+            if style:
+                style = ";".join([design_style, style])
             else:
-                df_style = design_style
+                style = design_style
 
             if config:
                 config = config.update(design_config)
@@ -563,21 +563,21 @@ class PutxlSet:
         style: the main parameter to add pre-defined format to core export data ranges (exc. headers and indices)
         use style_sheets command to view pre-defined formats
         '''
-        if df_style:
-            self.info_section_lv1("SECTION: df_style")
+        if style:
+            self.info_section_lv1("SECTION: style")
             from pandaspro.user_config.style_sheets import style_sheets
 
             # First parse string to lists
-            if isinstance(df_style, str):
-                loop_list = str2list(df_style)
-            elif isinstance(df_style, list):
-                loop_list = df_style
+            if isinstance(style, str):
+                loop_list = str2list(style)
+            elif isinstance(style, list):
+                loop_list = style
             else:
                 raise ValueError('Invalid object for style parameter, only str or list accepted')
-            self.logger.info(f"[df_style] argument is automatically parsed into a loop_list: **{loop_list}**")
+            self.logger.info(f"[style] argument is automatically parsed into a loop_list: **{loop_list}**")
 
             # Reorder the items in loop: first do the others, then come to index_merge (merge after fill color, etc.)
-            # Allow to pass str like df_style = "index_merge(..., ...)"
+            # Allow to pass str like style = "index_merge(..., ...)"
             checked_dict = {}
             for element in loop_list:
                 if element in style_sheets:
