@@ -312,7 +312,6 @@ class FramexlWriter:
         else:
             apply_columns = mycd.apply
             this_rules_mask = mycd.get_rules_mask()
-
             # Deprecated?
             # -------------------------------------------
             # cd_dfmap_1col = {}
@@ -325,21 +324,30 @@ class FramexlWriter:
             def _df_to_mystring(df):
                 lcarray = df.values.flatten()
                 long_string = ','.join([str(value) for value in lcarray])
+
                 self.logger.debug(f'++ \tUsing <_df_to_mystring() method>**')
                 self.logger.debug(f'++ \t[flattened lcarray]: a numpy array **{lcarray}**')
                 self.logger.debug(f'++ \t[long string]: a string **<{long_string}>** with length **{len(long_string)}**')
+
                 result_string = "no cells" if len(long_string) == 0 else long_string
                 return result_string
 
             cd_cellrange_1col = {}
+
             self.debug_section_spec_start('Parsing this_rules_mask which is the CdFormat class <get_rules_mask()> method')
             self.logger.debug(f'++ [this_rules_mask]: keys are **{this_rules_mask.keys()}**')
+
             for key, mask_rule in this_rules_mask.items():
-                self.logger.debug("")
-                self.logger.debug(f'++ \t[key]: **{key}**, [mask_rule]: a **{type(mask_rule)}** with [mask] and [format], [mask] being **{list(mask_rule["mask"])}**')
                 cd_cellrange_1col[key] = {}
                 temp_dfmap = self.dfmap[mask_rule['mask']][apply_columns]
+
+                self.logger.debug("")
+                self.logger.debug("")
+                self.logger.debug(f'++ \ttemp_dfmap = self.dfmap[mask_rule[mask]][apply_columns]')
+                self.logger.debug(f'++ \t[key]: **{key}**, [mask_rule]: a **{type(mask_rule)}** with [mask] and [format], [mask] being **{list(mask_rule["mask"])}**')
+                self.logger.debug(f'++ \t[key]: **{key}**, [apply_columns]: **{apply_columns}**')
                 self.logger.debug(f'++ \t[temp_dfmap]: a **{type(temp_dfmap)}** with size **{temp_dfmap.shape}**')
+
                 cd_cellrange_1col[key]['cellrange'] = _df_to_mystring(temp_dfmap)
                 cd_cellrange_1col[key]['format'] = mask_rule['format']
 
