@@ -6,6 +6,7 @@ from pandaspro.cpdbase.design import cpdBaseFrameDesign
 from pandaspro.cpdbase.files_version_parser import FilesVersionParser
 import textwrap
 
+
 # from pandaspro.utils.cpd_logger import cpdLogger
 
 
@@ -47,11 +48,11 @@ def cpdBaseFrame(
             def get_file_versions_parser(cls):
                 this_prefix = myclass.__name__ if prefix is None else prefix
                 fvp = FilesVersionParser(
-                    path = cls.get_path(),
-                    class_prefix = this_prefix,
-                    dateid_expression = dateid,
-                    file_type = file_type,
-                    fiscal_year_end = fiscal_year_end
+                    path=cls.get_path(),
+                    class_prefix=this_prefix,
+                    dateid_expression=dateid,
+                    file_type=file_type,
+                    fiscal_year_end=fiscal_year_end
                 )
                 # print(fvp.list_all_files())
                 return fvp
@@ -59,7 +60,8 @@ def cpdBaseFrame(
             @classmethod
             def get_path(cls):
                 if path and (hasattr(myclass, 'get_path') or hasattr(myclass, 'path')):
-                    raise AttributeError('Declaring both path argument (1) in @decorator and (2) in-class path/get_path at the same time is not allowed, please only declare one.')
+                    raise AttributeError(
+                        'Declaring both path argument (1) in @decorator and (2) in-class path/get_path at the same time is not allowed, please only declare one.')
                 elif path and not (hasattr(myclass, 'get_path') or hasattr(myclass, 'path')):
                     return path
                 else:
@@ -70,7 +72,8 @@ def cpdBaseFrame(
                     elif hasattr(myclass, 'get_path'):
                         return myclass.get_path()
                     else:
-                        raise TypeError("Can't instantiate abstract class MyConcreteClass with abstract method get_path.")
+                        raise TypeError(
+                            "Can't instantiate abstract class MyConcreteClass with abstract method get_path.")
 
             @classmethod
             def read_table(cls, version):
@@ -90,7 +93,8 @@ def cpdBaseFrame(
             @classmethod
             def get_process_method(cls):
                 if load and hasattr(myclass, 'load'):
-                    raise AttributeError('Declaring both load argument (1) in @decorator and (2) in-class load attribute/method at the same time is not allowed, please only declare one.')
+                    raise AttributeError(
+                        'Declaring both load argument (1) in @decorator and (2) in-class load attribute/method at the same time is not allowed, please only declare one.')
                 elif hasattr(myclass, 'load'):
                     return myclass.load
                 elif load:
@@ -162,20 +166,46 @@ def cpdBaseFrame(
                 return self.rename(columns=export_mapper)
 
             @property
-            def b(self):
+            def _parse_default_view_list(self):
                 if default_view_list is None:
-                    return self
+                    return self.columns.to_list()
                 else:
                     if isinstance(default_view_list, str):
-                        return self.br(default_view_list)
+                        return self.cvar(default_view_list)
                     elif isinstance(default_view_list, list):
-                        return self[default_view_list]
+                        return default_view_list
                     else:
                         raise TypeError('Invalid object type for default_view_list parameter')
 
             @property
-            def bmore(self):
+            def b(self):
+                viewlist = self._parse_default_view_list
+                return self[viewlist]
 
+            def _parse_adjust_column(self, varlist):
+                # Decide the adjust_column (list of vars)
+                if isinstance(varlist, str):
+                    adjust_column = cpd.parse_wild(varlist, self.columns)
+                elif isinstance(varlist, list):
+                    adjust_column = varlist
+                else:
+                    raise ValueError('input varlist must be either str or list')
+                pd.set_option('Display.Max_columns', None)
+                return adjust_column
+
+            def bmore(self, varlist):
+                if default_view_list is None:
+                    raise ValueError(
+                        "CANNOT CALL: [bmore] method cannot be called when default_list_view is at its default value None, which indicates method [b] will return all columns and no need to browse more columns")
+
+                adjust_column = self._parse_adjust_column(varlist)
+                return self[self._parse_default_view_list + adjust_column]
+
+            def bless(self, varlist):
+                adjust_column = self._parse_adjust_column(varlist)
+                original_list = self._parse_default_view_list
+                new_list = [item for item in original_list if item not in adjust_column]
+                return self[new_list]
 
         CombinedClass.__name__ = myclass.__name__
 
@@ -185,7 +215,6 @@ def cpdBaseFrame(
 
 
 if __name__ == '__main__':
-
     @cpdBaseFrame(default_version='latest_month')
     class SOB(pd.DataFrame):
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
@@ -194,6 +223,7 @@ if __name__ == '__main__':
         def load(data, region=None):
             print(region)
             return data.head(30)
+
 
     df1 = SOB(region='balabala')
     print(df1.vo)
