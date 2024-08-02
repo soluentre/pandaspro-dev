@@ -22,6 +22,11 @@ def extract_params(func):
     return pos_params, kw_params_with_defaults
 
 
+class cpdBaseFrameMapper:
+    def __init__(self, d):
+        self.mapper = d
+
+
 def cpdBaseFrame(
         path: str = None,
         file_type: str = 'csv',
@@ -31,7 +36,10 @@ def cpdBaseFrame(
         dateid: str = '%Y%m%d',
         sheet_name: str | int = 0,
         cellrange: str = 'A1',
-        fiscal_year_end: str = '06-30'
+        fiscal_year_end: str = '06-30',
+        import_rename_dict: dict = None,
+        export_rename_dict: dict = None,
+        default_view_list: str | list = None,
 ):
     def decorator(myclass):
         class CombinedClass(myclass, cpdBaseFrameDesign, ABC):
@@ -94,15 +102,19 @@ def cpdBaseFrame(
                 cpd_kwargs = extract_params(CombinedClass.get_process_method())[1]
                 version_kwarg = {'version': kwargs.pop('version', default_version)}
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
+
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
                 # self.debug.info(f'[version_kwarg]: {version_kwarg}')
                 # self.debug.info(f'[other_kwargs]: {other_kwargs}')
                 # self.debug.info(f'[kwargs]: {kwargs}')
                 # self.debug.info(f'[args]: {args}')
+
                 if args or kwargs:
+
                     # self.debug_info_lv1('Inside __init__')
                     # self.logger.info(f'Entered Above Part of init: args: **{type(args)}**, kwargs: **{type(kwargs)}**')
                     # self.logger.debug(f'Seeing values -> args: **{args}**, kwargs: **{kwargs}**')
+
                     try:
                         super(CombinedClass, self).__init__(*args, **kwargs)
                     except ValueError as e:
@@ -124,8 +136,10 @@ def cpdBaseFrame(
 
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
+                    processed_frame = processed_frame.rename(columns=import_rename_dict)
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
+                    self.export_mapper = cpdBaseFrameMapper(name_map)
                     self.fvp = CombinedClass.get_file_versions_parser()
                     self.get_version_input = version_kwarg['version']
                     self.get_filename = self.fvp.get_file(self.get_version_input)
@@ -140,10 +154,31 @@ def cpdBaseFrame(
                 return CombinedClass
 
             @property
-            def df(self):
-                return pd.DataFrame(self)
+            def er(self):
+                if export_rename_dict is None:
+                    export_mapper = self.export_mapper.mapper
+                else:
+                    export_mapper = export_rename_dict
+                return self.rename(columns=export_mapper)
+
+            @property
+            def b(self):
+                if default_view_list is None:
+                    return self
+                else:
+                    if isinstance(default_view_list, str):
+                        return self.br(default_view_list)
+                    elif isinstance(default_view_list, list):
+                        return self[default_view_list]
+                    else:
+                        raise TypeError('Invalid object type for default_view_list parameter')
+
+            @property
+            def bmore(self):
+
 
         CombinedClass.__name__ = myclass.__name__
+
         return CombinedClass
 
     return decorator
