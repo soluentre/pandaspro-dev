@@ -140,7 +140,8 @@ def cpdBaseFrame(
 
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
-                    processed_frame = processed_frame.rename(columns=import_rename_dict)
+                    if import_rename_dict is not None:
+                        processed_frame = processed_frame.rename(columns=import_rename_dict)
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
                     self.export_mapper = cpdBaseFrameMapper(name_map)
