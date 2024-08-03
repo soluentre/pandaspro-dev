@@ -24,13 +24,17 @@ class FramePro(pd.DataFrame):
     # noinspection PyFinal
     def __getattr__(self, item):
         def _parse_and_match(columns_list, attribute_name):
-            if not attribute_name.startswith('map_') and not attribute_name.startswith('list_'):
-                raise ValueError("Invalid attribute format, should start with 'map_' or 'list_'")
 
-            if attribute_name.startswith('map_'):
-                key_part = attribute_name[4:]
+            if attribute_name.startswith('cpdmap_'):
+                key_part = attribute_name[7:]
+            elif attribute_name.startswith('cpdlist_'):
+                key_part = attribute_name[8:]
+            elif attribute_name.startswith('cpdnotna_'):
+                key_part = attribute_name[9:]
+            elif attribute_name.startswith('cpdisna_'):
+                key_part = attribute_name[8:]
             else:
-                key_part = attribute_name[5:]
+                raise ValueError('prefix not added in [_parse_and_match] method')
 
             matched_columns = [col for col in columns_list if col in key_part]
 
