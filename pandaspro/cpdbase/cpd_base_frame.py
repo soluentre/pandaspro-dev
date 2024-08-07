@@ -115,7 +115,6 @@ def cpdBaseFrame(
                 import_rename_kwarg = {'import_rename': kwargs.pop('import_rename', import_rename)}
                 export_rename_kwarg = {'export_rename': kwargs.pop('export_rename', export_rename)}
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
-
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
                 # self.debug.info(f'[version_kwarg]: {version_kwarg}')
                 # self.debug.info(f'[other_kwargs]: {other_kwargs}')
@@ -123,11 +122,9 @@ def cpdBaseFrame(
                 # self.debug.info(f'[args]: {args}')
 
                 if args or kwargs:
-
                     # self.debug_info_lv1('Inside __init__')
                     # self.logger.info(f'Entered Above Part of init: args: **{type(args)}**, kwargs: **{type(kwargs)}**')
                     # self.logger.debug(f'Seeing values -> args: **{args}**, kwargs: **{kwargs}**')
-
                     try:
                         super(CombinedClass, self).__init__(*args, **kwargs)
                     except ValueError as e:
@@ -146,7 +143,6 @@ def cpdBaseFrame(
                         '''))
                 else:
                     # self.logger.info('Entered Below Part of init: no args or kwargs detected')
-
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
                     if import_rename_kwarg['import_rename'] is not None:
@@ -178,15 +174,54 @@ def cpdBaseFrame(
                         version=self.version,
                         uid=self.uid,
                         rename_status=self.rename_status,
-                        import_rename=self.import_mapper,
-                        export_rename=self.export_mapper,
+                        import_rename=self.import_mapper.mapper,
+                        export_rename=self.export_mapper.mapper,
                         **kwargs
                     )
                 return _c
 
+            def __getattr__(self, item):
+                if hasattr(super(self.__class__, self), item):
+                    return getattr(super(self.__class__, self), item)
+
+                if item.startswith('pvt_'):
+                    pivot_info = item[4:]
+                    variables = pivot_info.split('__')
+
+                    if len(variables) == 2:
+                        pivot_index, pivot_columns = variables
+
+                        if self.uid is None:
+                            idvar = self.columns[self.notnull().all()].tolist()
+                        else:
+                            idvar = self.uid
+
+                        if self.rename_status == 'Export':
+                            pivot_index = self.export_mapper.mapper[pivot_index]
+                            pivot_columns = self.export_mapper.mapper[pivot_columns]
+                            idvar = self.export_mapper.mapper[idvar]
+
+                        return FramePro(
+                            self.pivot_table(
+                                index=pivot_index,
+                                columns=pivot_columns,
+                                values=idvar,
+                                aggfunc='count',
+                                margins=True,
+                                margins_name='Total'
+                            )
+                        )
+                    else:
+                        raise ValueError('pvt_ for sob class must have 2 vars seperated by double underline mark __')
+                # elif item.startswith('quickview_'):
+                #     keyword = item[10:]
+                #     return self[conf.sobroster[keyword]]
+                else:
+                    return super().__getattr__(item)
+
             @property
             def er(self):
-                return self.rename(columns=self.export_mapper)
+                return self.rename(columns=self.export_mapper.mapper)
 
             @property
             def _parse_default_view_list(self):
