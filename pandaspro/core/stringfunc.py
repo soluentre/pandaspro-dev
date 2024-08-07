@@ -55,6 +55,22 @@ def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
     # noinspection PyUnboundLocalVariable
     return newlist
 
+def str2list(inputstring: str) -> Union[List[str], List[Union[str, Any]]]:
+    temp_list = [s.strip() for s in inputstring.split(';')] #切分成list （默认只会存在header和main_part）
+    pattern = '^/header:.+'
+    regex = re.compile(pattern)
+    first_ele = None
+    header_part = [s for s in temp_list if regex.match(s)] #查找是否有header（list）
+    if header_part:
+        header_part = ''.join(header_part) #变成字符串
+        header_part = [s.strip() for s in header_part.split(':')] #以：分割，找出header名字
+        first_ele = header_part[1] #header名字，（字符串）
+    main_ele = [s for s in temp_list if not regex.match(s)] #除header以外的main_part
+    if first_ele:
+        new_list = [first_ele, main_ele]
+    else:
+        new_list = main_ele
+    return new_list
 
 def parse_wild(promptstring: str, checklist: list, dictmap: dict = None):
     """
@@ -190,3 +206,8 @@ def parse_method(input_string):
     else:
         # If there are no parentheses, return only the method name
         return input_string, {}
+
+
+if __name__ == '__main__':
+    print(wildcardread(['abc', 'abcde'], '*e'))
+
