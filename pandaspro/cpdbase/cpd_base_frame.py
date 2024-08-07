@@ -2,6 +2,8 @@ import pandas as pd
 import pandaspro as cpd
 from abc import ABC
 import inspect
+
+from pandaspro import FramePro
 from pandaspro.cpdbase.design import cpdBaseFrameDesign
 from pandaspro.cpdbase.files_version_parser import FilesVersionParser
 import textwrap
@@ -45,7 +47,7 @@ def cpdBaseFrame(
         default_view_list: str | list = None,
 ):
     def decorator(myclass):
-        class CombinedClass(myclass, cpdBaseFrameDesign, ABC):
+        class CombinedClass(myclass, cpdBaseFrameDesign, FramePro, ABC):
             @classmethod
             def get_file_versions_parser(cls):
                 this_prefix = myclass.__name__ if prefix is None else prefix
@@ -106,7 +108,6 @@ def cpdBaseFrame(
 
             def __init__(self, *args, **kwargs):
                 cpd_kwargs = extract_params(CombinedClass.get_process_method())[1]
-                print(default_version)
                 uid_kwarg = {'uid': kwargs.pop('uid', uid)}
                 fvp_kwarg = {'fvp': kwargs.pop('fvp', CombinedClass.get_file_versions_parser())}
                 version_kwarg = {'version': kwargs.pop('version', default_version)}
@@ -152,22 +153,22 @@ def cpdBaseFrame(
                         processed_frame = processed_frame.rename(columns=import_rename_kwarg['import_rename'])
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
-                    self.fvp = fvp_kwarg['fvp']
-                    self.get_version_input = version_kwarg['version']
-                    self.get_filename = self.fvp.get_file(self.get_version_input)
-                    self.get_filename_full = self.get_path() + '/' + self.get_filename
-                    self.get_version = self.fvp.get_file_version_str(self.get_version_input)
-                    self.get_vo = self.fvp.get_file_version_dt(self.get_version_input)
-                    self.vo = self.get_vo
-                    self.get_more_info = self.fvp.get_suffix(self.get_version_input)
-                    self.uid = uid_kwarg['uid']
-                    self.rename_status = rename_status_kwarg['rename_status']
-                    self.import_mapper = cpdBaseFrameMapper(import_rename_kwarg['import_rename'])
-                    if export_rename_kwarg['export_rename'] is not None:
-                        self.export_mapper = cpdBaseFrameMapper(export_rename_kwarg['export_rename'])
-                    else:
-                        self.export_mapper = cpdBaseFrameMapper(name_map)
+                self.fvp = fvp_kwarg['fvp']
+                self.version = version_kwarg['version']
+                self.uid = uid_kwarg['uid']
+                self.rename_status = rename_status_kwarg['rename_status']
+                self.import_mapper = cpdBaseFrameMapper(import_rename_kwarg['import_rename'])
+                if export_rename_kwarg['export_rename'] is not None:
+                    self.export_mapper = cpdBaseFrameMapper(export_rename_kwarg['export_rename'])
+                else:
+                    self.export_mapper = cpdBaseFrameMapper(name_map)
 
+                self.get_filename = self.fvp.get_file(self.version)
+                self.get_filename_full = self.get_path() + '/' + self.get_filename
+                self.get_version = self.fvp.get_file_version_str(self.version)
+                self.get_vo = self.fvp.get_file_version_dt(self.version)
+                self.vo = self.get_vo
+                self.get_more_info = self.fvp.get_suffix(self.version)
 
             @property
             def _constructor(self):
@@ -237,7 +238,7 @@ def cpdBaseFrame(
 
 
 if __name__ == '__main__':
-    @cpdBaseFrame(default_version='latest_month')
+    @cpdBaseFrame(default_version='latest_month', uid='upi')
     class SOB(pd.DataFrame):
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
 
