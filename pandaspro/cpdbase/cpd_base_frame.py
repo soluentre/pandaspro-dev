@@ -214,8 +214,6 @@ def cpdBaseFrame(
                     else:
                         raise ValueError('pvt_ for sob class must have 2 vars seperated by double underline mark __')
                 # elif item.startswith('quickview_'):
-                #     keyword = item[10:]
-                #     return self[conf.sobroster[keyword]]
                 else:
                     return super().__getattr__(item)
 
