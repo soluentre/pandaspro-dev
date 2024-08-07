@@ -189,7 +189,7 @@ class PutxlSet:
         self.logger.info(">>>>>>> LOG FOR PUTXL  <<<<<<<")
         self.logger.info(">" * 30)
         self.logger.info(
-            f"> CONTENT: {content if isinstance(content, str) else 'DataFrame with Size of: ' + str(content.shape)}")
+            f"> CONTENT: {content if isinstance(content, str) or isinstance(content, list) else 'DataFrame with Size of: ' + str(content.shape)}")
         self.logger.info(f"> SHEET_NAME: {sheet_name}")
         self.logger.info(f"> CELL: {cell}")
         self.logger.info("> LOG ACTIVATED - INFO LEVEL")

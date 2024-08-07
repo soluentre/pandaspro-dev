@@ -38,8 +38,10 @@ def cpdBaseFrame(
         sheet_name: str | int = 0,
         cellrange: str = 'A1',
         fiscal_year_end: str = '06-30',
-        import_rename_dict: dict = None,
-        export_rename_dict: dict = None,
+        uid: str = None,
+        rename_status: str = 'Process',
+        import_rename: dict = None,
+        export_rename: dict = None,
         default_view_list: str | list = None,
 ):
     def decorator(myclass):
@@ -104,7 +106,13 @@ def cpdBaseFrame(
 
             def __init__(self, *args, **kwargs):
                 cpd_kwargs = extract_params(CombinedClass.get_process_method())[1]
+                print(default_version)
+                uid_kwarg = {'uid': kwargs.pop('uid', uid)}
+                fvp_kwarg = {'fvp': kwargs.pop('fvp', CombinedClass.get_file_versions_parser())}
                 version_kwarg = {'version': kwargs.pop('version', default_version)}
+                rename_status_kwarg = {'rename_status': kwargs.pop('rename_status', rename_status)}
+                import_rename_kwarg = {'import_rename': kwargs.pop('import_rename', import_rename)}
+                export_rename_kwarg = {'export_rename': kwargs.pop('export_rename', export_rename)}
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
 
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
@@ -140,12 +148,11 @@ def cpdBaseFrame(
 
                     raw_frame, name_map = CombinedClass.read_table(**version_kwarg)
                     processed_frame = CombinedClass.get_process_method()(raw_frame, **other_kwargs)
-                    if import_rename_dict is not None:
-                        processed_frame = processed_frame.rename(columns=import_rename_dict)
+                    if import_rename_kwarg['import_rename'] is not None:
+                        processed_frame = processed_frame.rename(columns=import_rename_kwarg['import_rename'])
                     super(CombinedClass, self).__init__(processed_frame)  # Ensure DataFrame initialization
 
-                    self.export_mapper = cpdBaseFrameMapper(name_map)
-                    self.fvp = CombinedClass.get_file_versions_parser()
+                    self.fvp = fvp_kwarg['fvp']
                     self.get_version_input = version_kwarg['version']
                     self.get_filename = self.fvp.get_file(self.get_version_input)
                     self.get_filename_full = self.get_path() + '/' + self.get_filename
@@ -153,18 +160,32 @@ def cpdBaseFrame(
                     self.get_vo = self.fvp.get_file_version_dt(self.get_version_input)
                     self.vo = self.get_vo
                     self.get_more_info = self.fvp.get_suffix(self.get_version_input)
+                    self.uid = uid_kwarg['uid']
+                    self.rename_status = rename_status_kwarg['rename_status']
+                    self.import_mapper = cpdBaseFrameMapper(import_rename_kwarg['import_rename'])
+                    if export_rename_kwarg['export_rename'] is not None:
+                        self.export_mapper = cpdBaseFrameMapper(export_rename_kwarg['export_rename'])
+                    else:
+                        self.export_mapper = cpdBaseFrameMapper(name_map)
+
 
             @property
             def _constructor(self):
-                return CombinedClass
+                def _c(*args, **kwargs):
+                    return CombinedClass(
+                        *args,
+                        version=self.version,
+                        uid=self.uid,
+                        rename_status=self.rename_status,
+                        import_rename=self.import_mapper,
+                        export_rename=self.export_mapper,
+                        **kwargs
+                    )
+                return _c
 
             @property
             def er(self):
-                if export_rename_dict is None:
-                    export_mapper = self.export_mapper.mapper
-                else:
-                    export_mapper = export_rename_dict
-                return self.rename(columns=export_mapper)
+                return self.rename(columns=self.export_mapper)
 
             @property
             def _parse_default_view_list(self):
