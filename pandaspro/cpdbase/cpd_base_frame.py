@@ -42,9 +42,9 @@ def cpdBaseFrame(
         fiscal_year_end: str = '06-30',
         uid: str = None,
         rename_status: str = 'Process',
-        import_rename: dict = None,
-        export_rename: dict = None,
-        default_view_list: str | list = None,
+        imr: dict = None,
+        exr: dict = None,
+        dvl: str | list = None,
 ):
     def decorator(myclass):
         class CombinedClass(myclass, cpdBaseFrameDesign, FramePro, ABC):
@@ -112,8 +112,8 @@ def cpdBaseFrame(
                 fvp_kwarg = {'fvp': kwargs.pop('fvp', CombinedClass.get_file_versions_parser())}
                 version_kwarg = {'version': kwargs.pop('version', default_version)}
                 rename_status_kwarg = {'rename_status': kwargs.pop('rename_status', rename_status)}
-                import_rename_kwarg = {'import_rename': kwargs.pop('import_rename', import_rename)}
-                export_rename_kwarg = {'export_rename': kwargs.pop('export_rename', export_rename)}
+                import_rename_kwarg = {'import_rename': kwargs.pop('import_rename', imr)}
+                export_rename_kwarg = {'export_rename': kwargs.pop('export_rename', exr)}
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
                 # self.debug.info(f'[version_kwarg]: {version_kwarg}')
@@ -225,13 +225,13 @@ def cpdBaseFrame(
 
             @property
             def _parse_default_view_list(self):
-                if default_view_list is None:
+                if dvl is None:
                     return self.columns.to_list()
                 else:
-                    if isinstance(default_view_list, str):
-                        return self.cvar(default_view_list)
-                    elif isinstance(default_view_list, list):
-                        return default_view_list
+                    if isinstance(dvl, str):
+                        return self.cvar(dvl)
+                    elif isinstance(dvl, list):
+                        return dvl
                     else:
                         raise TypeError('Invalid object type for default_view_list parameter')
 
@@ -252,7 +252,7 @@ def cpdBaseFrame(
                 return adjust_column
 
             def bmore(self, varlist):
-                if default_view_list is None:
+                if dvl is None:
                     raise ValueError(
                         "CANNOT CALL: [bmore] method cannot be called when default_list_view is at its default value None, which indicates method [b] will return all columns and no need to browse more columns")
 
