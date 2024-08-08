@@ -23,6 +23,10 @@ from pandaspro.cpdbase.api import (
     FilesVersionParser
 )
 
+from pandaspro.cpddate.api import (
+    DatePro
+)
+
 from pandaspro.io.api import (
     CellPro,
     index_cell,

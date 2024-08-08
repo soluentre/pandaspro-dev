@@ -32,15 +32,15 @@ class FramePro(pd.DataFrame):
             elif attribute_name.startswith('cpdnotna_'):
                 key_part = attribute_name[9:]
             elif attribute_name.startswith('cpdisna_'):
-                key_part = attribute_name[8:]
+                key_part = attribute_name[9:]
             else:
                 raise ValueError('prefix not added in [_parse_and_match] method')
 
             matched_columns = [col for col in columns_list if col in key_part]
 
-            if attribute_name.startswith('map_') and len(matched_columns) != 2:
+            if attribute_name.startswith('cpdmap_') and len(matched_columns) != 2:
                 raise ValueError("Attribute does not match exactly two columns in the frame columns")
-            elif attribute_name.startswith('list_') and len(matched_columns) != 1:
+            elif attribute_name.startswith('cpdlist_') and len(matched_columns) != 1:
                 raise ValueError("Attribute does not match exactly 1 columns in the frame columns")
 
             matched_columns.sort(key=lambda col: key_part.index(col))
