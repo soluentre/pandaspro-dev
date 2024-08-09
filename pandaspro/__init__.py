@@ -21,6 +21,8 @@ from pandaspro.core.api import (
 
 from pandaspro.cpdbase.api import (
     cpdBaseFrame,
+    cpdBaseFrameMapper,
+    cpdBaseFrameList,
     FilesVersionParser
 )
 
