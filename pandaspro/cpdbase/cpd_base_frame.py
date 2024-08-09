@@ -3,6 +3,7 @@ import pandaspro as cpd
 from abc import ABC
 import inspect
 
+from pandas._typing import UpdateJoin, IgnoreRaise
 from pandaspro import FramePro
 from pandaspro.cpdbase.design import cpdBaseFrameDesign
 from pandaspro.cpdbase.files_version_parser import FilesVersionParser
@@ -30,6 +31,11 @@ class cpdBaseFrameMapper:
         self.mapper = d
 
 
+class cpdBaseFrameList:
+    def __init__(self, l):
+        self.list = l
+
+
 def cpdBaseFrame(
         path: str = None,
         file_type: str = 'csv',
@@ -45,6 +51,7 @@ def cpdBaseFrame(
         imr: dict = None,
         exr: dict = None,
         dvl: str | list = None,
+        **custom_attrs
 ):
     def decorator(myclass):
         class CombinedClass(myclass, cpdBaseFrameDesign, FramePro, ABC):
@@ -114,7 +121,11 @@ def cpdBaseFrame(
                 rename_status_kwarg = {'rename_status': kwargs.pop('rename_status', rename_status)}
                 import_rename_kwarg = {'import_rename': kwargs.pop('import_rename', imr)}
                 export_rename_kwarg = {'export_rename': kwargs.pop('export_rename', exr)}
+                custom_attrs_saver = {}
+                for attr_name, attr_value in custom_attrs.items():
+                    custom_attrs_saver[attr_name] = kwargs.pop(attr_name, attr_value)
                 other_kwargs = {key: kwargs.pop(key, value) for key, value in cpd_kwargs.items()}
+
                 # self.debug.info(f'[cpd_kwargs]: {cpd_kwargs}')
                 # self.debug.info(f'[version_kwarg]: {version_kwarg}')
                 # self.debug.info(f'[other_kwargs]: {other_kwargs}')
@@ -157,6 +168,7 @@ def cpdBaseFrame(
                 if export_rename_kwarg['export_rename'] is not None:
                     self.export_mapper = cpdBaseFrameMapper(export_rename_kwarg['export_rename'])
                 else:
+                    # noinspection PyUnboundLocalVariable
                     self.export_mapper = cpdBaseFrameMapper(name_map)
 
                 self.get_filename = self.fvp.get_file(self.version)
@@ -166,9 +178,16 @@ def cpdBaseFrame(
                 self.vo = self.get_vo
                 self.get_more_info = self.fvp.get_suffix(self.version)
 
+                # Custom Attributes
+                for attr_name, attr_value in custom_attrs.items():
+                    setattr(self, attr_name, attr_value)
+                self.custom_attrs_saver = cpdBaseFrameMapper(custom_attrs_saver)
+
             @property
             def _constructor(self):
                 def _c(*args, **kwargs):
+                    custom_kwargs = {key: getattr(self, key) for key in self.custom_attrs_saver.mapper}
+                    kwargs.update(custom_kwargs)
                     return CombinedClass(
                         *args,
                         version=self.version,
@@ -271,7 +290,7 @@ def cpdBaseFrame(
 
 
 if __name__ == '__main__':
-    @cpdBaseFrame(default_version='latest_month', uid='upi')
+    @cpdBaseFrame(default_version='latest_month', uid='upi', msg=123)
     class SOB(pd.DataFrame):
         path = r'C:\Users\wb539289\OneDrive - WBG\K - Knowledge Management\Databases\Staff on Board Database\csv'
 
@@ -280,7 +299,12 @@ if __name__ == '__main__':
             print(region)
             return data.head(30)
 
+        # noinspection PyAttributeOutsideInit
+        def update_msg(self):
+            self.msg = 1
 
     df1 = SOB(region='balabala')
     print(df1.vo)
     v = df1.vo
+    df2 = df1.inlist('upi', 88315)
+
