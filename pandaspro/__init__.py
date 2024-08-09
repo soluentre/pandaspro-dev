@@ -3,6 +3,7 @@ from pandaspro.email.api import (
     create_mail_class
 )
 
+# noinspection PyProtectedMember
 from pandaspro.core.api import (
     bdate,
     dfilter,

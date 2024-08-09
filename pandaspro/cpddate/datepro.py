@@ -67,5 +67,5 @@ class DatePro:
 
 if __name__ == '__main__':
     # print(DatePro('2024-1-1').BdY1)
-    d = DatePro('2024-1-7')
+    d = DatePro('2024-01-07')
     print(d.BdY)
